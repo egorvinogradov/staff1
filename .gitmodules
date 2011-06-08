@@ -1,0 +1,3 @@
+[submodule "src/yammer_oauth"]
+	path = src/yammer_oauth
+	url = https://github.com/lemonad/python-yammer-oauth.git
