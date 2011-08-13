@@ -14,7 +14,7 @@ class Day(models.Model):
     day = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return unicode(self.week.pk) + u' ' + WEEK_DAYS[self.day]
+        return unicode(self.week.pk ) + u'+' + unicode(self.day) + u' (' + WEEK_DAYS[self.day] + u')'
 
 class Group(models.Model):
     title = models.CharField(max_length=100)
@@ -28,4 +28,4 @@ class Dish(models.Model):
     title = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return unicode(self.day.pk) + ' ' + unicode(self.group) + ' ' + unicode(self.title)
+        return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
