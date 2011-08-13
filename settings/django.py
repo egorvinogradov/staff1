@@ -98,8 +98,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'openid_consumer.middleware.OpenIDMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'openid_consumer.middleware.OpenIDMiddleware',
 )
 
 ROOT_URLCONF = 'staff.urls'
@@ -159,6 +159,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'socialauth.auth_backends.OpenIdBackend',
+    'team.auth_backends.OpenIdOstrovokBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'

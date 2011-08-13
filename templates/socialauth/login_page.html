@@ -1,13 +1,14 @@
-<html>
-<body onload="document.getElementById('openid_form').submit()">
+{% extends 'base.html' %}
+
+{#<body onload="document.getElementById('openid_form').submit()">#}
+
+{% block body %}
+<p>Авторизация через Google-аккаунт в домене @ostrovok.ru</p>
 
 <form action="/accounts/openid/" method="get" id="openid_form">
   <input type="hidden" name="action" value="verify" />
     <input type="hidden" name="openid_next" value="/">
     <input id="openid_identifier" name="openid_identifier" type="hidden" value="https://www.google.com/accounts/o8/id" />
+    <input type="submit" value="Продолжить" />
 </form>
-
-Redirecting...
-
-</body>
-</html>
+{% endblock body %}
