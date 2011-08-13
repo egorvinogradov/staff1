@@ -1,6 +1,8 @@
 from django.conf.urls.defaults import patterns, include, url
 
 from django.contrib import admin
+import team.urls
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -14,5 +16,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     (r'^accounts/', include('socialauth.urls')),
-    (r'^$', 'socialauth.views.signin_complete'),
+    (r'^signin/$', 'socialauth.views.signin_complete'),
+
+    (r'^', include(team.urls)),
 )

@@ -98,12 +98,14 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'openid_consumer.middleware.OpenIDMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 ROOT_URLCONF = 'staff.urls'
 
 TEMPLATE_DIRS = (
+    'templates/',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -114,7 +116,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    #'django.contrib.messages',
+    'django.contrib.messages',
     #'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
@@ -123,7 +125,8 @@ INSTALLED_APPS = (
     'socialauth',
     'openid_consumer',
 
-    'staff.dinner',
+    'team',
+    'dinner',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -153,4 +156,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.media",
     "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.request",
+)
+
+AUTHENTICATION_BACKENDS = (
+    'socialauth.auth_backends.OpenIdBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
