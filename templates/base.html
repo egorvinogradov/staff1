@@ -5,6 +5,16 @@
     <title></title>
 </head>
 <body>
+
+<div style="float: right">
+{% if user.is_authenticated %}
+    {{ user }} <a href="{% url socialauth_social_logout %}">выйти</a>
+{% else %}
+    <a href="{% url socialauth_login_page %}">login</a>
+{% endif %}
+</div>
+
+
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
