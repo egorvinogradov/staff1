@@ -2,6 +2,7 @@ from django.conf.urls.defaults import patterns, include, url
 
 from django.contrib import admin
 import team.urls
+import dinner.urls
 
 admin.autodiscover()
 
@@ -19,4 +20,5 @@ urlpatterns = patterns('',
     (r'^signin/$', 'socialauth.views.signin_complete'),
 
     (r'^', include(team.urls)),
+    (r'^dinner/', include(dinner.urls)),
 )

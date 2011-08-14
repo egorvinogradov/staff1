@@ -1,7 +1,8 @@
 #coding: utf-8
 from django.db import models
+from django.contrib.auth.models import User
 
-WEEK_DAYS = (u'Пн', u'Вт', u'Ср', u'Чт', u'Пн', u'Сб', u'Вс',)
+WEEK_DAYS = (u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс',)
 
 class Menu(models.Model):
     week = models.DateField(unique=True, primary_key=True)
@@ -14,7 +15,7 @@ class Day(models.Model):
     day = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return unicode(self.week.pk ) + u'+' + unicode(self.day) + u' (' + WEEK_DAYS[self.day] + u')'
+        return WEEK_DAYS[self.day]
 
 class Group(models.Model):
     title = models.CharField(max_length=100)
@@ -29,3 +30,18 @@ class Dish(models.Model):
 
     def __unicode__(self):
         return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
+
+class Order(models.Model):
+    user = models.ForeignKey(User)
+    menu = models.ForeignKey(Menu)
+
+    class Meta:
+        unique_together = (('user', 'menu'),)
+
+class OrderDayItem(models.Model):
+    order = models.ForeignKey(Order, verbose_name=u'День')
+    dish = models.ForeignKey(Dish, verbose_name=u'Блюдо')
+    count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
+
+    class Meta:
+        unique_together = (('order', 'dish'),)

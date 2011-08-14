@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block body %}
+    <p>{{ menu }}</p>
+
+    {% for day, dishes_by_group in dishes_by_group_by_day %}
+        <h4>{{ day }}</h4>
+
+        {% for group, dishes in dishes_by_group %}
+            <h5>{{ group.1 }}</h5>
+            <table>
+                {% for dish in dishes %}
+                <tr>
+                    <td>{{ dish.title }}</td>
+                    <td><input name="count" type="text" value="{{ count }}" maxlength="2" /></td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endfor %}
+    {% endfor %}
+
+{% endblock body %}
