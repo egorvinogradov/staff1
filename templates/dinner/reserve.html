@@ -15,7 +15,7 @@
             <table>
                 {% for dish in dishes %}
                 <tr>
-                    <td><input name="dish#{{ dish.id }}" type="text" value="{{ count|default:0 }}" maxlength="3" style="width:1em" /></td>
+                    <td><input name="dish#{{ dish.id }}" type="text" value="{{ dish.count }}" maxlength="3" style="width:1em" /></td>
                     <td>{{ dish.title }}</td>
                 </tr>
                 {% endfor %}
