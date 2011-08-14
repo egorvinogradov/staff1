@@ -2,6 +2,11 @@
 {% block body %}
     <p>{{ menu }}</p>
 
+    <form action="." method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="menu" value="{{ menu.pk|date:"c" }}" />
+
     {% for day, dishes_by_group in dishes_by_group_by_day %}
         <h4>{{ day }}</h4>
 
@@ -10,12 +15,16 @@
             <table>
                 {% for dish in dishes %}
                 <tr>
+                    <td><input name="dish#{{ dish.id }}" type="text" value="{{ count|default:0 }}" maxlength="3" style="width:1em" /></td>
                     <td>{{ dish.title }}</td>
-                    <td><input name="count" type="text" value="{{ count }}" maxlength="2" /></td>
                 </tr>
                 {% endfor %}
             </table>
         {% endfor %}
     {% endfor %}
+
+    <p><input type="submit" value="Сохранить" /></p>
+
+    </form>
 
 {% endblock body %}
