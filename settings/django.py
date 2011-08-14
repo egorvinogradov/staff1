@@ -94,6 +94,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -103,6 +104,15 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'staff.urls'
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+    'SHOW_TOOLBAR_CALLBACK': lambda request: True,
+    'EXTRA_SIGNALS': [],
+    'HIDE_DJANGO_SQL': False,
+    'TAG': 'div',
+}
+
 
 TEMPLATE_DIRS = (
     'templates/',
@@ -124,6 +134,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'socialauth',
     'openid_consumer',
+    'debug_toolbar',
 
     'team',
     'dinner',

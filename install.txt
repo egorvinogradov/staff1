@@ -1,4 +1,5 @@
 sudo pip install pyExcelerator 'python-openid>=2.0.0' 'oauth>=1.0.0' Django-Socialauth django python-psycopg2
+sudo pip install django-debug-toolbar
 
 $ diff -u /usr/local/lib/python2.7/dist-packages/openid_consumer/views.py-original /usr/local/lib/python2.7/dist-packages/openid_consumer/views.py
 --- /usr/local/lib/python2.7/dist-packages/openid_consumer/views.py-original	2011-08-12 12:30:24.142324161 +0000
