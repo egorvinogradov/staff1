@@ -9,6 +9,7 @@ import pyExcelerator as xls
 from django.db.transaction import commit_on_success
 from datetime import datetime
 from itertools import count
+from tempfile import NamedTemporaryFile
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
@@ -63,7 +64,30 @@ class MenuAdmin(admin.ModelAdmin):
         })
 
     def xls_view(self, request, menu):
-        content = ''
+        f = menu.source.file
+        workbook = xls.Workbook()
+        for sheet_name, values in xls.parse_xls(f, 'cp1251'):
+            sheet = workbook.add_sheet(sheet_name)
+            for r, c in values.keys():
+                sheet.write(r, c, values[(r, c)])
+
+        dest = NamedTemporaryFile()
+        workbook.save(dest.name)
+        dest.seek(0)
+        content = dest.read()
+        dest.close()
+#            day = m.Day(day=(_parse_day(sheet_name) - menu.week).days, week=menu)
+#            group = None
+#            for row_idx in count(2):
+#                if not (row_idx, 0) in values:
+#                    break
+#                elif group is None or not ( (row_idx, 1) in values ):
+#                    pass
+#                else:
+#                    dish = m.Dish(day=day, group=group, title=values[(row_idx, 1)])
+#                    values[(row_idx, 1)] = '111'
+
+
         resp = HttpResponse(content, content_type='application/x-msexcel')
         resp['Content-Disposition'] = 'attachment; filename=' + (os.path.basename(menu.source.name)[:-4] + '-filled.xls')
         return resp
