@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Заказанные обеды{% endblock %}
+{% block content %}
+    <div id="content-main">
+        <h1>Заказанные обеды:</h1>
+        <table>
+        {% for order in orders %}
+            <tr>
+                <td>{{ order.user.username }}</td>
+                <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
+                <td title="общее кол-во блюд">{{ order.num_items }}</td>
+                <td title="дни на которые хоть что-то заказно" style="{% if order.num_days <= 3 %}color:red{% endif %}">{{ order.num_days }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}

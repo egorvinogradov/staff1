@@ -1,5 +1,6 @@
 # coding: utf-8
 from django.contrib import admin
+from django.views.generic.simple import direct_to_template
 import models as m
 import forms as f
 import pyExcelerator as xls
@@ -41,6 +42,18 @@ class MenuAdmin(admin.ModelAdmin):
                     dish = m.Dish(day=day, group=group, title=values[(row_idx, 1)])
                     dish.save()
 
+    def change_view(self, request, object_id, extra_context=None):
+        menu = m.Menu.objects.get(pk=object_id)
+        orders = m.Order.objects.filter(user=request.user, menu=menu)\
+            .extra(select = {
+                'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
+                    .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
+                'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
+                    .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
+            })
+
+        return direct_to_template(request, 'dinner/report.html', {
+            'orders': orders,
+        })
+
 admin.site.register(m.Menu, MenuAdmin)
-admin.site.register(m.Group)
-admin.site.register(m.Dish)
