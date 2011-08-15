@@ -1,4 +1,5 @@
 #coding: utf-8
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -6,6 +7,7 @@ WEEK_DAYS = (u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс',)
 
 class Menu(models.Model):
     week = models.DateField(unique=True, primary_key=True)
+    source = models.FileField(upload_to=settings.UPLOAD_TO)
 
     def __unicode__(self):
         return u'на неделю с ' + unicode(self.week)
@@ -45,6 +47,7 @@ class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')
     dish = models.ForeignKey(Dish, verbose_name=u'Блюдо')
     count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = (('order', 'dish'),)
