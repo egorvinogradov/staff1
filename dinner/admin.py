@@ -1,6 +1,8 @@
 # coding: utf-8
 from django.contrib import admin
+from django.http import HttpResponse
 from django.views.generic.simple import direct_to_template
+import os
 import models as m
 import forms as f
 import pyExcelerator as xls
@@ -44,6 +46,10 @@ class MenuAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, extra_context=None):
         menu = m.Menu.objects.get(pk=object_id)
+
+        if request.GET.get('xls'):
+            return self.xls_view(request, menu)
+
         orders = m.Order.objects.filter(user=request.user, menu=menu)\
             .extra(select = {
                 'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
@@ -55,5 +61,11 @@ class MenuAdmin(admin.ModelAdmin):
         return direct_to_template(request, 'dinner/report.html', {
             'orders': orders,
         })
+
+    def xls_view(self, request, menu):
+        content = ''
+        resp = HttpResponse(content, content_type='application/x-msexcel')
+        resp['Content-Disposition'] = 'attachment; filename=' + (os.path.basename(menu.source.name)[:-4] + '-filled.xls')
+        return resp
 
 admin.site.register(m.Menu, MenuAdmin)
