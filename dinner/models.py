@@ -8,7 +8,7 @@ class Menu(models.Model):
     week = models.DateField(unique=True, primary_key=True)
 
     def __unicode__(self):
-        return u'Меню на неделю с ' + unicode(self.week)
+        return u'на неделю с ' + unicode(self.week)
 
 class Day(models.Model):
     week = models.ForeignKey(Menu)
@@ -34,6 +34,9 @@ class Dish(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(User)
     menu = models.ForeignKey(Menu)
+
+    def __unicode__(self):
+        return self.user.username + u' ' + unicode(self.menu)
 
     class Meta:
         unique_together = (('user', 'menu'),)
