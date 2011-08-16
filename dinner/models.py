@@ -28,7 +28,11 @@ class Group(models.Model):
 class Dish(models.Model):
     day = models.ForeignKey(Day)
     group = models.ForeignKey(Group)
+
+    index = models.PositiveIntegerField()
     title = models.CharField(max_length=200)
+    weight = models.PositiveIntegerField()
+    price = models.PositiveIntegerField()
 
     def __unicode__(self):
         return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)

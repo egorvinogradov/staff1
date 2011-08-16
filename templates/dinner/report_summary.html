@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Заказ на наделю {{ menu.week }} }}{% endblock %}
+{% block content %}
+    <div id="content-main">
+        {% include 'dinner/report_menu.html' %}
+
+        <table>
+            <tr>
+                <th>№ п/п</th>
+                <th>Наименование</th>
+                <th>Вес (грамм)</th>
+                <th>Цена(р)</th>
+                <th>Кол-во</th>
+                <th>Сумма(р)</th>
+            </tr>
+        {% for item in items %}
+            <tr>
+                <td>{{ item.dish.index }}</td>
+                <td>{{ item.dish.title }}</td>
+                <td>{{ item.dish.weight }}</td>
+                <td>{{ item.dish.price }}</td>
+                <td>{{ item.dish.count__sum }}</td>
+                <td>{{ item.dish.cost__sum }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+
+    </div>
+{% endblock %}

@@ -2,7 +2,8 @@
 {% block title %}Заказанные обеды{% endblock %}
 {% block content %}
     <div id="content-main">
-        <p><a href="?xls=1">Загрузить заполненный Excel-файл</a></p>
+        {% include 'dinner/report_menu.html' %}
+
         <h1>Заказанные обеды:</h1>
         <table>
         {% for order in orders %}

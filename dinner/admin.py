@@ -1,5 +1,6 @@
 # coding: utf-8
 from django.contrib import admin
+from django.db.models.aggregates import Sum
 from django.http import HttpResponse
 from django.views.generic.simple import direct_to_template
 import os
@@ -48,8 +49,8 @@ class MenuAdmin(admin.ModelAdmin):
     def change_view(self, request, object_id, extra_context=None):
         menu = m.Menu.objects.get(pk=object_id)
 
-        if request.GET.get('xls'):
-            return self.xls_view(request, menu)
+        if request.GET.get('r', None) == 'summary':
+            return self.summary_view(request, menu)
 
         orders = m.Order.objects.filter(user=request.user, menu=menu)\
             .extra(select = {
@@ -63,33 +64,16 @@ class MenuAdmin(admin.ModelAdmin):
             'orders': orders,
         })
 
-    def xls_view(self, request, menu):
-        f = menu.source.file
-        workbook = xls.Workbook()
-        for sheet_name, values in xls.parse_xls(f, 'cp1251'):
-            sheet = workbook.add_sheet(sheet_name)
-            for r, c in values.keys():
-                sheet.write(r, c, values[(r, c)])
+    def summary_view(self, request, menu):
+        items = m.OrderDayItem.objects\
+            .filter(order__menu = menu)\
+            .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group')\
+            .annotate(Sum('count'))\
+            .order_by('dish')
 
-        dest = NamedTemporaryFile()
-        workbook.save(dest.name)
-        dest.seek(0)
-        content = dest.read()
-        dest.close()
-#            day = m.Day(day=(_parse_day(sheet_name) - menu.week).days, week=menu)
-#            group = None
-#            for row_idx in count(2):
-#                if not (row_idx, 0) in values:
-#                    break
-#                elif group is None or not ( (row_idx, 1) in values ):
-#                    pass
-#                else:
-#                    dish = m.Dish(day=day, group=group, title=values[(row_idx, 1)])
-#                    values[(row_idx, 1)] = '111'
-
-
-        resp = HttpResponse(content, content_type='application/x-msexcel')
-        resp['Content-Disposition'] = 'attachment; filename=' + (os.path.basename(menu.source.name)[:-4] + '-filled.xls')
-        return resp
+        return direct_to_template(request, 'dinner/report_summary.html', {
+            'menu': menu,
+            'items': items,
+        })
 
 admin.site.register(m.Menu, MenuAdmin)
