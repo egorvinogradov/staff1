@@ -10,8 +10,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     (r'^accounts/', include('socialauth.urls')),
-    (r'^signin/$', 'socialauth.views.signin_complete'),
 
-    (r'^', include(team.urls)),
-    (r'^dinner/', include(dinner.urls)),
+    #(r'^', include(team.urls)),
+    (r'^', include(dinner.urls)),
 )
