@@ -2,8 +2,9 @@
 from pprint import pformat
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.views.generic.simple import direct_to_template
 import models as m
 from datetime import datetime
@@ -16,7 +17,6 @@ def _group_by_materialize(seq):
 @login_required
 @commit_on_success
 def reserve(request):
-
     if request.method == 'POST':
         menu = m.Menu.objects.get(pk=request.POST['menu'])
         order = m.Order.objects.get(user=request.user, menu=menu)
@@ -34,7 +34,10 @@ def reserve(request):
 
         return HttpResponseRedirect(request.get_full_path())
 
-    menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(2))
+    try:
+        menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(4))
+    except m.Menu.DoesNotExist:
+        return HttpResponse(u'новое меню ещё не загружено')
 
     order = m.Order.objects.get_or_create(user=request.user, menu=menu)[0]
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=menu).values_list('dish__pk', 'count'))
