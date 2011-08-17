@@ -4,7 +4,12 @@
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
 
+        <h2>Меню {{ menu }}</h2>
         <table>
+        {% for seq, day, day_cost in days %}
+            <tr>
+                <th colspan="20"><h3>{{ day }}</h3></th>
+            </tr>
             <tr>
                 <th>№ п/п</th>
                 <th>Наименование</th>
@@ -13,14 +18,20 @@
                 <th>Кол-во</th>
                 <th>Сумма(р)</th>
             </tr>
-        {% for item in items %}
+            {% for item in seq %}
             <tr>
                 <td>{{ item.dish__index }}</td>
                 <td>{{ item.dish__title }}</td>
-                <td>{{ item.dish__weight }}</td>
+                <td>{{ item.dish__weight|default_if_none:'—' }}</td>
                 <td>{{ item.dish__price }}</td>
                 <td>{{ item.count__sum }}</td>
-                <td>{{ item.cost__sum }}</td>
+                <td>{{ item.cost }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th colspan="4"></th>
+                <th><strong>Всего:</strong></th>
+                <th>{{ day_cost }}</th>
             </tr>
         {% endfor %}
         </table>

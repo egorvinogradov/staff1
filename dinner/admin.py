@@ -1,16 +1,14 @@
 # coding: utf-8
 from django.contrib import admin
 from django.db.models.aggregates import Sum
-from django.http import HttpResponse
 from django.views.generic.simple import direct_to_template
-import os
+import operator
 import models as m
 import forms as f
 import pyExcelerator as xls
 from django.db.transaction import commit_on_success
 from datetime import datetime
-from itertools import count
-from tempfile import NamedTemporaryFile
+from itertools import count, groupby
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
@@ -78,13 +76,25 @@ class MenuAdmin(admin.ModelAdmin):
     def summary_view(self, request, menu):
         items = m.OrderDayItem.objects\
             .filter(order__menu = menu)\
-            .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group')\
+            .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
             .order_by('dish')
 
+        for i in items:
+            i['cost'] = i['count__sum'] * i['dish__price']
+
+        days = []
+        for day, seq in groupby(list(items), operator.itemgetter('dish__day')):
+            seq = list(seq)
+            days.append((
+                seq,
+                unicode(m.Day.objects.get(pk=day)),
+                sum(map(operator.itemgetter('cost'), seq)),
+            ))
+
         return direct_to_template(request, 'dinner/report_summary.html', {
             'menu': menu,
-            'items': items,
+            'days': days,
         })
 
 admin.site.register(m.Menu, MenuAdmin)
