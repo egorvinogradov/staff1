@@ -15,12 +15,12 @@
             </tr>
         {% for item in items %}
             <tr>
-                <td>{{ item.dish.index }}</td>
-                <td>{{ item.dish.title }}</td>
-                <td>{{ item.dish.weight }}</td>
-                <td>{{ item.dish.price }}</td>
-                <td>{{ item.dish.count__sum }}</td>
-                <td>{{ item.dish.cost__sum }}</td>
+                <td>{{ item.dish__index }}</td>
+                <td>{{ item.dish__title }}</td>
+                <td>{{ item.dish__weight }}</td>
+                <td>{{ item.dish__price }}</td>
+                <td>{{ item.count__sum }}</td>
+                <td>{{ item.cost__sum }}</td>
             </tr>
         {% endfor %}
         </table>

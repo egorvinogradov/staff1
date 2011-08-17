@@ -43,7 +43,18 @@ class MenuAdmin(admin.ModelAdmin):
                 elif group is None or not ( (row_idx, 1) in values ):
                     group = _get_group(values[(row_idx, 0)])
                 else:
-                    dish = m.Dish(day=day, group=group, title=values[(row_idx, 1)])
+                    kwargs = dict(
+                        index=values[(row_idx, 0)],
+                        title=values[(row_idx, 1)],
+                        weight=values[(row_idx, 2)] if (row_idx, 2) in values else None,
+                        price=values[(row_idx, 3)],
+                    )
+
+                    dish = m.Dish(
+                        day=day,
+                        group=group,
+                        **kwargs
+                    )
                     dish.save()
 
     def change_view(self, request, object_id, extra_context=None):
@@ -52,7 +63,7 @@ class MenuAdmin(admin.ModelAdmin):
         if request.GET.get('r', None) == 'summary':
             return self.summary_view(request, menu)
 
-        orders = m.Order.objects.filter(user=request.user, menu=menu)\
+        orders = m.Order.objects.filter(menu=menu)\
             .extra(select = {
                 'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
