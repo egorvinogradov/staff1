@@ -124,8 +124,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
-    'socialauth',
-    'openid_consumer',
+    'social_auth',
     'debug_toolbar',
 
     'team',
@@ -159,11 +158,21 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.media",
     "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.request",
+    "social_auth.context_processors.social_auth_by_type_backends",
 )
 
+SOCIAL_AUTH_ENABLED_BACKENDS = ('ostrovok',)
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/accounts/login/ostrovok/'
+
 AUTHENTICATION_BACKENDS = (
-    'team.auth_backends.OpenIdOstrovokBackend',
+    'team.auth_backends.OstrovokBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
+SOCIAL_AUTH_IMPORT_BACKENDS = (
+    'team.auth_backends',
+)
+LOGIN_ERROR_URL = '/auth-error/'

@@ -11,9 +11,10 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
-    (r'^accounts/', include('socialauth.urls')),
+    url(r'^accounts/', include('social_auth.urls')),
+    url(r'^accounts/base/', include('django.contrib.auth.urls')),
 
-    #(r'^', include(team.urls)),
+    (r'^', include(team.urls)),
     (r'^', include(dinner.urls)),
 )
 
