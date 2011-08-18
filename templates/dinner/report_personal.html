@@ -9,17 +9,19 @@
 {% block content %}
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
-
+{% spaceless %}
         {% for day, users in days %}
             <h3>{{ day }}</h3>
             {% for user, items in users %}
-                <h4>{{ user.first_name}} {{ user.last_name }}</h4>
+                <h4 style="margin-bottom: 0">{{ user.first_name}} {{ user.last_name }}</h4>
+                <div>
                 {% for item in items %}
-                   {{ item.dish.title }}{% if item.count > 1 %} x{{ item.count }}{% endif %}<br/>
+                   {{ item.dish.title }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}<br/>
                 {% endfor %}
+                </div>
             {% endfor %}
             <hr style="page-break-after: always;"/>
         {% endfor %}
-
+{% endspaceless %}
     </div>
 {% endblock %}

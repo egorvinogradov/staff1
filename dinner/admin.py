@@ -104,7 +104,7 @@ class MenuAdmin(admin.ModelAdmin):
         items = m.OrderDayItem.objects\
             .filter(order__menu = menu)\
             .select_related('order', 'dish')\
-            .order_by('dish')
+            .order_by('dish__day__pk', 'order__user__pk', 'dish__pk')
 
         days = []
         for day, seq in groupby(list(items), lambda i: i.dish.day):
