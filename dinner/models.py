@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
-WEEK_DAYS = (u'Пн', u'Вт', u'Ср', u'Чт', u'Пт', u'Сб', u'Вс',)
+WEEK_DAYS = (u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота', u'Воскресенье',)
 
 class Menu(models.Model):
     week = models.DateField(unique=True, primary_key=True)

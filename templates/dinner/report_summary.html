@@ -1,5 +1,11 @@
 {% extends "admin/base_site.html" %}
+{% load static %}
 {% block title %}Заказ на наделю {{ menu.week }}{% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
+{% endblock %}
+
 {% block content %}
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}

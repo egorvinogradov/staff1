@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}Меню {{ menu }} по людям{% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
+{% endblock %}
+
+{% block content %}
+    <div id="content-main">
+        {% include 'dinner/report_menu.html' %}
+
+        {% for day, users in days %}
+            <h3>{{ day }}</h3>
+            {% for user, items in users %}
+                <h4>{{ user.first_name}} {{ user.last_name }}</h4>
+                {% for item in items %}
+                   {{ item.dish.title }}{% if item.count > 1 %} x{{ item.count }}{% endif %}<br/>
+                {% endfor %}
+            {% endfor %}
+            <hr style="page-break-after: always;"/>
+        {% endfor %}
+
+    </div>
+{% endblock %}

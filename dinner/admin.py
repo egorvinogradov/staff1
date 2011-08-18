@@ -60,6 +60,8 @@ class MenuAdmin(admin.ModelAdmin):
 
         if request.GET.get('r', None) == 'summary':
             return self.summary_view(request, menu)
+        elif request.GET.get('r', None) == 'personal':
+            return self.personal_view(request, menu)
 
         orders = m.Order.objects.filter(menu=menu)\
             .extra(select = {
@@ -93,6 +95,25 @@ class MenuAdmin(admin.ModelAdmin):
             ))
 
         return direct_to_template(request, 'dinner/report_summary.html', {
+            'menu': menu,
+            'days': days,
+        })
+
+    def personal_view(self, request, menu):
+        items = m.OrderDayItem.objects\
+            .filter(order__menu = menu)\
+            .select_related('order', 'dish')\
+            .order_by('dish')
+
+        days = []
+        for day, seq in groupby(list(items), lambda i: i.dish.day):
+            seq = list(seq)
+            days.append((
+                unicode(m.Day.objects.get(pk=day.pk)),
+                groupby(seq, lambda i: i.order.user),
+            ))
+
+        return direct_to_template(request, 'dinner/report_personal.html', {
             'menu': menu,
             'days': days,
         })
