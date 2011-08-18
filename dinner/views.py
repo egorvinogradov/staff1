@@ -10,9 +10,7 @@ import models as m
 from datetime import datetime
 from itertools import groupby
 from datetime import timedelta
-
-def _group_by_materialize(seq):
-    return [(k, list(v)) for k, v in seq]
+from utils import group_by_materialize
 
 @login_required
 @commit_on_success
@@ -47,8 +45,8 @@ def reserve(request):
     for d in dishes:
         d.count = ordered_items.get(d.pk, 0)
 
-    dishes_by_group = _group_by_materialize(groupby(dishes, lambda i: (i.day, i.group)))
-    dishes_by_group_by_day = _group_by_materialize(groupby(dishes_by_group, lambda i: i[0][0]))
+    dishes_by_group = group_by_materialize(groupby(dishes, lambda i: (i.day, i.group)))
+    dishes_by_group_by_day = group_by_materialize(groupby(dishes_by_group, lambda i: i[0][0]))
 
 
     return direct_to_template(request, 'dinner/reserve.html', {

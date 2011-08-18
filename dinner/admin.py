@@ -9,6 +9,7 @@ import pyExcelerator as xls
 from django.db.transaction import commit_on_success
 from datetime import datetime
 from itertools import count, groupby
+from utils import group_by_materialize
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
@@ -110,7 +111,7 @@ class MenuAdmin(admin.ModelAdmin):
             seq = list(seq)
             days.append((
                 unicode(m.Day.objects.get(pk=day.pk)),
-                groupby(seq, lambda i: i.order.user),
+                group_by_materialize(groupby(seq, lambda i: i.order.user)),
             ))
 
         return direct_to_template(request, 'dinner/report_personal.html', {
