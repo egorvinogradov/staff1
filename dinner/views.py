@@ -35,7 +35,7 @@ def reserve(request):
         return HttpResponseRedirect(request.get_full_path())
 
     try:
-        menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(4))
+        menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(3))
     except m.Menu.DoesNotExist:
         return HttpResponse(u'новое меню ещё не загружено')
 
