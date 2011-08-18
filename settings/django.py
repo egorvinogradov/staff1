@@ -98,11 +98,12 @@ ROOT_URLCONF = 'urls'
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
-    'SHOW_TOOLBAR_CALLBACK': lambda request: True,
     'EXTRA_SIGNALS': [],
     'HIDE_DJANGO_SQL': False,
     'TAG': 'div',
 }
+
+INTERNAL_IPS = ('10.0.0.35', '10.0.0.105', '10.0.0.106',)
 
 
 TEMPLATE_DIRS = (
