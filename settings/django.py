@@ -94,7 +94,7 @@ MIDDLEWARE_CLASSES = (
     'openid_consumer.middleware.OpenIDMiddleware',
 )
 
-ROOT_URLCONF = 'staff.urls'
+ROOT_URLCONF = 'urls'
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
