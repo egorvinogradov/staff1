@@ -1,11 +1,13 @@
 # coding: utf-8
 from pprint import pformat
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.views.generic.simple import direct_to_template
+from social_auth.models import UserSocialAuth
 import models as m
 from datetime import datetime
 from itertools import groupby
@@ -15,6 +17,12 @@ from utils import group_by_materialize
 @login_required
 @commit_on_success
 def reserve(request):
+    if not request.user.first_name \
+            or not request.user.last_name \
+            or not UserSocialAuth.objects.exists(user=request.user, provider='ostrovok'):
+        messages.add_message(request, messages.INFO, u'страница доступна только для пользователей@ostrovok.ru и заполненным именем')
+        return direct_to_template(request, 'base.html')
+
     if request.method == 'POST':
         menu = m.Menu.objects.get(pk=request.POST['menu'])
         order = m.Order.objects.get(user=request.user, menu=menu)
