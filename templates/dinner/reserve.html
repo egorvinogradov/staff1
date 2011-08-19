@@ -1,11 +1,22 @@
 {% extends 'base.html' %}
 {% block body %}
-    <p>{{ menu }}</p>
+    {% if is_office_manager %}
+        <a href="/admin/dinner/menu/">Управление меню</a>
+        <form action="." method="get">
+            {{ delegation_form.as_p }}
+            <script type="text/javascript">
+                $('#id_user').change(function(){this.form.submit();});
+            </script>
+        </form>
+    {% endif %}
+
+    <h3>Заказ {{ order }}</h3>
 
     <form action="." method="post">
     {% csrf_token %}
 
-    <input type="hidden" name="menu" value="{{ menu.pk|date:"c" }}" />
+    <p><input type="submit" value="Сохранить" /></p>
+    <input type="hidden" name="menu" value="{{ order.menu.pk|date:"c" }}" />
 
     {% for day, dishes_by_group in dishes_by_group_by_day %}
         <h4>{{ day }}</h4>
@@ -15,7 +26,7 @@
             <table>
                 {% for dish in dishes %}
                 <tr>
-                    <td><input name="dish#{{ dish.id }}" type="text" value="{{ dish.count }}" maxlength="3" style="width:1em" /></td>
+                    <td><input name="dish#{{ dish.id }}" type="text" value="{{ dish.count|default:0 }}" maxlength="3" style="width:1em" /></td>
                     <td>{{ dish.title }}</td>
                 </tr>
                 {% endfor %}

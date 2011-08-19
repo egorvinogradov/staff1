@@ -42,7 +42,7 @@ class Order(models.Model):
     menu = models.ForeignKey(Menu)
 
     def __unicode__(self):
-        return self.user.username + u' ' + unicode(self.menu)
+        return u'для ' + self.user.username + u' ' + unicode(self.menu)
 
     class Meta:
         unique_together = (('user', 'menu'),)

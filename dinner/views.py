@@ -5,6 +5,7 @@ from django.db.transaction import commit_on_success
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.generic.simple import direct_to_template
 from social_auth.models import UserSocialAuth
+from dinner import DINNER_MANAGER, forms
 import models as m
 from datetime import datetime
 from itertools import groupby
@@ -20,9 +21,21 @@ def reserve(request):
         messages.add_message(request, messages.INFO, u'страница доступна только для пользователей@ostrovok.ru и заполненным именем')
         return direct_to_template(request, 'base.html')
 
+
+    is_office_manager = request.user.groups.filter(pk=DINNER_MANAGER).exists()
+
+    delegation_form = None
+    if is_office_manager:
+        delegation_form = forms.DelegatedOrderForm(request.GET)
+
+    order_user = request.user
+    if delegation_form.is_valid() and delegation_form.cleaned_data['user']:
+        order_user = delegation_form.cleaned_data['user']
+
     if request.method == 'POST':
         menu = m.Menu.objects.get(pk=request.POST['menu'])
-        order = m.Order.objects.get(user=request.user, menu=menu)
+
+        order = m.Order.objects.get(user=order_user, menu=menu)
 
         for key, value in request.POST.items():
             if key.startswith('dish#') and value:
@@ -42,7 +55,7 @@ def reserve(request):
     except m.Menu.DoesNotExist:
         return HttpResponse(u'новое меню ещё не загружено')
 
-    order = m.Order.objects.get_or_create(user=request.user, menu=menu)[0]
+    order = m.Order.objects.get_or_create(user=order_user, menu=menu)[0]
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=menu).values_list('dish__pk', 'count'))
 
     dishes = m.Dish.objects.filter(day__week=menu).select_related().order_by('pk')
@@ -55,6 +68,8 @@ def reserve(request):
 
 
     return direct_to_template(request, 'dinner/reserve.html', {
-        'menu': menu,
+        'order': order,
         'dishes_by_group_by_day': dishes_by_group_by_day,
+        'delegation_form': delegation_form,
+        'is_office_manager': is_office_manager,
     })
