@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block body %}
+    <h3>Menu by {{ order.user.get_full_name }} for {{ order.menu.week }}</h3>
+
+{% spaceless %}
+        {% for day, items in days %}
+            <h3 style="margin-bottom: 0.1em">{{ day }}</h3>
+            <ul style="margin: 0; padding-left: 1em;">
+            {% for item in items %}
+               <li>{{ item.dish.title }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}</li>
+            {% endfor %}
+            </ul>
+        {% endfor %}
+{% endspaceless %}
+
+{% endblock %}

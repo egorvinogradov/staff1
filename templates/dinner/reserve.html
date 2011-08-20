@@ -14,7 +14,7 @@
 
     {% if order.donor %}
     <div style="background: #cfc; padding: 0.5em">
-        <h3>Поздравляем! Автор вашего меню на следующую неделю — {{ order.donor.get_full_name }}.</h3>
+        <h3>Поздравляем! Автор <a href="{% url dinner.views.order_view order.pk %}">вашего меню</a> на следующую неделю — {{ order.donor.get_full_name }}.</h3>
     </div>
     {% endif %}
 

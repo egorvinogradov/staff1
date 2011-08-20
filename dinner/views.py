@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
 from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.views.generic.simple import direct_to_template
 from social_auth.models import UserSocialAuth
 from dinner import DINNER_MANAGER, forms
@@ -73,3 +74,13 @@ def reserve(request):
         'delegation_form': delegation_form,
         'is_office_manager': is_office_manager,
     })
+
+def order_view(request, order_pk):
+    order = get_object_or_404(m.Order, pk = order_pk)
+    items = m.OrderDayItem.objects\
+        .filter(order = order)\
+        .select_related('order', 'dish')\
+        .order_by('dish__day__pk', 'dish__pk')
+
+    days = group_by_materialize(groupby(list(items), lambda i: i.dish.day))
+    return direct_to_template(request, 'dinner/order_view.html', {'order': order, 'days': days,})

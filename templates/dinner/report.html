@@ -19,6 +19,8 @@
                             <input type="hidden" name="for" value="{{ order.user.pk }}" />
                             {{ donor_widget }}
                         </form>
+                    {% else %}
+                        <a href="{% url dinner.views.order_view order.pk %}" target="_blank" onclick="window.open('{% url dinner.views.order_view order.pk %}', 'order', 'width=400,height=400'); return false;">посмотреть</a>
                     {% endif %}
                 {% endspaceless %}</td>
             </tr>
