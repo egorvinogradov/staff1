@@ -40,6 +40,7 @@ class Dish(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(User)
     menu = models.ForeignKey(Menu)
+    donor = models.ForeignKey(User, null=True, related_name='order_donor_set')
 
     def __unicode__(self):
         return u'для ' + self.user.username + u' ' + unicode(self.menu)

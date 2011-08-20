@@ -1,6 +1,9 @@
 # coding: utf-8
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.db.models.aggregates import Sum
+from django import forms
+from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
 import operator
 import models as m
@@ -63,17 +66,48 @@ class MenuAdmin(admin.ModelAdmin):
             return self.summary_view(request, menu)
         elif request.GET.get('r', None) == 'personal':
             return self.personal_view(request, menu)
+        else:
+            return self.progress_view(request, menu)
 
-        orders = m.Order.objects.filter(menu=menu)\
+
+    @commit_on_success
+    def _transfer_order(self, data, menu):
+        donor = m.Order.objects.get(user__pk=data['donor'], menu=menu)
+        receiver = m.Order.objects.get_or_create(user__pk=data['for'], menu=menu)[0]
+
+        m.OrderDayItem.objects.filter(order=receiver).delete()
+        for donor_item in m.OrderDayItem.objects.filter(order=donor):
+            m.OrderDayItem(order=receiver, dish=donor_item.dish, count=donor_item.count).save(force_insert=True)
+
+        receiver.donor = donor.user
+        receiver.save()
+
+
+    def progress_view(self, request, menu):
+        if request.method == 'POST':
+            self._transfer_order(request.POST, menu)
+            return HttpResponseRedirect(request.path)
+
+        orders = m.Order.objects.filter(menu=menu).select_related('user')\
             .extra(select = {
                 'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
                 'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
-            })
+            }).order_by('num_items')
+
+        orders = list(orders)
+        
+        donor_pks = [order.user.pk for order in orders if order.num_items > 0 and not order.donor]
+        donor_widget = forms.Select(
+            {'class': 'donor'},
+            [(u'', u' - выдать меню - ')] + list(User.objects.filter(pk__in = donor_pks).values_list('pk', 'username')),
+        ).render('donor', None)
+
 
         return direct_to_template(request, 'dinner/report.html', {
             'orders': orders,
+            'donor_widget': donor_widget,
         })
 
     def summary_view(self, request, menu):
