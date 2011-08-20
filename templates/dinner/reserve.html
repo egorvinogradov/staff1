@@ -12,6 +12,12 @@
 
     <h3>Заказ {{ order }}</h3>
 
+    {% if order.donor %}
+    <div style="background: #cfc; padding: 0.5em">
+        <h3>Поздравляем! Автор вашего меню на следующую неделю — {{ order.donor.get_full_name }}.</h3>
+    </div>
+    {% endif %}
+
     <form action="." method="post">
     {% csrf_token %}
 
