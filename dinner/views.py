@@ -30,7 +30,7 @@ def reserve(request):
         delegation_form = forms.DelegatedOrderForm(request.GET)
 
     order_user = request.user
-    if delegation_form.is_valid() and delegation_form.cleaned_data['user']:
+    if delegation_form and delegation_form.is_valid() and delegation_form.cleaned_data['user']:
         order_user = delegation_form.cleaned_data['user']
 
     if request.method == 'POST':
