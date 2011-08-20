@@ -38,16 +38,23 @@ def reserve(request):
 
         order = m.Order.objects.get(user=order_user, menu=menu)
 
+        updated = False
         for key, value in request.POST.items():
             if key.startswith('dish#') and value:
                 dish_id = int(key[5:])
                 try:
                     item = m.OrderDayItem.objects.get(order=order, dish__id=dish_id)
-                    item.count = int(value)
-                    item.save()
+                    if item.count != int(value):
+                        updated=True
+                        item.count = int(value)
+                        item.save()
+
                 except m.OrderDayItem.DoesNotExist:
                     if int(value):
                         m.OrderDayItem(order=order, dish_id=dish_id, count=int(value)).save()
+        if updated:
+            order.donor = None
+            order.save()
 
         return HttpResponseRedirect(request.get_full_path())
 
