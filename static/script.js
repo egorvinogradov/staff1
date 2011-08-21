@@ -8,9 +8,6 @@ var Meals = {
 };
 Meals.init = function() {
 	$('html').removeClass('no-js').addClass('js');
-	
-	// Some logic required for back-end to work properly (dunno why & wtf)
-	$('.change_user select').bind('change', function() { this.form.submit(); });
 }();
 Meals.inputs = function() {
 	if (!Meals.supports_inputtype_number) {
@@ -325,10 +322,14 @@ Meals.logic = function () {
 				form.find('.form-errors').hide().html('<li><span class="icon">&nbsp;</span>Дружище, выбери что-нибудь покушать. Не стесняйся.</li>').fadeIn(300);
 			}
 			else {
-				form.find('.form-errors').hide().html('<li><span class="icon">&nbsp;</span>Бро, ты выбрал всего лишь <strong>' + count + '</strong> позиций. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>').fadeIn(300);
+				form.find('.form-errors').hide().html('<li><span class="icon">&nbsp;</span>Бро, выбрано позиций: <strong>' + count + '</strong>. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>').fadeIn(300);
 				attempts++;
 				submit.html(submit.data('alt'));
 			}
 		}
 	});
+}();
+Meals.extras = function() {
+	// Some logic required for back-end to work properly (dunno why & wtf)
+	$('.change_user select').bind('change', function() { this.form.submit(); });
 }();
