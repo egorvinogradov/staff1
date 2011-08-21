@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 {% block body %}
 	<h2>Меню для {{ user|capfirst }} на неделю c {{ order.menu_id|date:"d F" }}</h2>
-
-{% spaceless %}
+	{% if days %}
+	{% spaceless %}
         {% for day, items in days %}
-            <h3 class="title">{{ day|lower|capfirst }}</h3>
-			<ul class="dishes review">
-            {% for item in items %}
-               <li{% if item.count > 1 %} class="multiple"{% endif %}>{% if item.count > 1 %}<span class="icon">&nbsp;</span>{% endif %}{{ item.dish.title|lower|capfirst }}{% if item.count > 1 %} <strong>({{ item.count }} шт.)</strong>{% endif %}</li>
-            {% endfor %}
-            </ul>
+		<h3 class="title">{{ day|lower|capfirst }}</h3>
+		<ul class="dishes review">
+		{% for item in items %}
+		   <li{% if item.count > 1 %} class="multiple"{% endif %}>{% if item.count > 1 %}<span class="icon">&nbsp;</span>{% endif %}{{ item.dish.title|lower|capfirst }}{% if item.count > 1 %} <strong>({{ item.count }} шт.)</strong>{% endif %}</li>
+		{% endfor %}
+		</ul>
         {% endfor %}
-{% endspaceless %}
-<div class="review_footer"><a href="/" class="button">Исправить меню</a></div>
+	{% endspaceless %}
+	<div class="review_footer"><a href="/" class="button">Исправить меню</a></div>
+	{% else %}
+	<ul class="messages">
+		<li><span class="icon">&nbsp;</span>Ничего не выбрано! Эту ситуацию нужно срочно исправлять!</li>
+	</ul>
+	<div class="review_footer"><a href="/" class="button">Исправить ситуацию</a></div>
+	{% endif %}
+	
 {% endblock %}
