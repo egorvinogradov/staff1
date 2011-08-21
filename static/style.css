@@ -11,6 +11,7 @@ input[type="search"],
 textarea,
 .fake-input,
 .messages li,
+.form-errors li,
 .title,
 .dishes li.selected {
 	-webkit-border-radius: 5px;
@@ -189,7 +190,8 @@ blockquote p:after {
 	background-color: rgba(200, 0, 0, .3);
 }
 	.messages li .icon,
-	.review .multiple .icon	{
+	.review .multiple .icon,
+	.form-errors li .icon	{
 		width: 18px;
 		height: 19px;
 		
@@ -204,7 +206,8 @@ blockquote p:after {
 		.messages li.info .icon {
 			background-position: -453px -5px;
 		}
-		.messages li.info .warning {
+		.messages li.warning .icon,
+		.form-errors li	.icon {
 			background-position: -393px -5px;
 		}
 	.messages li.info {
@@ -590,6 +593,9 @@ body {
 	margin-top: 20px;
 	text-align: center;
 }
+	.order_form .submit .script {
+		margin-right: 20px;
+	}
 	.title {
 		margin-top: 10px;
 		padding: 6px 10px;

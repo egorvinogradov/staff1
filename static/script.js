@@ -1,7 +1,10 @@
 /* Author: Max Degterev @suprMax
 */
 
-var Meals = {};
+var Meals = {
+	min_weekly_portions: 21,
+	max_rand_num: 3
+};
 
 Meals.inputs = function() {
 	if (!Modernizr.inputtypes.number) {
@@ -170,12 +173,16 @@ Meals.inputs = function() {
     });	
 }();
 Meals.logic = function () {
-	var days = $('div.day-segment'),
+	var form = $('#order_form'),
+		days = form.find('div.day-segment'),
 		titles = days.find('.title.script'),
 		next_day = days.find('a.next_day'),
 		dishes = days.find('.dishes'),
 		checkboxes = dishes.find('input[type="checkbox"]'),
-		amounts = dishes.find('input[type="number"]');
+		amounts = dishes.find('input[type="number"]'),
+		attempts = 0,
+		submit = $('#submit'),
+		randomize = form.find('.script.randomize');
 		
 	titles.bind('click', function() {
 		var el = $(this),
@@ -233,6 +240,11 @@ Meals.logic = function () {
 				num.val(1);
 				num.trigger('change');
 			}
+			num.removeAttr('data-status');
+			
+			// Need to recalculate number of positions in menu
+			attempts = 0;
+			submit.html(submit.data('norm'));
 			
 			num.removeAttr('disabled');
 			if (!Modernizr.inputtypes.number) {
@@ -246,8 +258,74 @@ Meals.logic = function () {
 			if (!Modernizr.inputtypes.number) {
 				num.parent().addClass('disabled');
 			}
+			
+			if (+num.val() > 0) {
+				num.attr('data-status', 'remove');
+			}
 		}
 	}
+	
+	randomize.bind('click', function(e) {
+		e.preventDefault();
+		//going through menu day by day
+		days.each(function() {
+			var dishes = $(this).find('.dishes'),
+				cat_counter = 1;
+			
+			// going through daily menu category after category
+			dishes.each(function(){
+				if (cat_counter == dishes.length) {
+					return;
+				}
+			
+				var el = $(this),
+					items = el.find('input[type="checkbox"]'),
+					count = items.length,
+					rnum = 0,
+					amount = Math.floor(Math.random() * Meals.max_rand_num),
+					item;
+					
+				for (i = 0; i <= amount; i++) {
+					rnum = Math.floor(Math.random() * (count - 1));
+					item = items.eq(rnum);
+					
+					if (!item.is(':checked')) {
+						item.attr('checked', 'checked');
+						item.trigger('change');
+					}
+				}
+			
+				cat_counter++;
+			});
+		});
+	});
+
+	// Checkboxes being able to actually remove something
+	form.submit(function(e) {
+		var hideout = form.find('div.hideout');
+			tb_removed = '',
+			count = 0;
+		
+		amounts.each(function() {
+			var el = $(this);
+			
+			if (el.attr('data-status') == 'remove') {
+				tb_removed += '<input type="hidden" name="' + el.attr('name') + '" value="0" />';
+			}
+			else {
+				count += +el.val();
+			}
+		});
+		
+		hideout.html(tb_removed);
+
+		if (count < Meals.min_weekly_portions && attempts < 1) {
+			e.preventDefault();
+			form.find('.form-errors').html('<li><span class="icon">&nbsp;</span>Бро, ты выбрал всего лишь <strong>' + count + '</strong> позиций. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>');
+			attempts++;
+			submit.html(submit.data('alt'));
+		}
+	});
 }();
 
 // Some logic required for back-end to work properly (dunno why & wtf)

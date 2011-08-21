@@ -29,7 +29,7 @@
     {% endif %}
 	</ul>
 
-	<form action="." method="post" class="order_form">
+	<form action="." method="post" class="order_form" id="order_form">
 		{% csrf_token %}
 
 		<input type="hidden" name="menu" value="{{ order.menu.pk|date:"c" }}" />
@@ -59,7 +59,9 @@
 			</div>
 		{% endfor %}
 		</section>
+		<div class="hidden hideout"></div>
+		<ul class="form-errors"></ul>
 
-		<div class="submit"><button class="button" type="submit">Все выбрал!</button></div>
+		<div class="submit"><a href="javascript:void(0);" class="button script randomize">Удиви меня</a><button class="button" id="submit" type="submit" data-norm="Все выбрал!" data-alt="Я сказал нажал!">Все выбрал!</button></div>
     </form>
 {% endblock body %}
