@@ -4,10 +4,13 @@
 var Meals = {
 	min_weekly_portions: 21,
 	max_rand_num: 3,
-	supports_inputtype_number: !!($('<input />', {type: 'number'}).get()[0].type === 'number')
+	supports_inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
 };
 Meals.init = function() {
 	$('html').removeClass('no-js').addClass('js');
+	
+	// Some logic required for back-end to work properly (dunno why & wtf)
+	$('.change_user select').bind('change', function() { this.form.submit(); });
 }();
 Meals.inputs = function() {
 	if (!Meals.supports_inputtype_number) {
@@ -25,9 +28,7 @@ Meals.inputs = function() {
 
 			el.wrap('<span class="num-shim-cont" />');
 			
-			if (disabled) {
-				el.parent().addClass('disabled');
-			}
+			disabled && el.parent().addClass('disabled');
 	
 			el.bind('change', function() {
 				var val = +el.val() || 0;
@@ -223,10 +224,7 @@ Meals.logic = function () {
 	
 	// Dumbas browsers compensation (Firefox, I'm looking at you intently)
 	checkboxes.each(function() {
-		var el = $(this),
-			status = el.is(':checked');
-		
-		status && triggerCheckbox.apply(this);
+		$(this).is(':checked') && triggerCheckbox.apply(this);
 	});
 	
 	function triggerCheckbox() {
@@ -269,14 +267,14 @@ Meals.logic = function () {
 	
 	randomize.bind('click', function(e) {
 		e.preventDefault();
-		//going through menu day by day
+		// going through menu day by day
 		days.each(function() {
 			var dishes = $(this).find('.dishes'),
 				cat_counter = 1;
 			
 			// going through daily menu category after category
 			dishes.each(function(){
-				if (cat_counter == dishes.length) {
+				if (cat_counter == dishes.length) { // don't want to order soda and spoons
 					return;
 				}
 			
@@ -334,17 +332,3 @@ Meals.logic = function () {
 		}
 	});
 }();
-
-// Some logic required for back-end to work properly (dunno why & wtf)
-$('.change_user select').bind('change', function() { this.form.submit(); });
-
-
-
-
-
-
-
-
-
-
-
