@@ -8,8 +8,8 @@ class DelegatedOrderForm(forms.Form):
     user = forms.ModelChoiceField(User.objects.filter(
         groups = Group.objects.get(pk=DINNER_DELEGATE_GROUP)),
         required=False,
-        empty_label=u'себе',
-        label=u'Кому заказать',
+        empty_label=u'себя',
+        label=u'Заказ для:',
     )
 
 class MenuForm(forms.ModelForm):

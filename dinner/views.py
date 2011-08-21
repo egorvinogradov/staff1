@@ -19,7 +19,7 @@ def reserve(request):
     if not request.user.first_name \
             or not request.user.last_name \
             or not UserSocialAuth.objects.filter(user=request.user, provider='ostrovok').exists():
-        messages.add_message(request, messages.INFO, u'страница доступна только для пользователей@ostrovok.ru и заполненным именем')
+        messages.add_message(request, messages.INFO, u'Страница доступна только для пользователей mail@ostrovok.ru с заполненным именем')
         return direct_to_template(request, 'base.html')
 
 
@@ -61,7 +61,7 @@ def reserve(request):
     try:
         menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(3))
     except m.Menu.DoesNotExist:
-        return HttpResponse(u'новое меню ещё не загружено')
+        return HttpResponse(u'Новое меню ещё не загружено :(')
 
     order = m.Order.objects.get_or_create(user=order_user, menu=menu)[0]
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=menu).values_list('dish__pk', 'count'))
