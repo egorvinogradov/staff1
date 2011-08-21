@@ -295,6 +295,8 @@ Meals.logic = function () {
 				cat_counter++;
 			});
 		});
+		// Inform the user
+		$('#main').find('ul.messages').hide().html('<li class="info"><span class="icon">&nbsp;</span>Твое меню чемпионов готово к отправке!</li>').fadeIn(300);
 	});
 
 	// Checkboxes being able to actually remove something
