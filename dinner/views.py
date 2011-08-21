@@ -85,7 +85,7 @@ def reserve(request):
 def order_view(request, order_pk):
     order = get_object_or_404(m.Order, pk = order_pk)
     items = m.OrderDayItem.objects\
-        .filter(order = order)\
+        .filter(order = order, count__gt = 0)\
         .select_related('order', 'dish')\
         .order_by('dish__day__pk', 'dish__pk')
 
