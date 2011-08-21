@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-    <h2>Меню для {{ user|capfirst }} на неделю c {{ order.menu_id|date:"d F" }}</h2>
+	<h2>Меню для {{ user|capfirst }} на неделю c {{ order.menu_id|date:"d F" }}</h2>
 
 {% spaceless %}
         {% for day, items in days %}
@@ -12,5 +12,5 @@
             </ul>
         {% endfor %}
 {% endspaceless %}
-
+<div class="review_footer"><a href="/" class="button">Исправить меню</a></div>
 {% endblock %}

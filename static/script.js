@@ -3,11 +3,14 @@
 
 var Meals = {
 	min_weekly_portions: 21,
-	max_rand_num: 3
+	max_rand_num: 3,
+	supports_inputtype_number: !!($('<input />', {type: 'number'}).get()[0].type === 'number')
 };
-
+Meals.init = function() {
+	$('html').removeClass('no-js').addClass('js');
+}();
 Meals.inputs = function() {
-	if (!Modernizr.inputtypes.number) {
+	if (!Meals.supports_inputtype_number) {
 		$('html').addClass('no-inputtypes-number');
 
 		$('input[type="number"]').each(function(){
@@ -179,7 +182,6 @@ Meals.logic = function () {
 		next_day = days.find('a.next_day'),
 		dishes = days.find('.dishes'),
 		checkboxes = dishes.find('input[type="checkbox"]'),
-		amounts = dishes.find('input[type="number"]'),
 		attempts = 0,
 		submit = $('#submit'),
 		randomize = form.find('.script.randomize');
@@ -247,7 +249,7 @@ Meals.logic = function () {
 			submit.html(submit.data('norm'));
 			
 			num.removeAttr('disabled');
-			if (!Modernizr.inputtypes.number) {
+			if (!Meals.supports_inputtype_number) {
 				num.parent().removeClass('disabled');
 			}
 		}
@@ -255,7 +257,7 @@ Meals.logic = function () {
 			li.removeClass('selected');
 		
 			num.attr('disabled', 'disabled');
-			if (!Modernizr.inputtypes.number) {
+			if (!Meals.supports_inputtype_number) {
 				num.parent().addClass('disabled');
 			}
 			
@@ -306,7 +308,7 @@ Meals.logic = function () {
 			tb_removed = '',
 			count = 0;
 		
-		amounts.each(function() {
+		dishes.find('input[type="number"]').each(function() {
 			var el = $(this);
 			
 			if (el.attr('data-status') == 'remove') {

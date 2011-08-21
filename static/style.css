@@ -171,10 +171,6 @@ blockquote p:after {
 .messages {
 	margin: 20px 0;
 }
-.form-errors:empty,
-.messages:empty {
-	display: none;
-}
 .form-errors li,
 .messages li {
 	margin: 5px 0;
@@ -187,6 +183,7 @@ blockquote p:after {
 	
 	color: #550000;
 	border: 1px solid #873b3b;
+	background-color: #e9ac56;
 	background-color: rgba(200, 0, 0, .3);
 }
 	.messages li .icon,
@@ -213,16 +210,19 @@ blockquote p:after {
 	.messages li.info {
 		color: #055000;
 		border-color: #0b7200;
+		background-color: #aee652;
 		background-color: rgba(0, 200, 0, .3);
 	}
 	.messages li.debug {
 		color: #000055;
 		border: 1px solid #002372;
+		background-color: #53a2e5;
 		background-color: rgba(0, 0, 200, .3);
 	}
 	.messages li.warning {
 		color: #3a3500;
 		border: 1px solid #c1b100;
+		background-color: #e5e053;
 		background-color: rgba(200, 200, 0, .3);
 	}
 
@@ -668,26 +668,9 @@ body {
 					text-indent: -12px;
 				}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.review_footer {
+	text-align: center;
+}
 
 /* =============================================================================
    Non-semantic helper classes
@@ -752,33 +735,6 @@ body {
 
 /* A hack for HTML5 contenteditable attribute on mobile */
 textarea.contenteditable { -webkit-appearance: none; }
-
-/* =============================================================================
-   PLACEHOLDER Media Queries for Responsive Design.
-   These override the primary ('mobile first') styles
-   Modify as content requires.
-   ========================================================================== */
-
-@media only screen and (min-width: 480px) {
-  /* Style adjustments for viewports 480px and over go here */
-
-}
-
-@media only screen and (min-width: 768px) {
-  /* Style adjustments for viewports 768px and over go here */
-
-}
-
-@media only screen and (min-width: 800px) {
-  /* Style adjustments for viewports 800px and over go here (desktops?) */
-}
-
-@media
-only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5) {
-  /* Style adjustments for iPhone 4, Opera Mobile 11 and other high pixel ratio devices */
-}
 
 /* =============================================================================
    Print styles.
