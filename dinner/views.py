@@ -2,8 +2,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.simple import direct_to_template
 from social_auth.models import UserSocialAuth
 from dinner import DINNER_MANAGER, forms
@@ -56,7 +56,7 @@ def reserve(request):
             order.donor = None
             order.save()
 
-        return HttpResponseRedirect(request.get_full_path())
+        return redirect('dinner.views.order_view', order.pk)
 
     try:
         menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(3))
