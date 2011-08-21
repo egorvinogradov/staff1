@@ -171,6 +171,9 @@ blockquote p:after {
 .messages {
 	margin: 20px 0;
 }
+.form-errors {
+	display: none;
+}
 .form-errors li,
 .messages li {
 	margin: 5px 0;
