@@ -323,9 +323,14 @@ Meals.logic = function () {
 
 		if (count < Meals.min_weekly_portions && attempts < 1) {
 			e.preventDefault();
-			form.find('.form-errors').html('<li><span class="icon">&nbsp;</span>Бро, ты выбрал всего лишь <strong>' + count + '</strong> позиций. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>');
-			attempts++;
-			submit.html(submit.data('alt'));
+			if (count === 0) {
+				form.find('.form-errors').hide().html('<li><span class="icon">&nbsp;</span>Дружище, выбери что-нибудь покушать. Не стесняйся.</li>').fadeIn(300);
+			}
+			else {
+				form.find('.form-errors').hide().html('<li><span class="icon">&nbsp;</span>Бро, ты выбрал всего лишь <strong>' + count + '</strong> позиций. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>').fadeIn(300);
+				attempts++;
+				submit.html(submit.data('alt'));
+			}
 		}
 	});
 }();
