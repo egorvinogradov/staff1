@@ -19,7 +19,7 @@
 		</div>
     {% endif %}
 	
-	<h2>Меню для {{ user|capfirst }} на неделю c {{ order.menu_id|date:"d F" }}</h2>
+	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.menu_id|date:"d F" }}</h2>
 
 	<ul class="messages">
     {% if order.donor %}
@@ -49,7 +49,7 @@
 								<input type="checkbox" value="1" id="dish_{{ dish.id }}" name="dish_check#{{ dish.id }}"{% if dish.count %} checked="checked"{% endif %} />
 							</span>
 							<label for="dish_{{ dish.id }}">{{ dish.title|lower|capfirst }}</label>
-							<input name="dish#{{ dish.id }}" type="number" min="1" max="10" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
+							<input name="dish#{{ dish.id }}" type="number" min="1" max="5" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
 						</li>
 						{% endfor %}
 					</ul>

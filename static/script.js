@@ -18,7 +18,7 @@ Meals.inputs = function() {
 				min = +el.attr('min'),
 				max = +el.attr('max'),
 				step = +el.attr('step'),
-				disabled = !!el.attr('disabled'),
+				disabled = el.attr('disabled'),
 				lock = true, // Locking disables lots of key combinations, like Ctrl+V.
 				fr = $('<span class="num-shim" style="position: absolute;"><span class="up" style="display: block; cursor: pointer;">&#9650;</span><span class="down" style="display: block; cursor: pointer;">&#9660;</span></span>');
 				// Don't forget to position .num-shim in CSS.	
@@ -29,7 +29,6 @@ Meals.inputs = function() {
 	
 			el.bind('change', function() {
 				var val = +el.val() || 0;
-				
 				el.val(Math.min(Math.max(min, val), max));
 			});
 			
@@ -57,16 +56,11 @@ Meals.inputs = function() {
 			.insertAfter(el)
 			.find('span')
 			.bind('click', function() {
-				if ($(this).hasClass('up')) {
-					valUpdate(step);
-				}
-				else {
-					valUpdate(-step);
-				}
+				$(this).hasClass('up') ? valUpdate(step) : valUpdate(-step);
 			});
 			
 			function valUpdate(num) {
-				if (!!el.attr('disabled')) {
+				if (el.attr('disabled')) {
 					return;
 				}
 				el.val(+el.val() +num).trigger('change');
@@ -87,25 +81,25 @@ Meals.inputs = function() {
         }
     });
 
-    $('span.fake-radio').each(function() {
-        var cont = $(this),
-            input = cont.find('input');
-
-        input.bind('change', function() {
-            var el = $(this),
-                cont = $(this).parent();
-
-           $('input[name="'+el.attr('name')+'"]')
-           .parent()
-           .removeClass('active');
-
-            cont.addClass('active');
-        });
-
-        if (input.is(':checked') && !cont.hasClass('active')) {
-            input.trigger('change');
-        }
-    });
+//    $('span.fake-radio').each(function() {
+//        var cont = $(this),
+//            input = cont.find('input');
+//
+//        input.bind('change', function() {
+//            var el = $(this),
+//                cont = $(this).parent();
+//
+//           $('input[name="'+el.attr('name')+'"]')
+//           .parent()
+//           .removeClass('active');
+//
+//            cont.addClass('active');
+//        });
+//
+//        if (input.is(':checked') && !cont.hasClass('active')) {
+//            input.trigger('change');
+//        }
+//    });
 
 	$('div.fake-select').each(function() {
         var wrap = $(this),
@@ -115,20 +109,14 @@ Meals.inputs = function() {
             cont = wrap.find('.selector'),
             curr = cont.find('.current'),
             ul = cont.find('ul'),
-            fragment = document.createDocumentFragment();
+            fragment = '';
 
         options.each(function() {
-            var li = fragment.appendChild(document.createElement('li'));
-            li.appendChild(document.createTextNode(this.innerHTML));
-            li.setAttribute('data-val', this.value);
-
-            if (options.length - 1 == this.index) {
-                li.className += " last";
-            }
+			var el = $(this);
+			fragment += '<li' + ((options.length - 1 == this.index) ? ' class="last"' : '') + ' data-val="' + el.val() + '">' + el.html() + '</li>';
         });
 
         cont.bind('click', function(e) {
-            // Lol hack
             e.stopPropagation();
             cont.toggleClass('active');
 			curr.toggleClass('active');
@@ -137,11 +125,10 @@ Meals.inputs = function() {
         ul
 		.append(fragment)
 		.find('li').bind('click', function(e) {
+			e.stopPropagation();
+			
 			var el = $(this),
 			    li = ul.find('li');
-
-			// Lol hack
-			e.stopPropagation();
 
 			select
 			    .val(el.data('val'))
@@ -151,8 +138,7 @@ Meals.inputs = function() {
 		});
 
         select.bind('change', function() {
-            var selected = ul.find('li[data-val="'+select.val()+'"]');
-            curr.text(selected.text());
+            curr.text(ul.find('li[data-val="'+select.val()+'"]').text());
         });
 
         label.bind('click', function(e) {
@@ -165,9 +151,9 @@ Meals.inputs = function() {
 
         $(document).bind('click', function(e) {
             var target = e.target,
-                jtarget = $(target);
+                $target = $(target);
 
-            if (cont.hasClass('active') && !jtarget.is(cont) && !jtarget.is(label)) {
+            if (cont.hasClass('active') && !$target.is(cont) && !$target.is(label)) {
                 cont.trigger('click');
             }
         });
@@ -202,18 +188,17 @@ Meals.logic = function () {
 	next_day.bind('click', function(e) {
 		e.preventDefault();
 		
-		var el = $(this),
-			cont = el.parents('div.day-segment'),
-			next = cont.next('div.day-segment');
-		
 		days.each(function() {
-			var el = $(this),
-				title = el.find('h3.title.script.active');
-			
-			title.trigger('click');
+			$(this)
+				.find('h3.title.script.active')
+				.trigger('click'); // Best way since we can change sliding animation and forget to change it here. Yes, we are mere humans
 		});
 		
-		next.find('h3.title.script').trigger('click');
+		$(this)
+			.parents('div.day-segment')
+			.next('div.day-segment')
+			.find('h3.title.script')
+			.trigger('click');
 	});
 	
 	// Do stuff when checkbox is checked
@@ -227,38 +212,30 @@ Meals.logic = function () {
 	function triggerCheckbox() {
 		var el = $(this),
 			li = el.parents('li').filter(':first'),
-			num = li.find('input[type="number"]'),
-			num_val = +num.val();
+			num = li.find('input[type="number"]');
 			
 		if (el.is(':checked')) {
 			li.addClass('selected');
 			
-			if (num_val < 1) {
-				num.val(1);
-				num.trigger('change');
-			}
-			num.removeAttr('data-status');
+			// Cannot be checked with zero value
+			(+num.val() < 1) && num.val(el.val()).trigger('change');
+
+			// Reset input field
+			num.removeAttr('data-status').removeAttr('disabled');
 			
-			// Need to recalculate number of positions in menu
+			// Reset attempts counter
 			attempts = 0;
 			submit.html(submit.data('norm'));
-			
-			num.removeAttr('disabled');
-			if (!Meals.supports_inputtype_number) {
-				num.parent().removeClass('disabled');
-			}
+
+			Meals.supports_inputtype_number || num.parent().removeClass('disabled');
 		}
 		else {
 			li.removeClass('selected');
-		
+
+			(+num.val() > 0) && num.attr('data-status', 'remove');
 			num.attr('disabled', 'disabled');
-			if (!Meals.supports_inputtype_number) {
-				num.parent().addClass('disabled');
-			}
-			
-			if (+num.val() > 0) {
-				num.attr('data-status', 'remove');
-			}
+
+			Meals.supports_inputtype_number || num.parent().addClass('disabled');
 		}
 	}
 	
@@ -280,16 +257,12 @@ Meals.logic = function () {
 					count = items.length,
 					rnum = 0,
 					amount = Math.floor(Math.random() * Meals.max_rand_num),
-					item;
+					i = 0;
 					
-				for (i = 0; i <= amount; i++) {
+				for (NaN; i <= amount; i++) { 
 					rnum = Math.floor(Math.random() * (count - 1));
-					item = items.eq(rnum);
 					
-					if (!item.is(':checked')) {
-						item.attr('checked', 'checked');
-						item.trigger('change');
-					}
+					items.eq(rnum).is(':checked') || items.eq(rnum).attr('checked', 'checked').trigger('change');
 				}
 			
 				cat_counter++;
