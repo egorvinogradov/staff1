@@ -31,7 +31,7 @@
 		<a href="/" class="logolink"><h1>Островок.ru</h1></a>
 		<div class="status">
 		{% if user.is_authenticated %}
-			Привет, <strong>{{ user|capfirst }}</strong> | <a href="{% url django.contrib.auth.views.logout %}">выйти</a>
+			Привет, <strong>{{ user.get_full_name }}</strong> | <a href="{% url django.contrib.auth.views.logout %}">выйти</a>
 		{% else %}
 			<a href="{% url django.contrib.auth.views.login %}">Войти</a>
 		{% endif %}
