@@ -1,16 +1,19 @@
 /* Author: Max Degterev @suprMax
 */
 
-var Meals = {
+Meals.settings = {
 	min_weekly_portions: 21,
 	max_rand_num: 3,
 	supports_inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
+};
+Meals.supports = {
+	inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
 };
 Meals.init = function() {
 	$('html').removeClass('no-js').addClass('js');
 }();
 Meals.inputs = function() {
-	if (!Meals.supports_inputtype_number) {
+	if (!Meals.supports.inputtype_number) {
 		$('html').addClass('no-inputtypes-number');
 
 		$('input[type="number"]').each(function(){
@@ -227,7 +230,7 @@ Meals.logic = function () {
 			attempts = 0;
 			submit.html(submit.data('norm'));
 
-			Meals.supports_inputtype_number || num.parent().removeClass('disabled');
+			Meals.supports.inputtype_number || num.parent().removeClass('disabled');
 		}
 		else {
 			li.removeClass('selected');
@@ -235,7 +238,7 @@ Meals.logic = function () {
 			(+num.val() > 0) && num.attr('data-status', 'remove');
 			num.attr('disabled', 'disabled');
 
-			Meals.supports_inputtype_number || num.parent().addClass('disabled');
+			Meals.supports.inputtype_number || num.parent().addClass('disabled');
 		}
 	}
 	
@@ -256,7 +259,7 @@ Meals.logic = function () {
 					items = el.find('input[type="checkbox"]'),
 					count = items.length,
 					rnum = 0,
-					amount = Math.floor(Math.random() * Meals.max_rand_num),
+					amount = Math.floor(Math.random() * Meals.settings.max_rand_num),
 					i = 0;
 					
 				for (NaN; i <= amount; i++) { 
@@ -275,29 +278,36 @@ Meals.logic = function () {
 	// Checkboxes being able to actually remove something
 	form.submit(function(e) {
 		var hideout = form.find('div.hideout');
-			tb_removed = '',
+			temp_str = '',
 			count = 0;
 		
 		dishes.find('input[type="number"]').each(function() {
 			var el = $(this);
 			
 			if (el.attr('data-status') == 'remove') {
-				tb_removed += '<input type="hidden" name="' + el.attr('name') + '" value="0" />';
+				temp_str += '<input type="hidden" name="' + el.attr('name') + '" value="0" />';
 			}
 			else {
 				count += +el.val();
 			}
 		});
 		
-		hideout.html(tb_removed);
+		hideout.html(temp_str);
 
-		if (count < Meals.min_weekly_portions && attempts < 1) {
+		if (count < Meals.settings.min_weekly_portions && attempts < 1) {
 			e.preventDefault();
 			if (count === 0) {
 				form.find('.form-errors').html('<li><span class="icon">&nbsp;</span>Дружище, выбери что-нибудь покушать. Не стесняйся.</li>').fadeIn(300);
 			}
 			else {
-				form.find('.form-errors').html('<li><span class="icon">&nbsp;</span>Бро, выбрано позиций: <strong>' + count + '</strong>. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>').fadeIn(300);
+				if (Meals.username == 'marat') {
+					temp_str = '<li><span class="icon">&nbsp;</span>Маратик, выбрано позиций: <strong>' + count + '</strong>. Закажи побольше, все равно ведь половину съедят!</li>';
+				}
+				else {
+					temp_str = '<li><span class="icon">&nbsp;</span>Бро, выбрано позиций: <strong>' + count + '</strong>. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>';
+				}
+				
+				form.find('.form-errors').html(temp_str).fadeIn(300);
 				attempts++;
 				submit.html(submit.data('alt'));
 			}

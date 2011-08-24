@@ -61,7 +61,7 @@ def reserve(request):
     try:
         menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(3))
     except m.Menu.DoesNotExist:
-        return HttpResponse(u'Новое меню ещё не загружено :(')
+        return direct_to_template(request, 'dinner/empty.html')
 
     order = m.Order.objects.get_or_create(user=order_user, menu=menu)[0]
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=menu).values_list('dish__pk', 'count'))

@@ -25,6 +25,11 @@
 	<link rel="stylesheet" href="{% get_media_prefix %}style.css">
 
 	<script src="{% get_media_prefix %}html5.js"></script>
+	<script>
+		var Meals = {
+			username: '{{ user }}'
+		};
+	</script>
 </head>
 <body>
 	<header class="gheader">
@@ -53,7 +58,7 @@
     </div>
 
 	<footer class="gfooter">
-		Кушай вкусно, бро <span>:)</span>
+		Кушай вкусно, бро <span class="rotate">:)</span>
 	</footer>
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>

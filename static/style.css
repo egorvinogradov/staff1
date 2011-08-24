@@ -535,17 +535,18 @@ body {
 	padding: 20px 0;
 	text-align: center;
 }
-	.gfooter span {
-		margin-left: 10px;
-		display: inline-block;
-		
-		font-weight: bold;
-		
-		-webkit-transform: rotate(90deg);
-			-moz-transform: rotate(90deg);
-				-o-transform: rotate(90deg);
-					transform: rotate(90deg);
-	}
+
+.rotate {
+	margin: 0 10px;
+	display: inline-block;
+	
+	font-weight: bold;
+	
+	-webkit-transform: rotate(90deg);
+		-moz-transform: rotate(90deg);
+			-o-transform: rotate(90deg);
+				transform: rotate(90deg);
+}
 
 .main {
 	width: 960px;
