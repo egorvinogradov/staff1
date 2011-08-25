@@ -180,11 +180,11 @@ Meals.logic = function () {
 		
 		if (state) {
 			el.removeClass('active');
-			slider.slideUp(600);
+			slider.slideUp(200);
 		}
 		else {
 			el.addClass('active');
-			slider.slideDown(600);
+			slider.slideDown(200);
 		}
 	});
 	
@@ -272,7 +272,11 @@ Meals.logic = function () {
 			});
 		});
 		// Inform the user
-		$('#main').find('ul.messages').hide().html('<li class="info"><span class="icon">&nbsp;</span>Твое меню чемпионов готово к отправке!</li>').fadeIn(300);
+		$('#main')
+			.find('ul.messages')
+			.hide()
+			.html('<li class="info"><span class="icon">&nbsp;</span>Твое меню чемпионов готово к отправке!</li>')
+			.fadeIn(200);
 	});
 
 	// Checkboxes being able to actually remove something
@@ -307,7 +311,7 @@ Meals.logic = function () {
 					temp_str = '<li><span class="icon">&nbsp;</span>Бро, выбрано позиций: <strong>' + count + '</strong>. Надумал воровать еду у Марата? Подтверди выбор повторным нажатием!</li>';
 				}
 				
-				form.find('.form-errors').html(temp_str).fadeIn(300);
+				form.find('.form-errors').html(temp_str).fadeIn(200);
 				attempts++;
 				submit.html(submit.data('alt'));
 			}
