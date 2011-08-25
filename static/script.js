@@ -2,8 +2,8 @@
 */
 
 Meals.settings = {
-	min_weekly_portions: 21,
-	max_rand_num: 3,
+	min_weekly_portions: 17,
+	max_rand_num: 2,
 	supports_inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
 };
 Meals.supports = {
