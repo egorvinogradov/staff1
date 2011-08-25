@@ -94,7 +94,7 @@ class MenuAdmin(admin.ModelAdmin):
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
                 'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
-            }).order_by('num_items')
+            }).order_by('user__last_name')
 
         orders = list(orders)
         
@@ -112,7 +112,7 @@ class MenuAdmin(admin.ModelAdmin):
 
     def summary_view(self, request, menu):
         items = m.OrderDayItem.objects\
-            .filter(order__menu = menu)\
+            .filter(order__menu = menu, count__gt=0)\
             .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
             .order_by('dish')
@@ -136,7 +136,7 @@ class MenuAdmin(admin.ModelAdmin):
 
     def personal_view(self, request, menu):
         items = m.OrderDayItem.objects\
-            .filter(order__menu = menu)\
+            .filter(order__menu=menu, count__gt=0)\
             .select_related('order', 'dish')\
             .order_by('dish__day__pk', 'order__user__pk', 'dish__pk')
 
