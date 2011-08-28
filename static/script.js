@@ -173,7 +173,7 @@ Meals.overlay = function() {
 	};
 	
 	var updateDishes = function(key, value) {
-		dishes.filter('[data-field="' + key + '"]')[value ? 'show' : 'hide']();
+		dishes.filter('[data-field="' + key + '"]')[value ? 'show' : 'hide']().prev()[value ? 'addClass' : 'removeClass']('active');
 	};
 
 	// Opens overlay
