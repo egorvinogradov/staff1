@@ -36,7 +36,7 @@
 		<a href="/" class="logolink"><h1>Островок.ru</h1></a>
 		<div class="status">
 		{% if user.is_authenticated %}
-			Привет, <strong>{{ user.get_full_name }}</strong> | <a href="{% url django.contrib.auth.views.logout %}">выйти</a>
+			Привет, <strong>{{ user.get_full_name }}</strong> | <a href="javascript:void(0);" id="settings">настройки</a> | <a href="{% url django.contrib.auth.views.logout %}">выйти</a>
 		{% else %}
 			<a href="{% url django.contrib.auth.views.login %}">Войти</a>
 		{% endif %}
@@ -60,12 +60,73 @@
 	<footer class="gfooter">
 		<a href="http://ru.wikipedia.org/wiki/%D0%9A%D0%BD%D0%B8%D0%B3%D0%B0_%D0%BE_%D0%B2%D0%BA%D1%83%D1%81%D0%BD%D0%BE%D0%B9_%D0%B8_%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D0%BE%D0%B9_%D0%BF%D0%B8%D1%89%D0%B5">Кушай вкусно, бро <span class="rotate">:)</span></a>
 	</footer>
+	
+	<aside id="overlay">
+		<div class="wrap">
+			<div class="contens">
+				<form class="pseudo">
+					<h3>Всегда отображать раскрытыми:</h3>
+					<p>
+						<span class="fake-checkbox">
+							<span>&nbsp;</span>
+							<input type="checkbox" value="1" id="settings_1" name="settings_1" data-field="field_1" />
+						</span>
+						<label for="settings_1">Первое</label>
+					</p>
+					<p>
+						<span class="fake-checkbox">
+							<span>&nbsp;</span>
+							<input type="checkbox" value="1" id="settings_2" name="settings_2" data-field="field_2" />
+						</span>
+						<label for="settings_2">Второе</label>
+					</p>
+					<p>
+						<span class="fake-checkbox">
+							<span>&nbsp;</span>
+							<input type="checkbox" value="1" id="settings_3" name="settings_3" data-field="field_3" />
+						</span>
+						<label for="settings_3">Салатики</label>
+					</p>
+					<p>
+						<span class="fake-checkbox">
+							<span>&nbsp;</span>
+							<input type="checkbox" value="1" id="settings_4" name="settings_4" data-field="field_4" />
+						</span>
+						<label for="settings_4">Пирожные</label>
+					</p>
+					<p>
+						<span class="fake-checkbox">
+							<span>&nbsp;</span>
+							<input type="checkbox" value="1" id="settings_5" name="settings_5" data-field="field_5" />
+						</span>
+						<label for="settings_5">Вилки да ложки</label>
+					</p>
+					<a href="javascript:void(0);" class="closebutton">X</a>
+				</form>
+			</div>
+		</div>
+	</aside>
 
+	<script src="{% get_media_prefix %}yepnope.1.0.2-min.js"></script>
+	<script>
+	yepnope([{
+		load: '//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js',
+		complete: function () {
+			if (!window.jQuery) {
+				yepnope('{% get_media_prefix %}jquery-1.6.2.min.js');
+			}
+		}
+	}, {
+		load: ['{% get_media_prefix %}jquery.cookie.js', '{% get_media_prefix %}script.js']
+	}]);
+	</script>
+	{% comment %}
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="{% get_media_prefix %}jquery-1.6.2.min.js"><\/script>')</script>
 
+	<script src="{% get_media_prefix %}jquery.cookie.js"></script>
 	<script src="{% get_media_prefix %}script.js"></script>
-
+	{% endcomment %}
 	<!--[if lt IE 7 ]>
 		<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
 		<script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>

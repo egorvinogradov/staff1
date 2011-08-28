@@ -11,6 +11,16 @@ Meals.supports = {
 };
 Meals.init = function() {
 	$('html').removeClass('no-js').addClass('js');
+	$.cookie('settings') || function() {
+		var defaults = {
+			field_1: false,
+			field_2: false,
+			field_3: false,
+			field_4: false,
+			field_5: false
+		};
+		$.cookie('settings', JSON.stringify(defaults), { expires: 7, path: '/' });
+	}();
 }();
 Meals.inputs = function() {
 	if (!Meals.supports.inputtype_number) {
@@ -84,26 +94,6 @@ Meals.inputs = function() {
         }
     });
 
-//    $('span.fake-radio').each(function() {
-//        var cont = $(this),
-//            input = cont.find('input');
-//
-//        input.bind('change', function() {
-//            var el = $(this),
-//                cont = $(this).parent();
-//
-//           $('input[name="'+el.attr('name')+'"]')
-//           .parent()
-//           .removeClass('active');
-//
-//            cont.addClass('active');
-//        });
-//
-//        if (input.is(':checked') && !cont.hasClass('active')) {
-//            input.trigger('change');
-//        }
-//    });
-
 	$('div.fake-select').each(function() {
         var wrap = $(this),
             select = wrap.find('select'),
@@ -162,16 +152,76 @@ Meals.inputs = function() {
         });
     });	
 }();
+Meals.overlay = function() {
+	var overlay = $('#overlay'),
+		contents = overlay.find('div.contens'),
+		trigger = $('#settings'),
+		form = overlay.find('form.pseudo'),
+		closebutt = form.find('a.closebutton'),
+		checkboxes = form.find('input[type="checkbox"]'),
+		dishes = $('#order_form').find('ul.dishes'),
+		settings = JSON.parse($.cookie('settings'));
+		
+	var overlayOpen = function(e) {
+		e && e.preventDefault();
+		overlay.css({left: 0, top: 0});
+	};
+	
+	var overlayClose = function(e) {
+		e && e.preventDefault();
+		overlay.css({left: -100500, top: -100500});
+	};
+	
+	var updateDishes = function(key, value) {
+		dishes.filter('[data-field="' + key + '"]')[value ? 'show' : 'hide']();
+	};
+
+	// Opens overlay
+	trigger.bind('click', overlayOpen);
+	
+	// Closes overlay
+	$(document).bind('keydown', function(e) {
+		(e.keyCode == 27) && overlayClose();
+	});
+	overlay.bind('click', function(e) {
+		$(e.target).hasClass('contens') && function() {
+			e.preventDefault();
+			overlayClose();
+		}();
+	});
+	closebutt.bind('click', overlayClose);
+	
+	// Load current settings
+	$.each(settings, function(key, value){// Can be done better, but what the heck. There are only 5 items there
+		value && function() {
+			checkboxes.filter('[data-field="' + key + '"]').attr('checked', 'checked').trigger('change');
+			updateDishes(key, value);
+		}();
+	});
+	
+	// Handle selection
+	checkboxes.bind('change', function(e) {
+		var el = $(this),
+			key = el.data('field'),
+			state = el.is(':checked'),
+			settings = JSON.parse($.cookie('settings'));
+
+		// Save settings
+		settings[key] = state;
+		$.cookie('settings', JSON.stringify(settings), { expires: 7, path: '/' });
+		
+		updateDishes(key, state);
+	});
+}();
 Meals.logic = function () {
 	var form = $('#order_form'),
 		days = form.find('div.day-segment'),
 		titles = days.find('.title.script'),
 		next_day = days.find('a.next_day'),
-		dishes = days.find('.dishes'),
+		dishes = days.find('ul.dishes'),
 		checkboxes = dishes.find('input[type="checkbox"]'),
 		attempts = 0,
-		submit = $('#submit'),
-		randomize = form.find('.script.randomize');
+		submit = $('#submit');
 		
 	titles.bind('click', function() {
 		var el = $(this),
@@ -242,43 +292,6 @@ Meals.logic = function () {
 		}
 	}
 	
-	randomize.bind('click', function(e) {
-		e.preventDefault();
-		// going through menu day by day
-		days.each(function() {
-			var dishes = $(this).find('.dishes'),
-				cat_counter = 1;
-			
-			// going through daily menu category after category
-			dishes.each(function(){
-				if (cat_counter == dishes.length) { // don't want to order soda and spoons
-					return;
-				}
-			
-				var el = $(this),
-					items = el.find('input[type="checkbox"]'),
-					count = items.length,
-					rnum = 0,
-					amount = Math.floor(Math.random() * Meals.settings.max_rand_num),
-					i = 0;
-					
-				for (NaN; i <= amount; i++) { 
-					rnum = Math.floor(Math.random() * (count - 1));
-					
-					items.eq(rnum).is(':checked') || items.eq(rnum).attr('checked', 'checked').trigger('change');
-				}
-			
-				cat_counter++;
-			});
-		});
-		// Inform the user
-		$('#main')
-			.find('ul.messages')
-			.hide()
-			.html('<li class="info"><span class="icon">&nbsp;</span>Твое меню чемпионов готово к отправке!</li>')
-			.fadeIn(200);
-	});
-
 	// Checkboxes being able to actually remove something
 	form.submit(function(e) {
 		var hideout = form.find('div.hideout');

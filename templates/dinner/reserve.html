@@ -41,7 +41,7 @@
 				<div class="day-menu slider">
 				{% for group, dishes in dishes_by_group %}
 					<h4 class="title script">{{ group.1|lower|capfirst }}<span class="icon">&nbsp;</span></h4>
-					<ul class="dishes slider">
+					<ul class="dishes slider" data-field="field_{{ forloop.counter }}">
 						{% for dish in dishes %}
 						<li{% if dish.count %} class="selected"{% endif %}>
 							<span class="fake-checkbox">
