@@ -10,17 +10,16 @@
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
 {% spaceless %}
-        {% for day, users in days %}
-            <h3>{{ day }}</h3>
-            {% for user, items in users %}
-                <h4 style="margin-bottom: 0">{{ user.first_name}} {{ user.last_name }}</h4>
-                <div>
+        {% for user, days in users %}
+            <h3 style="color:black">{{ user.get_full_name }}</h3>
+            {% for day, items in days %}
+                <h4 style="margin-bottom: 0; color: gray">{{ day }}</h4>
+                <div style="padding-left: 1em">
                 {% for item in items %}
                    {{ item.dish.title }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}<br/>
                 {% endfor %}
                 </div>
             {% endfor %}
-            <hr style="page-break-after: always;"/>
         {% endfor %}
 {% endspaceless %}
     </div>

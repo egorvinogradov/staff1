@@ -137,20 +137,20 @@ class MenuAdmin(admin.ModelAdmin):
     def personal_view(self, request, menu):
         items = m.OrderDayItem.objects\
             .filter(order__menu=menu, count__gt=0)\
-            .select_related('order', 'dish')\
-            .order_by('dish__day__pk', 'order__user__pk', 'dish__pk')
+            .select_related(depth=2)\
+            .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
 
-        days = []
-        for day, seq in groupby(list(items), lambda i: i.dish.day):
+        users = []
+        for user, seq in groupby(list(items), lambda i: i.order.user):
             seq = list(seq)
-            days.append((
-                unicode(m.Day.objects.get(pk=day.pk)),
-                group_by_materialize(groupby(seq, lambda i: i.order.user)),
+            users.append((
+                user,
+                group_by_materialize(groupby(seq, lambda i: i.dish.day)),
             ))
 
         return direct_to_template(request, 'dinner/report_personal.html', {
             'menu': menu,
-            'days': days,
+            'users': users,
         })
 
 admin.site.register(m.Menu, MenuAdmin)
