@@ -66,6 +66,8 @@ class MenuAdmin(admin.ModelAdmin):
             return self.summary_view(request, menu)
         elif request.GET.get('r', None) == 'personal':
             return self.personal_view(request, menu)
+        elif request.GET.get('r', None) == 'taxes':
+            return self.taxes_view(request, menu)
         else:
             return self.progress_view(request, menu)
 
@@ -149,6 +151,30 @@ class MenuAdmin(admin.ModelAdmin):
             ))
 
         return direct_to_template(request, 'dinner/report_personal.html', {
+            'menu': menu,
+            'users': users,
+        })
+
+    def taxes_view(self, request, menu):
+        items = m.OrderDayItem.objects\
+            .filter(order__menu=menu, count__gt=0)\
+            .select_related(depth=2)\
+            .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
+
+        users = []
+        for user, seq in groupby(list(items), lambda i: i.order.user):
+            seq = list(seq)
+            users.append((
+                user,
+                group_by_materialize(groupby(seq, lambda i: i.dish.day)),
+            ))
+
+        for user, days in users:
+            for day, seq in days:
+                day.cost = sum(i.dish.price*i.count for i in seq)
+            user.cost = sum(d.cost for d, seq in days)
+
+        return direct_to_template(request, 'dinner/report_taxes.html', {
             'menu': menu,
             'users': users,
         })

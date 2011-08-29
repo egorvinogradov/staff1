@@ -1,0 +1,28 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}Меню {{ menu }} по людям{% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
+{% endblock %}
+
+{% block content %}
+    <div id="content-main">
+        {% include 'dinner/report_menu.html' %}
+{% spaceless %}
+        {% for user, days in users %}
+            <h4>{{ user.get_full_name }}</h4>
+            <table>
+            {% for day, items in days %}
+                <tr>
+                    <td>{{ day }}</td><td>{{ day.cost }} руб.</td>
+                </tr>
+            {% endfor %}
+                <tr style="font-weight: bold">
+                    <td>за неделю</td><td>{{ user.cost }} руб.</td>
+                </tr>
+            </table>
+        {% endfor %}
+{% endspaceless %}
+    </div>
+{% endblock %}
