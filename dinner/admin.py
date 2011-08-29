@@ -1,10 +1,9 @@
 # coding: utf-8
-import StringIO
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db.models.aggregates import Sum
 from django import forms
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
 import operator
 import models as m
@@ -14,7 +13,6 @@ from django.db.transaction import commit_on_success
 from datetime import datetime
 from itertools import count, groupby
 from utils import group_by_materialize
-import csv
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
@@ -137,48 +135,22 @@ class MenuAdmin(admin.ModelAdmin):
         })
 
     def personal_view(self, request, menu):
-        csv_encoding = 'cp1251'
-
         items = m.OrderDayItem.objects\
             .filter(order__menu=menu, count__gt=0)\
             .select_related('order', 'dish')\
-            .order_by('order__user__pk', 'dish__day__pk', 'dish__pk')
-        items = list(items)
-        WEEK_DAYS_SET = set(unicode(i.dish.day) for i in items)
-        WEEK_DAYS = tuple(wday for wday in m.WEEK_DAYS if wday in WEEK_DAYS_SET)
+            .order_by('dish__day__pk', 'order__user__pk', 'dish__pk')
 
-
-        people = []
-        for user, seq in groupby(list(items), lambda i: i.order.user):
+        days = []
+        for day, seq in groupby(list(items), lambda i: i.dish.day):
             seq = list(seq)
-            people.append((
-                m.User.objects.get(pk=user.pk),
-                group_by_materialize(groupby(seq, lambda i: unicode(i.dish.day))),
+            days.append((
+                unicode(m.Day.objects.get(pk=day.pk)),
+                group_by_materialize(groupby(seq, lambda i: i.order.user)),
             ))
 
-        rows = [tuple([u"-"] + list(w.encode(csv_encoding) for w in WEEK_DAYS))]
-        for user, days in people:
-            days = dict(days)
-            cols = [user.get_full_name().encode(csv_encoding)]
-            for wday in m.WEEK_DAYS:
-                items = days.get(wday, [])
-                lines = []
-                for i in items:
-                    line = i.dish.title
-                    if i.count > 1:
-                        line += " x" + str(i.count)
-                    lines.append(line)
-                cols.append(u"\n".join(lines).encode(csv_encoding))
-            rows.append(tuple(cols))
-
-        out = StringIO.StringIO()
-        f = csv.writer(out)
-        for row in rows:
-            f.writerow(row)
-
-        out.seek(0)
-        resp = HttpResponse(out.read(), 'text/csv', 200, 'text/csv; charset=' + csv_encoding)
-        resp['Content-Disposition'] = 'attachment; filename="menu-{0}.csv"'.format(unicode(menu.week))
-        return resp
+        return direct_to_template(request, 'dinner/report_personal.html', {
+            'menu': menu,
+            'days': days,
+        })
 
 admin.site.register(m.Menu, MenuAdmin)
