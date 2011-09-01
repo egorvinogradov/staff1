@@ -8,6 +8,7 @@
         <table>
         {% for order in orders %}
             <tr>
+                <td align="right">{{ forloop.counter }}</td>
                 <td>{{ order.user.username }}</td>
                 <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
                 <td title="общее кол-во блюд">{{ order.num_items|default_if_none:'-' }}</td>
