@@ -102,14 +102,14 @@ class MenuAdmin(admin.ModelAdmin):
             }).order_by('user__last_name')
 
         orders = list(orders)
-        
+
         donor_pks = [order.user.pk for order in orders if order.num_items > 0 and not order.donor]
         donor_widget = forms.Select(
             {'class': 'donor'},
             [(u'', u' - выдать меню - ')] + list(User.objects.filter(pk__in = donor_pks).values_list('pk', 'username')),
         ).render('donor', None)
 
-        missing_users = set(UserSocialAuth.objects.filter(provider='ostrovok').values_list('id', flat=True))
+        missing_users = set(UserSocialAuth.objects.filter(provider='ostrovok').values_list('user__pk', flat=True))
         missing_users -= set(order.user.pk for order in orders)
 
         for missing_user in User.objects.filter(pk__in = missing_users):
