@@ -6,6 +6,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
 import operator
+from social_auth.models import UserSocialAuth
 import models as m
 import forms as f
 import pyExcelerator as xls
@@ -13,6 +14,8 @@ from django.db.transaction import commit_on_success
 from datetime import datetime
 from itertools import count, groupby
 from utils import group_by_materialize
+from social_auth.models import UserSocialAuth
+
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
@@ -106,6 +109,11 @@ class MenuAdmin(admin.ModelAdmin):
             [(u'', u' - выдать меню - ')] + list(User.objects.filter(pk__in = donor_pks).values_list('pk', 'username')),
         ).render('donor', None)
 
+        missing_users = set(UserSocialAuth.objects.filter(provider='ostrovok').values_list('id', flat=True))
+        missing_users -= set(order.user.pk for order in orders)
+
+        for missing_user in User.objects.filter(pk__in = missing_users):
+            orders.append(m.Order.objects.get_or_create(user=missing_user, menu=menu)[0])
 
         return direct_to_template(request, 'dinner/report.html', {
             'orders': orders,
