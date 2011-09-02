@@ -82,6 +82,7 @@ def reserve(request):
         'is_office_manager': is_office_manager,
     })
 
+@login_required
 def order_view(request, order_pk):
     order = get_object_or_404(m.Order, pk = order_pk)
     items = m.OrderDayItem.objects\

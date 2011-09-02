@@ -29,7 +29,7 @@
     {% endif %}
 	</ul>
 
-	<form action="." method="post" class="order_form" id="order_form">
+	<form action="" method="post" class="order_form" id="order_form">
 		{% csrf_token %}
 
 		<input type="hidden" name="menu" value="{{ order.menu.pk|date:"c" }}" />
