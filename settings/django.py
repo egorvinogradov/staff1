@@ -1,6 +1,8 @@
 # Django settings for staff project.
 import os
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -47,7 +49,7 @@ USE_L10N = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = os.path.dirname(os.path.dirname(__file__)) + '/static/'
+MEDIA_ROOT = ROOT + '/static/'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -80,7 +82,7 @@ SECRET_KEY = 'lhut*arex%a$%z*masg72c$mq4x#e9r6a+b61m3eyvmj(!i!r8'
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
+#    'django.template.loaders.app_directories.Loader',
 #     'django.template.loaders.eggs.Loader',
 )
 
@@ -103,11 +105,15 @@ DEBUG_TOOLBAR_CONFIG = {
     'TAG': 'div',
 }
 
-INTERNAL_IPS = ('10.0.0.35', '10.0.0.105', '10.0.0.106',)
+INTERNAL_IPS = (
+    '188.254.43.246',  '89.221.51.34', # office
+    '178.140.56.36', '80.250.237.100',
+    '95.84.198.12', '89.179.244.26', '95.31.16.175',
+)
 
 
 TEMPLATE_DIRS = (
-    'templates/',
+    ROOT + '/templates/',
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
