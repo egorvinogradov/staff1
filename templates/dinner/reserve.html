@@ -49,7 +49,7 @@
 								<input type="checkbox" value="1" id="dish_{{ dish.id }}" name="dish_check#{{ dish.id }}"{% if dish.count %} checked="checked"{% endif %} />
 							</span>
 							<label for="dish_{{ dish.id }}">{{ dish.title|lower|capfirst }}</label>
-							<input name="dish#{{ dish.id }}" type="number" min="1" max="5" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
+							<input name="dish#{{ dish.id }}" type="number" min="1" max="20" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
 						</li>
 						{% endfor %}
 					</ul>
