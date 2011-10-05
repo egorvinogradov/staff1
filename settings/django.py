@@ -135,6 +135,7 @@ INSTALLED_APPS = (
 
     'team',
     'dinner',
+    'review',
 )
 
 # A sample logging configuration. The only tangible logging

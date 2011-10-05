@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 import team.urls
 import dinner.urls
+import review.urls
 
 admin.autodiscover()
 
@@ -16,6 +17,7 @@ urlpatterns = patterns('',
 
     (r'^', include(team.urls)),
     (r'^', include(dinner.urls)),
+    (r'^review/', include(review.urls)),
 )
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

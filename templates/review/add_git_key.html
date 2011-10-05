@@ -1,0 +1,6 @@
+<form action="" method="post">
+    {% csrf_token %}
+    <h2>{{ msg }}</h2>
+    <textarea name="key"></textarea><br/>
+    <input type="submit" value="Add" />
+</form>
