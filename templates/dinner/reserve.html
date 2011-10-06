@@ -32,7 +32,7 @@
 	<form action="" method="post" class="order_form" id="order_form">
 		{% csrf_token %}
 
-		<input type="hidden" name="menu" value="{{ order.menu.pk|date:"c" }}" />
+		<input type="hidden" name="week" value="{{ order.menu.pk|date:"c" }}" />
 
 		<section class="dishes-list" id="dishes_list">
 		{% for day, dishes_by_group in dishes_by_group_by_day %}

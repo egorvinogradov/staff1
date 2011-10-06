@@ -1,8 +1,8 @@
 # coding: utf-8
+from pprint import pformat
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.transaction import commit_on_success
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.simple import direct_to_template
 from social_auth.models import UserSocialAuth
@@ -34,9 +34,9 @@ def reserve(request):
         order_user = delegation_form.cleaned_data['user']
 
     if request.method == 'POST':
-        week = m.Week.objects.get(pk=request.POST['menu'])
+        week = m.Week.objects.get(pk=request.POST['week'])
 
-        order = m.Order.objects.get(user=order_user, menu=menu)
+        order = m.Order.objects.get(user=order_user, week=week)
 
         updated = False
         for key, value in request.POST.items():
@@ -59,14 +59,14 @@ def reserve(request):
         return redirect('dinner.views.order_view', order.pk)
 
     try:
-        menu = m.Menu.objects.get(week__gt = datetime.now() - timedelta(3))
-    except m.Menu.DoesNotExist:
+        week = m.Week.objects.get(date__gt = datetime.now() - timedelta(3))
+    except m.Week.DoesNotExist:
         return direct_to_template(request, 'dinner/empty.html')
 
-    order = m.Order.objects.get_or_create(user=order_user, menu=menu)[0]
-    ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=menu).values_list('dish__pk', 'count'))
+    order = m.Order.objects.get_or_create(user=order_user, week=week)[0]
+    ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=week).values_list('dish__pk', 'count'))
 
-    dishes = m.Dish.objects.filter(day__week=menu).select_related().order_by('pk')
+    dishes = m.Dish.objects.filter(day__week=week).select_related().order_by('pk')
 
     for d in dishes:
         d.count = ordered_items.get(d.pk, 0)
