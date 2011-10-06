@@ -104,14 +104,18 @@ class MenuAdmin(admin.ModelAdmin):
             else:
                 # Бутерброд с рыбкой,,20/25/10,55.00
                 try:
-                    title, space1, weight, price = row
+                    title, subtitle, weight, price = row
                 except ValueError:
                     raise Exception('failed parsing ' + unicode(pformat(row), 'utf-8'))
                 price = float(price.decode('utf-8').replace(u' р.', ''))
 
+                title = title.decode('utf-8')
+                if subtitle.strip():
+                    title += ' + ' + subtitle.decode('utf-8')
+
                 kwargs = dict(
                     index=0,
-                    title=title.decode('utf-8'),
+                    title=title,
                     weight=weight,
                     price=price,
                 )
