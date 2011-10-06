@@ -1,4 +1,5 @@
 # coding: utf-8
+from pprint import pformat
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db.models.aggregates import Sum
@@ -44,10 +45,9 @@ class MenuAdmin(admin.ModelAdmin):
 
     def _process_dobrayatrapeza(self, menu, form, request, change):
         f = form.cleaned_data['source'].file
-        #rows = csv.reader(f)
+        rows = [line for line in f.read().split("\n")]
+        rows = csv.reader(rows)
         f.seek(0)
-        rows = [line.rstrip().split(',') for line in f.read().split("\n")]
-        rows = iter(rows)
         first_day = True
 
         day = None
@@ -87,17 +87,21 @@ class MenuAdmin(admin.ModelAdmin):
 
                 day = _create_day_from_date(menu, day)
             elif len(row) == 1:
-                group = _get_group(next(rows)[0]) # NEW Бутерброды
+                group = row[0].decode('utf-8').rstrip()
+                group = _get_group(group) # NEW Бутерброды
             elif len(row) > 3 and not row[0]:
                 pass #end
             else:
                 # Бутерброд с рыбкой,,20/25/10,55.00
-                title, space1, weight, price = row
+                try:
+                    title, space1, weight, price = row
+                except ValueError:
+                    raise Exception('failed parsing ' + unicode(pformat(row), 'utf-8'))
                 price = float(price.decode('utf-8').replace(u' р.', ''))
 
                 kwargs = dict(
                     index=0,
-                    title=title,
+                    title=title.decode('utf-8'),
                     weight=weight,
                     price=price,
                 )
