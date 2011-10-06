@@ -54,11 +54,14 @@ class MenuAdmin(admin.ModelAdmin):
         group = None
 
         while True:
-            row = next(rows)
+            try:
+                row = next(rows)
+            except StopIteration:
+                break
             if len(row) == 1 and row[0].decode('utf-8').strip() == u'МЕНЮ':
                 #next day
 
-                day = next(rows)[0].split('   ')[0]
+                day = next(rows)[0].split('  ')[0].strip()
                 next(rows) #Наши телефоны
                 next(rows) #Наименование,,Вес (гр.),Цена ,Кол-во
 
@@ -78,7 +81,10 @@ class MenuAdmin(admin.ModelAdmin):
                 day = day.replace(u'августа', u'8')
                 day = day.replace(u'сентября', u'9')
 
-                day = datetime.strptime(day, '%d %m %Y').date()
+                try:
+                    day = datetime.strptime(day, '%d %m %Y').date()
+                except UnicodeEncodeError:
+                    raise Exception('failed to parse day' + day)
 
                 if first_day:
                     first_day=False
