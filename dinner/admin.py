@@ -99,7 +99,7 @@ class MenuAdmin(admin.ModelAdmin):
             elif len(row) == 1:
                 group = row[0].decode('utf-8').rstrip()
                 group = _get_group(group) # NEW Бутерброды
-            elif len(row) > 3 and not row[0]:
+            elif len(row) > 3 and not row[0].strip() and not row[1].strip():
                 pass #end
             else:
                 # Бутерброд с рыбкой,,20/25/10,55.00
@@ -109,10 +109,18 @@ class MenuAdmin(admin.ModelAdmin):
                     raise Exception('failed parsing ' + unicode(pformat(row), 'utf-8'))
                 price = float(price.decode('utf-8').replace(u' р.', ''))
 
-                title = title.decode('utf-8')
-                if subtitle.strip():
-                    title += ' + ' + subtitle.decode('utf-8')
+                title = title.decode('utf-8').strip()
+                subtitle = subtitle.decode('utf-8').strip()
 
+                if title:
+                    prev_title = title
+
+                if not title and subtitle:
+                    title = prev_title
+
+                if subtitle:
+                    title += ' + ' + subtitle
+                
                 kwargs = dict(
                     index=0,
                     title=title,
