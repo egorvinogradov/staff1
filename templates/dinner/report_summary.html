@@ -1,6 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
-{% block title %}Заказ на наделю {{ menu.week }}{% endblock %}
+{% block title %}Заказ на наделю {{ week }}{% endblock %}
 
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
@@ -10,7 +10,7 @@
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
 
-        <h2>Меню {{ menu }}</h2>
+        <h2>Меню {{ week }}</h2>
         <table>
         {% for seq, day, day_cost in days %}
             <tr>
