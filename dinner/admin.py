@@ -22,7 +22,6 @@ def _parse_day(s):
 def _create_day_from_date(menu, date):
     e = m.Day(day=(date - menu.week).days, week=menu)
     e.save()
-    raise Exception([menu, date, e])
     return e
 
 def _create_day(menu, day):
@@ -45,7 +44,10 @@ class MenuAdmin(admin.ModelAdmin):
 
     def _process_dobrayatrapeza(self, menu, form, request, change):
         f = form.cleaned_data['source'].file
-        rows = csv.reader(f)
+        #rows = csv.reader(f)
+        f.seek(0)
+        rows = [line.rstrip().split(',') for line in f.read().split("\n")]
+        rows = iter(rows)
         first_day = True
 
         day = None
@@ -57,6 +59,10 @@ class MenuAdmin(admin.ModelAdmin):
                 #next day
 
                 day = next(rows)[0].split('   ')[0]
+                next(rows) #Наши телефоны
+                next(rows) #Наименование,,Вес (гр.),Цена ,Кол-во
+
+
                 day = unicode(day, 'utf-8')
 
                 day = day.replace(u'октября', u'10')
@@ -80,10 +86,6 @@ class MenuAdmin(admin.ModelAdmin):
                     super(MenuAdmin, self).save_model(request, menu, form, change)
 
                 day = _create_day_from_date(menu, day)
-
-                next(rows) #Наши телефоны
-                next(rows) #Наименование,,Вес (гр.),Цена ,Кол-во
-
             elif len(row) == 1:
                 group = _get_group(next(rows)[0]) # NEW Бутерброды
             elif len(row) > 3 and not row[0]:
