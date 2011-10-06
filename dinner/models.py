@@ -5,9 +5,16 @@ from django.contrib.auth.models import User
 
 WEEK_DAYS = (u'Понедельник', u'Вторник', u'Среда', u'Четверг', u'Пятница', u'Суббота', u'Воскресенье',)
 
+class Provider(models.Model):
+    name = models.CharField(unique=True, max_length=20)
+
+    def __unicode__(self):
+        return self.name
+
 class Menu(models.Model):
     week = models.DateField(unique=True, primary_key=True)
     source = models.FileField(upload_to=settings.UPLOAD_TO)
+    provider = models.ForeignKey(Provider)
 
     def __unicode__(self):
         return u'на неделю с ' + unicode(self.week)

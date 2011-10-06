@@ -1,0 +1,6 @@
+- fields: {name: hleb-sol.ru}
+  model: dinner.provider
+  pk: 1
+- fields: {name: dobraja-trapeza.com}
+  model: dinner.provider
+  pk: 2

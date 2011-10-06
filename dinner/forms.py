@@ -15,4 +15,4 @@ class DelegatedOrderForm(forms.Form):
 class MenuForm(forms.ModelForm):
     class Meta:
         model = m.Menu
-        fields = ('source',)
+        fields = ('source', 'provider')
