@@ -11,16 +11,25 @@ class Provider(models.Model):
     def __unicode__(self):
         return self.name
 
-class Menu(models.Model):
-    week = models.DateField(unique=True, primary_key=True)
-    source = models.FileField(upload_to=settings.UPLOAD_TO)
-    provider = models.ForeignKey(Provider)
+class Week(models.Model):
+    date = models.DateField(unique=True)
 
     def __unicode__(self):
-        return u'на неделю с ' + unicode(self.week)
+        return unicode(self.date)
+
+class Menu(models.Model):
+    week = models.ForeignKey(Week)
+    provider = models.ForeignKey(Provider)
+    source = models.FileField(upload_to=settings.UPLOAD_TO)
+
+    def __unicode__(self):
+        return u'на неделю с ' + unicode(self.week) + u' by ' + unicode(self.provider)
+
+    class Meta:
+        unique_together = (("week", "provider"),)
 
 class Day(models.Model):
-    week = models.ForeignKey(Menu)
+    week = models.ForeignKey(Week)
     day = models.PositiveIntegerField()
 
     def __unicode__(self):
@@ -34,6 +43,7 @@ class Group(models.Model):
 
 class Dish(models.Model):
     day = models.ForeignKey(Day)
+    provider = models.ForeignKey(Provider)
     group = models.ForeignKey(Group)
 
     index = models.PositiveIntegerField()
@@ -46,14 +56,14 @@ class Dish(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(User)
-    menu = models.ForeignKey(Menu)
+    week = models.ForeignKey(Week)
     donor = models.ForeignKey(User, null=True, related_name='order_donor_set')
 
     def __unicode__(self):
         return u'для ' + self.user.username + u' ' + unicode(self.menu)
 
     class Meta:
-        unique_together = (('user', 'menu'),)
+        unique_together = (('user', 'week'),)
 
 class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')

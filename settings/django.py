@@ -16,7 +16,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'staff',                      # Or path to database file if using sqlite3.
+        'NAME': 'staff2',                      # Or path to database file if using sqlite3.
         'USER': 'staff',                       # Not used with sqlite3.
         'PASSWORD': 'VgcVS/6DFnDP48yfwcygUwxISGHtK',                  # Not used with sqlite3.
         'HOST': '127.0.0.1',                      # Set to empty string for localhost. Not used with sqlite3.
@@ -136,7 +136,6 @@ INSTALLED_APPS = (
     'team',
     'dinner',
     'review',
-    'south',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -184,3 +183,4 @@ SOCIAL_AUTH_IMPORT_BACKENDS = (
     'team.auth_backends',
 )
 LOGIN_ERROR_URL = '/auth-error/'
+

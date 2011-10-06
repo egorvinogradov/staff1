@@ -20,16 +20,19 @@ import csv
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
 
-def _create_day_from_date(menu, date):
-    e = m.Day(day=(date - menu.week).days, week=menu)
+def _create_day_from_date(week, date):
+    e = m.Day(day=(date - week.date).days, week=week)
     e.save()
     return e
 
-def _create_day(menu, day):
-    return _create_day_from_date(menu, _parse_day(day))
+def _create_day(week, day):
+    return _create_day_from_date(week, _parse_day(day))
 
 def _get_group(title):
     return m.Group.objects.get_or_create(title=title)[0]
+
+def _get_weekobj(date):
+    return m.Week.objects.get_or_create(date=date)[0]
 
 class MenuAdmin(admin.ModelAdmin):
     form = f.MenuForm
@@ -44,6 +47,7 @@ class MenuAdmin(admin.ModelAdmin):
             raise Exception('unsupported provider')
 
     def _process_dobrayatrapeza(self, menu, form, request, change):
+        provider = m.Provider.objects.get(pk=2)
         f = form.cleaned_data['source'].file
         rows = [line for line in f.read().split("\n")]
         rows = csv.reader(rows)
@@ -88,10 +92,10 @@ class MenuAdmin(admin.ModelAdmin):
 
                 if first_day:
                     first_day=False
-                    menu.week = form.cleaned_data['week'] = day
+                    week = menu.week = form.cleaned_data['week'] = _get_weekobj(day)
                     super(MenuAdmin, self).save_model(request, menu, form, change)
 
-                day = _create_day_from_date(menu, day)
+                day = _create_day_from_date(week, day)
             elif len(row) == 1:
                 group = row[0].decode('utf-8').rstrip()
                 group = _get_group(group) # NEW Бутерброды
@@ -114,20 +118,22 @@ class MenuAdmin(admin.ModelAdmin):
 
                 dish = m.Dish(
                     day=day,
+                    provider=provider,
                     group=group,
                     **kwargs
                 )
                 dish.save()
 
     def _process_hlebsol(self, menu, form, request, change):
+        provider = m.Provider.objects.get(pk=1)
         first_sheet = False
         f = form.cleaned_data['source'].file
         for sheet_name, values in xls.parse_xls(f, 'cp1251'):
             if not first_sheet:
                 first_sheet = True
-                menu.week = form.cleaned_data['week'] = _parse_day(sheet_name)
+                week = menu.week = form.cleaned_data['week'] = _get_weekobj(_parse_day(sheet_name))
                 super(MenuAdmin, self).save_model(request, menu, form, change)
-            day = _create_day(menu, sheet_name)
+            day = _create_day(week, sheet_name)
             group = None
             for row_idx in count(2):
                 if not (row_idx, 0) in values:
@@ -144,6 +150,7 @@ class MenuAdmin(admin.ModelAdmin):
 
                     dish = m.Dish(
                         day=day,
+                        provider=provider,
                         group=group,
                         **kwargs
                     )

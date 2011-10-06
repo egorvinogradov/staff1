@@ -34,7 +34,7 @@ def reserve(request):
         order_user = delegation_form.cleaned_data['user']
 
     if request.method == 'POST':
-        menu = m.Menu.objects.get(pk=request.POST['menu'])
+        week = m.Week.objects.get(pk=request.POST['menu'])
 
         order = m.Order.objects.get(user=order_user, menu=menu)
 
