@@ -60,7 +60,7 @@ class Order(models.Model):
     donor = models.ForeignKey(User, null=True, related_name='order_donor_set')
 
     def __unicode__(self):
-        return u'для ' + self.user.username + u' ' + unicode(self.menu)
+        return u'для ' + self.user.username + u' ' + unicode(self.week)
 
     class Meta:
         unique_together = (('user', 'week'),)
