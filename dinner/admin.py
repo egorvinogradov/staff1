@@ -6,7 +6,6 @@ from django import forms
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
 import operator
-from social_auth.models import UserSocialAuth
 import models as m
 import forms as f
 import pyExcelerator as xls
@@ -15,15 +14,19 @@ from datetime import datetime
 from itertools import count, groupby
 from utils import group_by_materialize
 from social_auth.models import UserSocialAuth
-
+import csv
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
 
-def _create_day(menu, day):
-    e = m.Day(day=(_parse_day(day) - menu.week).days, week=menu)
+def _create_day_from_date(menu, date):
+    e = m.Day(day=(date - menu.week).days, week=menu)
     e.save()
+    raise Exception([menu, date, e])
     return e
+
+def _create_day(menu, day):
+    return _create_day_from_date(menu, _parse_day(day))
 
 def _get_group(title):
     return m.Group.objects.get_or_create(title=title)[0]
@@ -33,6 +36,78 @@ class MenuAdmin(admin.ModelAdmin):
 
     @commit_on_success
     def save_model(self, request, menu, form, change):
+        if int(menu.provider.pk) == 2:
+            return self._process_dobrayatrapeza(menu, form, request, change)
+        elif int(menu.provider.pk) == 1:
+            return self._process_hlebsol(menu, form, request, change)
+        else:
+            raise Exception('unsupported provider')
+
+    def _process_dobrayatrapeza(self, menu, form, request, change):
+        f = form.cleaned_data['source'].file
+        rows = csv.reader(f)
+        first_day = True
+
+        day = None
+        group = None
+
+        while True:
+            row = next(rows)
+            if len(row) == 1 and row[0].decode('utf-8').strip() == u'МЕНЮ':
+                #next day
+
+                day = next(rows)[0].split('   ')[0]
+                day = unicode(day, 'utf-8')
+
+                day = day.replace(u'октября', u'10')
+                day = day.replace(u'ноября', u'11')
+                day = day.replace(u'декабря', u'12')
+                day = day.replace(u'января', u'1')
+                day = day.replace(u'февраля', u'2')
+                day = day.replace(u'марта', u'3')
+                day = day.replace(u'апреля', u'4')
+                day = day.replace(u'мая', u'5')
+                day = day.replace(u'июня', u'6')
+                day = day.replace(u'июля', u'7')
+                day = day.replace(u'августа', u'8')
+                day = day.replace(u'сентября', u'9')
+
+                day = datetime.strptime(day, '%d %m %Y').date()
+
+                if first_day:
+                    first_day=False
+                    menu.week = form.cleaned_data['week'] = day
+                    super(MenuAdmin, self).save_model(request, menu, form, change)
+
+                day = _create_day_from_date(menu, day)
+
+                next(rows) #Наши телефоны
+                next(rows) #Наименование,,Вес (гр.),Цена ,Кол-во
+
+            elif len(row) == 1:
+                group = _get_group(next(rows)[0]) # NEW Бутерброды
+            elif len(row) > 3 and not row[0]:
+                pass #end
+            else:
+                # Бутерброд с рыбкой,,20/25/10,55.00
+                title, space1, weight, price = row
+                price = float(price.decode('utf-8').replace(u' р.', ''))
+
+                kwargs = dict(
+                    index=0,
+                    title=title,
+                    weight=weight,
+                    price=price,
+                )
+
+                dish = m.Dish(
+                    day=day,
+                    group=group,
+                    **kwargs
+                )
+                dish.save()
+
+    def _process_hlebsol(self, menu, form, request, change):
         first_sheet = False
         f = form.cleaned_data['source'].file
         for sheet_name, values in xls.parse_xls(f, 'cp1251'):
