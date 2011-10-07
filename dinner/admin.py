@@ -29,6 +29,7 @@ def _create_day(week, day):
     return _create_day_from_date(week, _parse_day(day))
 
 def _get_group(title):
+    title = title.replace(u'NEW ', '')
     return m.Group.objects.get_or_create(title=title)[0]
 
 def _get_weekobj(date):
