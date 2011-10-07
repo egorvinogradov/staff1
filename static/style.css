@@ -21,7 +21,7 @@ aside .pseudo {
 			
 	-webkit-background-clip: padding-box;
 	   -moz-background-clip: padding-box;
-		    background-clip: padding-box;			
+			background-clip: padding-box;			
 }
 
 .fake-select ul,
@@ -38,8 +38,8 @@ aside .pseudo {
 			border-radius: 2px;
 }
 
-                      
-.button {                
+					  
+.button {				
 	-webkit-box-shadow: 0 1px 0 0 rgba(255, 255, 255, .25) inset, 1px 1px 0 0 rgba(0, 0, 0, .25);
 	   -moz-box-shadow: 0 1px 0 0 rgba(255, 255, 255, .25) inset, 1px 1px 0 0 rgba(0, 0, 0, .25);
 			box-shadow: 0 1px 0 0 rgba(255, 255, 255, .25) inset, 1px 1px 0 0 rgba(0, 0, 0, .25);
@@ -111,7 +111,7 @@ aside .pseudo {
    ========================================================================== */
 
 body, select, input, button, textarea {
-    color: #321b00;
+	color: #321b00;
 	font: normal 13px/1.4em Helvetica, Arial, sans-serif;
 }
 
@@ -224,10 +224,10 @@ blockquote p:after {
 
 /* Default link styles */
 a, a:active, a:visited {
-    color: #0a49be;
+	color: #0a49be;
 }
 a:hover {
-    color: #2965d4;
+	color: #2965d4;
 }
 
 /* Colors for form validity */
@@ -254,7 +254,7 @@ a.button {
 	
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
-		    box-sizing: border-box;
+			box-sizing: border-box;
 			
 	cursor: pointer;
 }
@@ -322,7 +322,7 @@ textarea,
 	
 	-webkit-box-sizing: border-box;
 	   -moz-box-sizing: border-box;
-		    box-sizing: border-box;	
+			box-sizing: border-box;	
 }
 input[disabled],
 textarea[disabled],
@@ -347,8 +347,8 @@ textarea.error,
 
 input[type="checkbox"],
 input[type="radio"] {
-    padding: 0;
-    background: transparent;
+	padding: 0;
+	background: transparent;
 }
 
 .fake-checkbox-wrap label,
@@ -413,63 +413,63 @@ input[type="radio"] {
 .fake-select {
 	overflow: visible;
 }
-    .js .fake-select select {
-        position: absolute;
-        top: -100500px;
-        left: -100500px;
-    }
-    .fake-select label {
-        display: inline-block;
-    }
-    .fake-select .selector {
-        display: inline-block;
-        position: relative;
-    }
-        .fake-select .selector .current {
+	.js .fake-select select {
+		position: absolute;
+		top: -100500px;
+		left: -100500px;
+	}
+	.fake-select label {
+		display: inline-block;
+	}
+	.fake-select .selector {
+		display: inline-block;
+		position: relative;
+	}
+		.fake-select .selector .current {
 			min-width: 100%;
 			position: relative;
-            z-index: 905;
-        }
+			z-index: 905;
+		}
 		
-    .no-js .fake-select .selector {
-        display: none;
-    }
-        .fake-select ul {
-            min-width: 100%;
-            margin: 0;
-            position: absolute;
-            left: 0;
-            top: 28px;
-            
-            display: none;
+	.no-js .fake-select .selector {
+		display: none;
+	}
+		.fake-select ul {
+			min-width: 100%;
+			margin: 0;
+			position: absolute;
+			left: 0;
+			top: 28px;
+			
+			display: none;
 			border: 1px solid #c0c0c0;
-            
-            list-style: none;
+			
+			list-style: none;
 
 			background: #fff;
-        
-            z-index: 902;
+		
+			z-index: 902;
 			text-align: left;
 
 			-webkit-box-sizing: border-box;
 			   -moz-box-sizing: border-box;
 					box-sizing: border-box;
-        }
-        .fake-select .active ul {
-            display: block;
-        }
-            .fake-select ul li {
+		}
+		.fake-select .active ul {
+			display: block;
+		}
+			.fake-select ul li {
 				margin: 0;
-                padding: 6px 8px;
-                cursor: pointer;
-			    word-wrap: normal;
-			    white-space: nowrap;
-            }
-            .fake-select ul li:active,
+				padding: 6px 8px;
+				cursor: pointer;
+				word-wrap: normal;
+				white-space: nowrap;
+			}
+			.fake-select ul li:active,
  			form .dropholder a.ui-state-active,
  			form .dropholder a:active {
-                background: #eee;
-            }
+				background: #eee;
+			}
 	
 .num-shim-cont {
 	display: inline-block;
@@ -646,6 +646,15 @@ body {
 					margin-left: 10px;
 					font-size: 14px;
 				}
+				.dishes .price {
+					float: right;
+					font-size: 14px;
+					text-align: right;
+					width: 50px;
+				}
+				.dishes .price:after {
+					content: " р.";
+				}
 				.dishes input[type="number"] {
 					width: 50px;
 					
@@ -773,7 +782,7 @@ aside.active {
 .trigger3D {
 	-webkit-transform: translate3d(0,0,0);
 	   -moz-transform: translate3d(0,0,0);
-    	-ms-transform: translate3d(0,0,0);
+		-ms-transform: translate3d(0,0,0);
 		 -o-transform: translate3d(0,0,0);
 			transform: translate3d(0,0,0);
 }

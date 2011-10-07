@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load vardump %}
 {% block body %}
-    {% if is_office_manager %}
+	{% if is_office_manager %}
 		<div class="manage cf">
 			<a href="/admin/dinner/menu/" class="button small">менеджить хочу</a>
 			<form action="." method="get" class="change_user">
@@ -17,16 +17,16 @@
 				{% endfor %}
 			</form>
 		</div>
-    {% endif %}
+	{% endif %}
 	
 	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.menu_id|date:"d F" }}</h2>
 
 	<ul class="messages">
-    {% if order.donor %}
+	{% if order.donor %}
 		<li class="info"><span class="icon">&nbsp;</span>Специальная акция! Автор <a href="{% url dinner.views.order_view order.pk %}">твоего меню</a> на следующую неделю &mdash; <strong>{{ order.donor.get_full_name }}</strong>.</li>
 	{% else %}
 		<li class="info"><span class="icon">&nbsp;</span>Твой текущий выбор можно проверить по ссылке: <a href="{% url dinner.views.order_view order.pk %}">давай сюда меню сейчас</a>.</li>
-    {% endif %}
+	{% endif %}
 	</ul>
 
 	<form action="" method="post" class="order_form" id="order_form">
@@ -49,6 +49,7 @@
 								<input type="checkbox" value="1" id="dish_{{ dish.id }}" name="dish_check#{{ dish.id }}"{% if dish.count %} checked="checked"{% endif %} />
 							</span>
 							<label for="dish_{{ dish.id }}">{{ dish.title|lower|capfirst }}</label>
+							<div class="price" data-price="{{ dish.price }}">{{ dish.price }}</div>
 							<input name="dish#{{ dish.id }}" type="number" min="1" max="20" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
 						</li>
 						{% endfor %}
@@ -63,5 +64,5 @@
 		<ul class="form-errors"></ul>
 
 		<div class="submit"><button class="button" id="submit" type="submit" data-norm="Все выбрал!" data-alt="Я сказал нажал!">Все выбрал!</button></div>
-    </form>
+	</form>
 {% endblock body %}
