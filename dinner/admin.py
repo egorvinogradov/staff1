@@ -47,6 +47,7 @@ class MenuAdmin(admin.ModelAdmin):
             raise Exception('unsupported provider')
 
     def _process_dobrayatrapeza(self, menu, form, request, change):
+        idx = 1
         provider = m.Provider.objects.get(pk=2)
         f = form.cleaned_data['source'].file
         rows = [line for line in f.read().split("\n")]
@@ -122,11 +123,12 @@ class MenuAdmin(admin.ModelAdmin):
                     title += ' + ' + subtitle
                 
                 kwargs = dict(
-                    index=0,
+                    index=idx,
                     title=title,
                     weight=weight,
                     price=price,
                 )
+                idx += 1
 
                 dish = m.Dish(
                     day=day,
@@ -235,7 +237,7 @@ class WeekAdmin(admin.ModelAdmin):
             .filter(order__week=week, count__gt=0)\
             .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
-            .order_by('dish')
+            .order_by('dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
 
         for i in items:
             i['cost'] = i['count__sum'] * i['dish__price']
