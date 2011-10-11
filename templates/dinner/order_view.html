@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block body %}
-	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.menu_id|date:"d F" }}</h2>
+	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.week.date|date:"d F" }}</h2>
 	{% if days %}
 	{% spaceless %}
         {% for day, items in days %}
