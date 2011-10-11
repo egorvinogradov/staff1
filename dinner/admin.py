@@ -29,6 +29,7 @@ def _create_day(week, day):
     return _create_day_from_date(week, _parse_day(day))
 
 def _get_group(title):
+    title = title.replace(u'NEW ', '')
     return m.Group.objects.get_or_create(title=title)[0]
 
 def _get_weekobj(date):
@@ -47,6 +48,7 @@ class MenuAdmin(admin.ModelAdmin):
             raise Exception('unsupported provider')
 
     def _process_dobrayatrapeza(self, menu, form, request, change):
+        idx = 1
         provider = m.Provider.objects.get(pk=2)
         f = form.cleaned_data['source'].file
         rows = [line for line in f.read().split("\n")]
@@ -122,11 +124,12 @@ class MenuAdmin(admin.ModelAdmin):
                     title += ' + ' + subtitle
                 
                 kwargs = dict(
-                    index=0,
+                    index=idx,
                     title=title,
                     weight=weight,
                     price=price,
                 )
+                idx += 1
 
                 dish = m.Dish(
                     day=day,
@@ -169,22 +172,26 @@ class MenuAdmin(admin.ModelAdmin):
                     dish.save()
 
     def change_view(self, request, object_id, extra_context=None):
-        menu = m.Menu.objects.get(pk=object_id)
+        return HttpResponseRedirect('/admin/dinner/week/' + str(m.Menu.objects.get(pk=object_id).week.pk) + '/')
+
+
+class WeekAdmin(admin.ModelAdmin):
+    def change_view(self, request, object_id, extra_context=None):
+        week = m.Week.objects.get(pk=object_id)
 
         if request.GET.get('r', None) == 'summary':
-            return self.summary_view(request, menu)
+            return self.summary_view(request, week)
         elif request.GET.get('r', None) == 'personal':
-            return self.personal_view(request, menu)
+            return self.personal_view(request, week)
         elif request.GET.get('r', None) == 'taxes':
-            return self.taxes_view(request, menu)
+            return self.taxes_view(request, week)
         else:
-            return self.progress_view(request, menu)
-
+            return self.progress_view(request, week)
 
     @commit_on_success
-    def _transfer_order(self, data, menu):
-        donor = m.Order.objects.get(user__pk=data['donor'], menu=menu)
-        receiver = m.Order.objects.get_or_create(user__pk=data['for'], menu=menu)[0]
+    def _transfer_order(self, data, week):
+        donor = m.Order.objects.get(user__pk=data['donor'], week=week)
+        receiver = m.Order.objects.get_or_create(user__pk=data['for'], week=week)[0]
 
         m.OrderDayItem.objects.filter(order=receiver).delete()
         for donor_item in m.OrderDayItem.objects.filter(order=donor):
@@ -194,12 +201,12 @@ class MenuAdmin(admin.ModelAdmin):
         receiver.save()
 
 
-    def progress_view(self, request, menu):
+    def progress_view(self, request, week):
         if request.method == 'POST':
-            self._transfer_order(request.POST, menu)
+            self._transfer_order(request.POST, week)
             return HttpResponseRedirect(request.path)
 
-        orders = m.Order.objects.filter(menu=menu).select_related('user')\
+        orders = m.Order.objects.filter(week=week).select_related('user')\
             .extra(select = {
                 'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
@@ -219,19 +226,19 @@ class MenuAdmin(admin.ModelAdmin):
         missing_users -= set(order.user.pk for order in orders)
 
         for missing_user in User.objects.filter(pk__in = missing_users):
-            orders.append(m.Order.objects.get_or_create(user=missing_user, menu=menu)[0])
+            orders.append(m.Order.objects.get_or_create(user=missing_user, week=week)[0])
 
         return direct_to_template(request, 'dinner/report.html', {
             'orders': orders,
             'donor_widget': donor_widget,
         })
 
-    def summary_view(self, request, menu):
+    def summary_view(self, request, week):
         items = m.OrderDayItem.objects\
-            .filter(order__menu = menu, count__gt=0)\
+            .filter(order__week=week, count__gt=0)\
             .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
-            .order_by('dish')
+            .order_by('dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
 
         for i in items:
             i['cost'] = i['count__sum'] * i['dish__price']
@@ -246,13 +253,13 @@ class MenuAdmin(admin.ModelAdmin):
             ))
 
         return direct_to_template(request, 'dinner/report_summary.html', {
-            'menu': menu,
+            'week': week,
             'days': days,
         })
 
-    def personal_view(self, request, menu):
+    def personal_view(self, request, week):
         items = m.OrderDayItem.objects\
-            .filter(order__menu=menu, count__gt=0)\
+            .filter(order__week=week, count__gt=0)\
             .select_related(depth=2)\
             .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
 
@@ -265,13 +272,13 @@ class MenuAdmin(admin.ModelAdmin):
             ))
 
         return direct_to_template(request, 'dinner/report_personal.html', {
-            'menu': menu,
+            'week': week,
             'users': users,
         })
 
-    def taxes_view(self, request, menu):
+    def taxes_view(self, request, week):
         items = m.OrderDayItem.objects\
-            .filter(order__menu=menu, count__gt=0)\
+            .filter(order__week=week, count__gt=0)\
             .select_related(depth=2)\
             .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
 
@@ -289,8 +296,9 @@ class MenuAdmin(admin.ModelAdmin):
             user.cost = sum(d.cost for d, seq in days)
 
         return direct_to_template(request, 'dinner/report_taxes.html', {
-            'menu': menu,
+            'week': week,
             'users': users,
         })
 
 admin.site.register(m.Menu, MenuAdmin)
+admin.site.register(m.Week, WeekAdmin)

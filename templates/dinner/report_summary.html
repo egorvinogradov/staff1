@@ -1,6 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
-{% block title %}Заказ на наделю {{ menu.week }}{% endblock %}
+{% block title %}Заказ на наделю {{ week }}{% endblock %}
 
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
@@ -10,14 +10,14 @@
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
 
-        <h2>Меню {{ menu }}</h2>
+        <h2>Меню {{ week }}</h2>
         <table>
         {% for seq, day, day_cost in days %}
             <tr>
                 <th colspan="20"><h3>{{ day }}</h3></th>
             </tr>
             <tr>
-                <th>№ п/п</th>
+              {#  <th>№ п/п</th> #}
                 <th>Наименование</th>
                 <th>Вес (грамм)</th>
                 <th>Цена(р)</th>
@@ -26,7 +26,7 @@
             </tr>
             {% for item in seq %}
             <tr>
-                <td>{{ item.dish__index }}</td>
+               {# <td>{{ item.dish__index }}</td> #}
                 <td>{{ item.dish__title }}</td>
                 <td>{{ item.dish__weight|default_if_none:'—' }}</td>
                 <td>{{ item.dish__price }}</td>
