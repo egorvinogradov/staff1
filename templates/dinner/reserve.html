@@ -19,7 +19,7 @@
 		</div>
 	{% endif %}
 	
-	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.menu.week.date|date:"d F" }}</h2>
+	<h2>Мсьё {{ user.get_full_name }}, твоё меню на неделю c {{ order.menu.week.date|date:"d F" }}</h2>
 
 	<ul class="messages">
 	{% if order.donor %}
@@ -37,7 +37,7 @@
 		<section class="dishes-list" id="dishes_list">
 		{% for day, dishes_by_group in dishes_by_group_by_day %}
 			<div class="day-segment">
-				<h3 class="title script">{{ day|lower|capfirst }}<span class="icon">&nbsp;</span></h3>
+				<h3 class="title script">{{ day|lower|capfirst }} <span class="icon">&nbsp;</span> <span class="price">&nbsp;</span></h3>
 				<div class="day-menu slider">
 				{% for group, dishes in dishes_by_group %}
 					<h4 class="title script">{{ group.1|lower|capfirst }}<span class="icon">&nbsp;</span></h4>
@@ -48,9 +48,10 @@
 								<span>&nbsp;</span>
 								<input type="checkbox" value="1" id="dish_{{ dish.id }}" name="dish_check#{{ dish.id }}"{% if dish.count %} checked="checked"{% endif %} />
 							</span>
-							<label for="dish_{{ dish.id }}">{{ dish.title|lower|capfirst }}</label>
 							<div class="price" data-price="{{ dish.price }}">{{ dish.price }}</div>
 							<input name="dish#{{ dish.id }}" type="number" min="1" max="20" step="1" value="{{ dish.count|default:0 }}"{% if not dish.count %} disabled="disabled"{% endif %} autocomplete="off" autocorrect="off"  />
+							<label for="dish_{{ dish.id }}">{{ dish.title|lower|capfirst }}</label>
+							<del></del>
 						</li>
 						{% endfor %}
 					</ul>
@@ -63,6 +64,6 @@
 		<div class="hidden hideout"></div>
 		<ul class="form-errors"></ul>
 
-		<div class="submit"><button class="button" id="submit" type="submit" data-norm="Все выбрал!" data-alt="Я сказал нажал!">Все выбрал!</button></div>
+		<div class="submit"><button class="button" id="submit" type="submit" data-norm="Всё выбрал!" data-alt="Я сказал нажал!">Всё выбрал!</button></div>
 	</form>
 {% endblock body %}

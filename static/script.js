@@ -223,6 +223,30 @@ Meals.logic = function () {
 		attempts = 0,
 		submit = $('#submit');
 		
+	days.bind('change', function() {
+		var day = $(this),
+		    h3 = day.find('> h3'),
+		    price = h3.find('span.price'),
+		    selected = day.find('li.selected'),
+		    total = 0,
+		    diff = 420;
+		
+		selected.each(function() {
+			var el = $(this);
+			total += el.find('div.price').data('price') * el.find('input[type=number]').val();
+		});
+		diff = 420 - total;
+
+		price.html(total);
+
+		h3[selected.length ? 'addClass' : 'removeClass']('selected');
+		day[total > 420 ? 'addClass' : 'removeClass']('locked');
+
+		day.find('li').each(function(){
+			$(this)[this.getElementsByTagName('div')[0].innerHTML > diff ? 'addClass' : 'removeClass']('locked');
+		});
+	});
+	
 	titles.bind('click', function() {
 		var el = $(this),
 			slider = el.next('.slider'),
@@ -235,6 +259,9 @@ Meals.logic = function () {
 		else {
 			el.addClass('active');
 			slider.slideDown(200);
+			$('html,body').animate({
+				scrollTop: el.offset().top
+			}, 400);
 		}
 	});
 	
@@ -261,7 +288,7 @@ Meals.logic = function () {
 	checkboxes.each(function() {
 		$(this).is(':checked') && triggerCheckbox.apply(this);
 	});
-	
+
 	function triggerCheckbox() {
 		var el = $(this),
 			li = el.parents('li').filter(':first'),
@@ -282,14 +309,23 @@ Meals.logic = function () {
 
 			Meals.supports.inputtype_number || num.parent().removeClass('disabled');
 		}
-		else {
+		else
+		{
 			li.removeClass('selected');
 
 			(+num.val() > 0) && num.attr('data-status', 'remove');
-			num.attr('disabled', 'disabled');
+			num.attr('disabled', 'disabled').val(0);
 
 			Meals.supports.inputtype_number || num.parent().addClass('disabled');
 		}
+
+
+		var ul = li.parents('ul'),
+		    h4 = ul.prev('h4');
+
+		h4[ul.find('li.selected').length ? 'addClass' : 'removeClass']('selected')
+		.parents('div.day-segment').trigger('change');
+
 	}
 	
 	// Checkboxes being able to actually remove something
