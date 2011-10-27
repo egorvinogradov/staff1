@@ -52,7 +52,7 @@ class Dish(models.Model):
     price = models.PositiveIntegerField()
 
     def __unicode__(self):
-        return u'№' + unicode(self.index) + u' ' + unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
+        return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
 
 class Order(models.Model):
     user = models.ForeignKey(User)
