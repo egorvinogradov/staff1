@@ -2,9 +2,8 @@
 */
 
 Meals.settings = {
-	min_weekly_portions: 17,
-	max_rand_num: 2,
-	supports_inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
+	min_weekly_portions: 10,
+	max_rand_num: 2
 };
 Meals.supports = {
 	inputtype_number: $('<input />', {type: 'number'}).get()[0].type === 'number'
@@ -19,7 +18,7 @@ Meals.init = function() {
 			field_4: false,
 			field_5: false
 		};
-		$.cookie('settings', JSON.stringify(defaults), { expires: 7, path: '/' });
+		$.cookie('settings', JSON.stringify(defaults), { expires: 365, path: '/' });
 	}();
 }();
 Meals.inputs = function() {
