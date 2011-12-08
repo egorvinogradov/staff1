@@ -175,7 +175,7 @@ class MenuAdmin(admin.ModelAdmin):
         week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
-        for day_num in range(0, 4):
+        for day_num in range(0, 5):
             day = m.Day(day=day_num, week=week)
             day.save()
 
