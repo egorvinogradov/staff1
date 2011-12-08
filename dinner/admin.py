@@ -11,7 +11,7 @@ import models as m
 import forms as f
 import pyExcelerator as xls
 from django.db.transaction import commit_on_success
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import count, groupby
 from utils import group_by_materialize
 from social_auth.models import UserSocialAuth
@@ -40,7 +40,9 @@ class MenuAdmin(admin.ModelAdmin):
 
     @commit_on_success
     def save_model(self, request, menu, form, change):
-        if int(menu.provider.pk) == 2:
+        if int(menu.provider.pk) == 3:
+            return self._process_fusion(menu, form, request, change)
+        elif int(menu.provider.pk) == 2:
             return self._process_dobrayatrapeza(menu, form, request, change)
         elif int(menu.provider.pk) == 1:
             return self._process_hlebsol(menu, form, request, change)
@@ -138,6 +140,62 @@ class MenuAdmin(admin.ModelAdmin):
                     **kwargs
                 )
                 dish.save()
+
+    def _process_fusion(self, menu, form, request, change):
+        provider = m.Provider.objects.get(pk=3)
+        f = form.cleaned_data['source'].file
+
+        data = []
+
+        rows = list(csv.reader(f)) + ['', '', '']
+        i = 0
+        index = 0
+        group = None
+        while i < len(rows):
+            row = rows[i]
+            row = [v.strip().decode('utf-8') for v in row]
+            i += 1
+
+            if not any(row):
+                continue
+            elif row[1] and not row[0] and (len(row) == 2 or not row[2]):
+                group = row[1]
+            else:
+                weight, title, price = row
+
+                if any(rows[i]) and rows[i][1].strip() and not rows[i][0].strip() and (len(rows[i]) == 2 or not rows[i][2].strip()):
+                    title += "\n" + rows[i][1].strip().decode('utf-8')
+                    i += 1
+
+                price = float(price.split(' ', 1)[0].replace(',', '.'))
+                index += 1
+                data.append((group, weight, title, price, index))
+
+        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=7)
+        week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
+        super(MenuAdmin, self).save_model(request, menu, form, change)
+
+        for day_num in range(0, 4):
+            day = m.Day(day=day_num, week=week)
+            day.save()
+
+            for group, weight, title, price, index in data:
+                kwargs = dict(
+                    index=index,
+                    title=title,
+                    weight=weight,
+                    price=price,
+                )
+
+                dish = m.Dish(
+                    day=day,
+                    provider=provider,
+                    group=_get_group(group),
+                    **kwargs
+                )
+                dish.save()
+
+
 
     def _process_hlebsol(self, menu, form, request, change):
         provider = m.Provider.objects.get(pk=1)

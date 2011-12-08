@@ -4,6 +4,9 @@
 - fields: {name: dobraja-trapeza.com}
   model: dinner.provider
   pk: 2
+- fields: {name: fusion}
+  model: dinner.provider
+  pk: 3
 - fields: {name: DinnerManagers}
   model: auth.group
   pk: 1
