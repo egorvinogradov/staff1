@@ -21,9 +21,7 @@ def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
 
 def _create_day_from_date(week, date):
-    e = m.Day(day=(date - week.date).days, week=week)
-    e.save()
-    return e
+    return m.Day.objects.get_or_create(day=(date - week.date).days, week=week)[0]
 
 def _create_day(week, day):
     return _create_day_from_date(week, _parse_day(day))
@@ -176,8 +174,7 @@ class MenuAdmin(admin.ModelAdmin):
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
         for day_num in range(0, 5):
-            day = m.Day(day=day_num, week=week)
-            day.save()
+            day = m.Day.objects.get_or_create(day=day_num, week=week)[0]
 
             for group, weight, title, price, index in data:
                 kwargs = dict(
