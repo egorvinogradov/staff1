@@ -35,6 +35,9 @@ class Day(models.Model):
     def __unicode__(self):
         return WEEK_DAYS[self.day]
 
+    class Meta:
+        unique_together = [('week', 'day')]
+
 class Group(models.Model):
     title = models.CharField(max_length=100)
 
