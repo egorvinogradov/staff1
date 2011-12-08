@@ -181,7 +181,7 @@ class MenuAdmin(admin.ModelAdmin):
 
             for group, weight, title, price, index in data:
                 kwargs = dict(
-                    index=index,
+                    index=index+1000,
                     title=title,
                     weight=weight,
                     price=price,
