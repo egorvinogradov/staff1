@@ -312,7 +312,7 @@ class WeekAdmin(admin.ModelAdmin):
             .filter(order__week=week, count__gt=0)\
             .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
-            .order_by('dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
+            .order_by('-dish__provider__pk', 'dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
 
         for i in items:
             i['cost'] = i['count__sum'] * i['dish__price']
