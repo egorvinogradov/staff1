@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 from pprint import pformat
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -66,7 +67,9 @@ def reserve(request):
     order = m.Order.objects.get_or_create(user=order_user, week=week)[0]
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=week).values_list('dish__pk', 'count'))
 
-    dishes = m.Dish.objects.filter(day__week=week).select_related().order_by('day', '-provider', 'pk', 'group', 'title')
+    dishes = m.Dish.objects.filter(day__week=week).select_related().order_by('day__day', '-provider', 'pk', 'group', 'title')
+    if os.path.exists('/home/denis/hbonly'):
+        dishes = dishes.filter(provider__pk=1)
     dishes = list(dishes)
 
     for d in dishes:
