@@ -140,42 +140,7 @@ class MenuAdmin(admin.ModelAdmin):
                 dish.save()
 
     def _process_fusion(self, menu, form, request, change):
-        provider = m.Provider.objects.get(pk=3)
-        f = form.cleaned_data['source'].file
-
-        data = []
-
-        rows = list(csv.reader(f)) + ['', '', '']
-        i = 0
-        index = 0
-        group = None
-        while i < len(rows):
-            row = rows[i]
-            row = [v.strip().decode('utf-8') for v in row]
-            i += 1
-
-            if not any(row):
-                continue
-            elif row[1] and not row[0] and (len(row) == 2 or not row[2]):
-                group = row[1]
-            else:
-                weight, title, price = row
-
-                if any(rows[i]) and rows[i][1].strip() and not rows[i][0].strip() and (len(rows[i]) == 2 or not rows[i][2].strip()):
-                    title += "\n" + rows[i][1].strip().decode('utf-8')
-                    i += 1
-
-                price = float(price.split(' ', 1)[0].replace(',', '.'))
-                index += 1
-                data.append((group, weight, title, price, index))
-
-        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=7)
-        week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
-        super(MenuAdmin, self).save_model(request, menu, form, change)
-
-        for day_num in range(0, 5):
-            day = m.Day.objects.get_or_create(day=day_num, week=week)[0]
-
+        def __save_data(day, data, provider):
             for group, weight, title, price, index in data:
                 kwargs = dict(
                     index=index+1000,
@@ -192,6 +157,60 @@ class MenuAdmin(admin.ModelAdmin):
                 )
                 dish.save()
 
+
+        provider = m.Provider.objects.get(pk=3)
+        f = form.cleaned_data['source'].file
+        # FILE MUST BE RED BEFORE super() call!!!!!
+        rows = list(csv.reader(f, dialect='excel')) + ['', '', '']
+
+        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=7)
+        week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
+        super(MenuAdmin, self).save_model(request, menu, form, change)
+
+        days_map = dict((day_name.capitalize() + ' 2', day_num) for day_num, day_name in enumerate(u'понедельник вторник среда четверг пятница суббота воскресенье'.split(' ')))
+
+        data = []
+
+        i = 0
+        index = 0
+        group = None
+        day = None
+        while i < len(rows):
+            row = rows[i]
+            row = [v.strip().decode('utf-8') for v in row]
+            i += 1
+
+            if not any(row):
+                continue
+            elif row[0] in days_map:
+                if not (day is None):
+                    #raise Exception(pformat(data).decode('unicode-escape'))
+                    __save_data(day, data, provider)
+                    data = []
+
+                day = m.Day.objects.get_or_create(day=days_map[row[0]], week=week)[0]
+            elif len(row)==1 and row[0]:
+                group = row[0]
+            elif len(row)==2 and not row[0] and row[1]:
+                group = row[1]
+            elif len(row)==3 and row[0]==u'выход':
+                group = row[1]
+            else:
+                if len(row) < 3:
+                    raise Exception("Unexpected row: " + pformat(row).decode('unicode-escape'))
+                weight, title, price = row
+
+                if len(rows[i])==1 and rows[i][0][0] == '(':
+                    title += "\n" + rows[i][0].decode('utf-8')
+                    i += 1
+
+                price = float(price.split(' ', 1)[0].replace(',', '.'))
+                index += 1
+                if not group:
+                    raise Exception('no group found yet line#{0}'.format(i))
+                data.append((group, weight, title, price, index))
+        #raise Exception(pformat(data).decode('unicode-escape'))
+        __save_data(day, data, provider)
 
 
     def _process_hlebsol(self, menu, form, request, change):
