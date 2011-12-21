@@ -6,6 +6,7 @@ from django.contrib import admin
 import team.urls
 import dinner.urls
 import review.urls
+import staff.urls
 
 admin.autodiscover()
 
@@ -15,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^accounts/', include('social_auth.urls')),
     url(r'^accounts/base/', include('django.contrib.auth.urls')),
 
+    (r'^staff/', include(staff.urls)),
     (r'^', include(team.urls)),
     (r'^', include(dinner.urls)),
     (r'^review/', include(review.urls)),

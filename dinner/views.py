@@ -13,6 +13,7 @@ from datetime import datetime
 from itertools import groupby
 from datetime import timedelta
 from utils import group_by_materialize
+from staff.models import Office
 
 @login_required
 @commit_on_success
@@ -22,6 +23,11 @@ def reserve(request):
             or not UserSocialAuth.objects.filter(user=request.user, provider='ostrovok').exists():
         messages.add_message(request, messages.INFO, u'Страница доступна только для пользователей mail@ostrovok.ru с заполненным именем')
         return direct_to_template(request, 'base.html')
+
+    if not request.user.get_profile().office:
+        return direct_to_template(request, 'staff/config.html', dict(
+            offices = Office.objects.all()
+        ))
 
 
     is_office_manager = request.user.groups.filter(pk=DINNER_MANAGER).exists()

@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from itertools import count, groupby
 from utils import group_by_materialize
 from social_auth.models import UserSocialAuth
+from staff.models import Office
 import csv
 
 def _parse_day(s):
@@ -310,44 +311,56 @@ class WeekAdmin(admin.ModelAdmin):
     def summary_view(self, request, week):
         items = m.OrderDayItem.objects\
             .filter(order__week=week, count__gt=0)\
-            .values('dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
+            .values('order__user__profile__office__id', 'dish__provider__pk', 'dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
             .annotate(Sum('count'))\
-            .order_by('-dish__provider__pk', 'dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
+            .order_by('-dish__provider__pk', 'order__user__profile__office__id', 'dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
 
         for i in items:
             i['cost'] = i['count__sum'] * i['dish__price']
 
-        days = []
-        for day, seq in groupby(list(items), operator.itemgetter('dish__day')):
-            seq = list(seq)
-            days.append((
-                seq,
-                unicode(m.Day.objects.get(pk=day)),
-                sum(map(operator.itemgetter('cost'), seq)),
+        groups = []
+        for (provider, office), weekseq in groupby(list(items), operator.itemgetter('dish__provider__pk', 'order__user__profile__office__id')):
+            days = []
+            for day, seq in groupby(weekseq, operator.itemgetter('dish__day')):
+                seq = list(seq)
+                days.append((
+                    seq,
+                    unicode(m.Day.objects.get(pk=day)),
+                    sum(map(operator.itemgetter('cost'), seq)),
+                ))
+            groups.append((
+                m.Provider.objects.get(pk=provider),
+                Office.objects.get(id=office),
+                days
             ))
 
         return direct_to_template(request, 'dinner/report_summary.html', {
             'week': week,
-            'days': days,
+            'groups': groups,
         })
 
     def personal_view(self, request, week):
         items = m.OrderDayItem.objects\
             .filter(order__week=week, count__gt=0)\
-            .select_related(depth=2)\
-            .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
+            .select_related(depth=4)\
+            .order_by('order__user__profile__office__id', 'order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
 
-        users = []
-        for user, seq in groupby(list(items), lambda i: i.order.user):
-            seq = list(seq)
-            users.append((
-                user,
-                group_by_materialize(groupby(seq, lambda i: i.dish.day)),
-            ))
+        offices = []
+        for office, usersseq in groupby(list(items), lambda i: i.order.user.get_profile().office):
+            users = []
+            for user, seq in groupby(usersseq, lambda i: i.order.user):
+                seq = list(seq)
+                users.append((
+                    user,
+                    group_by_materialize(groupby(seq, lambda i: i.dish.day)),
+                ))
+
+            offices.append(( office, users ))
+
 
         return direct_to_template(request, 'dinner/report_personal.html', {
             'week': week,
-            'users': users,
+            'offices': offices,
         })
 
     def taxes_view(self, request, week):

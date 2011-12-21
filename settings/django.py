@@ -76,6 +76,8 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+AUTH_PROFILE_MODULE = 'staff.UserProfile'
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'lhut*arex%a$%z*masg72c$mq4x#e9r6a+b61m3eyvmj(!i!r8'
 
@@ -93,7 +95,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'openid_consumer.middleware.OpenIDMiddleware',
+    'django_openid_consumer.middleware.OpenIDMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -136,6 +138,7 @@ INSTALLED_APPS = (
     'team',
     'dinner',
     'review',
+    'staff',
 
     'south',
 )
