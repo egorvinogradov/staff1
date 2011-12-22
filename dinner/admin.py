@@ -168,7 +168,7 @@ class MenuAdmin(admin.ModelAdmin):
         week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
-        days_map = dict((day_name.capitalize() + ' 2', day_num) for day_num, day_name in enumerate(u'понедельник вторник среда четверг пятница суббота воскресенье'.split(' ')))
+        days_map = dict((day_name.capitalize() + ' 3', day_num) for day_num, day_name in enumerate(u'понедельник вторник среда четверг пятница суббота воскресенье'.split(' ')))
 
         data = []
 
@@ -183,13 +183,13 @@ class MenuAdmin(admin.ModelAdmin):
 
             if not any(row):
                 continue
-            elif row[0] in days_map:
+            elif row[0].capitalize() in days_map:
                 if not (day is None):
                     #raise Exception(pformat(data).decode('unicode-escape'))
                     __save_data(day, data, provider)
                     data = []
 
-                day = m.Day.objects.get_or_create(day=days_map[row[0]], week=week)[0]
+                day = m.Day.objects.get_or_create(day=days_map[row[0].capitalize()], week=week)[0]
             elif len(row)==1 and row[0]:
                 group = row[0]
             elif len(row)==2 and not row[0] and row[1]:
@@ -210,6 +210,7 @@ class MenuAdmin(admin.ModelAdmin):
                 if not group:
                     raise Exception('no group found yet line#{0}'.format(i))
                 data.append((group, weight, title, price, index))
+            
         #raise Exception(pformat(data).decode('unicode-escape'))
         __save_data(day, data, provider)
 
