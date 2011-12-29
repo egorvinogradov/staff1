@@ -200,7 +200,6 @@ class MenuAdmin(admin.ModelAdmin):
             elif len(row)==5 and re.match("^\d+", row[0]):
                 if len(row) < 3:
                     raise Exception("Unexpected row: " + pformat(row).decode('unicode-escape'))
-                print 'row', pformat(row).decode('unicode-escape')
                 weight, title, price, amount, total = row
 
                 if len(rows[i])==1 and rows[i][0][0] == '(':
