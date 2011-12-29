@@ -165,7 +165,7 @@ class MenuAdmin(admin.ModelAdmin):
         # FILE MUST BE RED BEFORE super() call!!!!!
         rows = list(csv.reader(f, dialect='excel')) + ['', '', '']
 
-        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=7)
+        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=14)
         week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
@@ -225,7 +225,7 @@ class MenuAdmin(admin.ModelAdmin):
         for sheet_name, values in xls.parse_xls(f, 'cp1251'):
             if not first_sheet:
                 first_sheet = True
-                week = menu.week = form.cleaned_data['week'] = _get_weekobj(_parse_day(sheet_name))
+                week = menu.week = form.cleaned_data['week'] = _get_weekobj(_parse_day(sheet_name)-timedelta(days=1))
                 super(MenuAdmin, self).save_model(request, menu, form, change)
             day = _create_day(week, sheet_name)
             group = None
