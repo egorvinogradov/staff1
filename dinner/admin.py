@@ -165,7 +165,7 @@ class MenuAdmin(admin.ModelAdmin):
         # FILE MUST BE RED BEFORE super() call!!!!!
         rows = list(csv.reader(f, dialect='excel')) + ['', '', '']
 
-        week_date = datetime.now() - timedelta(days=datetime.now().weekday()) + timedelta(days=14)
+        week_date = datetime.now() + timedelta(days=7-datetime.now().weekday())
         week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
@@ -175,7 +175,7 @@ class MenuAdmin(admin.ModelAdmin):
 
         i = 0
         index = 0
-        group = None
+        group = u"Меню от Fusion"
         day = None
         while i < len(rows):
             row = rows[i]
@@ -184,23 +184,21 @@ class MenuAdmin(admin.ModelAdmin):
 
             if not any(row):
                 continue
-            elif re.sub("^['\"]|[\s\"'\d]*$", "", row[0]).capitalize() in days_map:
+            elif re.sub("['\"\s'\d]*", "", row[0]).capitalize() in days_map:
                 if not (day is None):
                     #raise Exception(pformat(data).decode('unicode-escape'))
                     __save_data(day, data, provider)
                     data = []
                 day_name = re.sub("^['\"]|[\s\"'\d]*$", "", row[0]).capitalize()
                 day = m.Day.objects.get_or_create(day=days_map[day_name], week=week)[0]
-            elif len(row)==1 and row[0]:
-                group = row[0]
-            elif len(row)==2 and not row[0] and row[1]:
-                group = row[1]
-            elif len(row)==5 and row[0] ==u'выход' or row[0]==u"":
-                group = row[1]
-            elif len(row)==5 and re.match("^\d+", row[0]):
-                if len(row) < 3:
-                    raise Exception("Unexpected row: " + pformat(row).decode('unicode-escape'))
-                weight, title, price, amount, total = row
+            #elif len(row)==1 and row[0]:
+            #    group = row[0]
+            #elif len(row)==2 and not row[0] and row[1]:
+            #    group = row[1]
+            #elif len(row)==5 and row[0] ==u'выход' or row[0]==u"":
+            #    group = row[1]
+            elif len(row)==3 and re.search("\d$", row[2]):
+                title, weight, price = row
 
                 if len(rows[i])==1 and rows[i][0][0] == '(':
                     title += "\n" + rows[i][0].decode('utf-8')
@@ -225,7 +223,7 @@ class MenuAdmin(admin.ModelAdmin):
         for sheet_name, values in xls.parse_xls(f, 'cp1251'):
             if not first_sheet:
                 first_sheet = True
-                week = menu.week = form.cleaned_data['week'] = _get_weekobj(_parse_day(sheet_name)-timedelta(days=1))
+                week = menu.week = form.cleaned_data['week'] = _get_weekobj(_parse_day(sheet_name))
                 super(MenuAdmin, self).save_model(request, menu, form, change)
             day = _create_day(week, sheet_name)
             group = None
