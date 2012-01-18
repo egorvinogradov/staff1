@@ -141,7 +141,7 @@ class MenuAdmin(admin.ModelAdmin):
                 )
                 dish.save()
 
-    def _process_fusion(self, menu, form, request, change):
+    def _process_fusion_old(self, menu, form, request, change):
         def __save_data(day, data, provider):
             for group, weight, title, price, index in data:
                 kwargs = dict(
@@ -215,8 +215,12 @@ class MenuAdmin(admin.ModelAdmin):
         #raise Exception(pformat(data).decode('unicode-escape'))
         __save_data(day, data, provider)
 
+    def _process_fusion(self, *args, **kwargs):
+        provider = m.Provider.objects.get(pk=3)
+        return self._process_hlebsol(provider=provider, *args, **kwargs)
 
-    def _process_hlebsol(self, menu, form, request, change):
+
+    def _process_hlebsol(self, menu, form, request, change, provider=None):
         provider = m.Provider.objects.get(pk=1)
         first_sheet = False
         f = form.cleaned_data['source'].file
@@ -227,6 +231,7 @@ class MenuAdmin(admin.ModelAdmin):
                 super(MenuAdmin, self).save_model(request, menu, form, change)
             day = _create_day(week, sheet_name)
             group = None
+
             for row_idx in count(2):
                 if not (row_idx, 0) in values:
                     break
