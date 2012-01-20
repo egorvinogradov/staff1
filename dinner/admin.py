@@ -221,7 +221,9 @@ class MenuAdmin(admin.ModelAdmin):
 
 
     def _process_hlebsol(self, menu, form, request, change, provider=None):
-        provider = m.Provider.objects.get(pk=1)
+        if not provider:
+            provider = m.Provider.objects.get(pk=1)
+
         first_sheet = False
         f = form.cleaned_data['source'].file
         for sheet_name, values in xls.parse_xls(f, 'cp1251'):
