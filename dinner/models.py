@@ -13,6 +13,7 @@ class Provider(models.Model):
 
 class Week(models.Model):
     date = models.DateField(unique=True)
+    closed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.date)

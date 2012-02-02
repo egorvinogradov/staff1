@@ -260,6 +260,8 @@ class MenuAdmin(admin.ModelAdmin):
 
 
 class WeekAdmin(admin.ModelAdmin):
+    list_display = ('date', 'closed')
+    list_editable = ('closed',)
     def change_view(self, request, object_id, extra_context=None):
         week = m.Week.objects.get(pk=object_id)
 
@@ -290,15 +292,17 @@ class WeekAdmin(admin.ModelAdmin):
             self._transfer_order(request.POST, week)
             return HttpResponseRedirect(request.path)
 
-        orders = m.Order.objects.filter(week=week).select_related('user')\
+        orders = m.Order.objects.filter(week=week).select_related('user', 'user__profile__office')\
             .extra(select = {
                 'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
                 'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
                     .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
-            }).order_by('user__last_name')
+            }).order_by('user__profile__office__id', 'user__last_name')
 
         orders = list(orders)
+
+
 
         donor_pks = [order.user.pk for order in orders if order.num_items > 0 and not order.donor]
         donor_widget = forms.Select(
@@ -312,8 +316,12 @@ class WeekAdmin(admin.ModelAdmin):
         for missing_user in User.objects.filter(pk__in = missing_users):
             orders.append(m.Order.objects.get_or_create(user=missing_user, week=week)[0])
 
+        offices = []
+        for office, orderseq in groupby(list(orders), lambda o: o.user.profile.office):
+            offices.append((office, list(orderseq)))
+
         return direct_to_template(request, 'dinner/report.html', {
-            'orders': orders,
+            'offices': offices,
             'donor_widget': donor_widget,
         })
 

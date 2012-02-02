@@ -6,25 +6,28 @@
         {% include 'dinner/report_menu.html' %}
         <h1>Заказанные обеды:</h1>
         <table>
-        {% for order in orders %}
-            <tr>
-                <td align="right">{{ forloop.counter }}</td>
-                <td>{{ order.user.username }}</td>
-                <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
-                <td title="общее кол-во блюд">{{ order.num_items|default_if_none:'-' }}</td>
-                <td title="дни на которые хоть что-то заказно" style="{% if order.num_days <= 3 %}color:red{% endif %}">{{ order.num_days|default:'-' }}</td>
-                <td>{% spaceless %}
-                    {% if order.num_items < 5  or order.donor %}
-                        <form action="." method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="for" value="{{ order.user.pk }}" />
-                            {{ donor_widget }}
-                        </form>
-                    {% else %}
-                        <a href="{% url dinner.views.order_view order.pk %}" target="_blank" onclick="window.open('{% url dinner.views.order_view order.pk %}', 'order', 'width=400,height=400'); return false;">посмотреть</a>
-                    {% endif %}
-                {% endspaceless %}</td>
-            </tr>
+        {% for office, orders in offices %}
+        <tr><td></td><td colspan="5"><h1>{{office.title}}</h1></td></tr>    
+            {% for order in orders %}
+                <tr>
+                    <td align="right">{{ forloop.counter }}</td>
+                    <td>{{ order.user.username }}</td>
+                    <td>{{ order.user.first_name }} {{ order.user.last_name }}</td>
+                    <td title="общее кол-во блюд">{{ order.num_items|default_if_none:'-' }}</td>
+                    <td title="дни на которые хоть что-то заказно" style="{% if order.num_days <= 3 %}color:red{% endif %}">{{ order.num_days|default:'-' }}</td>
+                    <td>{% spaceless %}
+                        {% if order.num_items < 5  or order.donor %}
+                            <form action="." method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="for" value="{{ order.user.pk }}" />
+                                {{ donor_widget }}
+                            </form>
+                        {% else %}
+                            <a href="{% url dinner.views.order_view order.pk %}" target="_blank" onclick="window.open('{% url dinner.views.order_view order.pk %}', 'order', 'width=400,height=400'); return false;">посмотреть</a>
+                        {% endif %}
+                    {% endspaceless %}</td>
+                </tr>
+            {% endfor %}
         {% endfor %}
         </table>
     </div>

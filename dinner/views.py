@@ -45,6 +45,9 @@ def reserve(request):
 
         order = m.Order.objects.get(user=order_user, week=week)
 
+        if week.closed:
+            return redirect('dinner.views.order_view', order.pk)
+
         updated = False
         for key, value in request.POST.items():
             if key.startswith('dish#') and value:
@@ -71,6 +74,10 @@ def reserve(request):
         return direct_to_template(request, 'dinner/empty.html')
 
     order = m.Order.objects.get_or_create(user=order_user, week=week)[0]
+
+    if week.closed:
+        return redirect('dinner.views.order_view', order.pk)
+
     ordered_items = dict(m.OrderDayItem.objects.filter(order=order, dish__day__week=week).values_list('dish__pk', 'count'))
 
     dishes = m.Dish.objects.filter(day__week=week).select_related().order_by('day__day', '-provider', 'pk', 'group', 'title')
@@ -101,4 +108,8 @@ def order_view(request, order_pk):
         .order_by('dish__day__pk', 'dish__pk')
 
     days = group_by_materialize(groupby(list(items), lambda i: i.dish.day))
-    return direct_to_template(request, 'dinner/order_view.html', {'order': order, 'days': days,})
+    return direct_to_template(
+        request, 
+        'dinner/order_view.html', 
+        {'order': order, 'days': days,}
+    )
