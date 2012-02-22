@@ -10,6 +10,7 @@ ADMINS = (
     # ('Denis', 'denis@ostrovok.ru'),
     # ('Your Name', 'your_email@example.com'),
     ('Yasha', 'jjay@ostrovok.ru'),
+    ('dkr', 'dkr@ostrovok.ru'),
 )
 
 MANAGERS = ADMINS
