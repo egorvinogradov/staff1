@@ -3,7 +3,7 @@ import re
 from pprint import pformat
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.db.models.aggregates import Sum
+from django.db.models.aggregates import Sum, Min, Max
 from django import forms
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
@@ -381,27 +381,64 @@ class WeekAdmin(admin.ModelAdmin):
         })
 
     def taxes_view(self, request, week):
-        items = m.OrderDayItem.objects\
-            .filter(order__week=week, count__gt=0)\
-            .select_related(depth=2)\
-            .order_by('order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
+        if 'date' in request.GET:
+            now = datetime.strptime(request.GET["date"], "%m.%Y")
+        else:
+            now = datetime.now()
+
+        first_day = datetime(
+            year = now.year,
+            month = now.month,
+            day = 1
+        )
+        last_day = datetime(
+            year = now.year if now.month < 12 else now.year + 1,
+            month = now.month + 1 if now.month < 12 else 1,
+            day = 1
+        )
+        period_caption = "%s - %s" % (first_day.strftime("%d.%m.%Y"), last_day.strftime("%d.%m.%Y"))
+
+        items = m.OrderDayItem.objects.values("dish__title", "dish__price", "order__user")\
+            .annotate(Sum("count"))\
+            .order_by("order__user__last_name", "order__user__first_name")\
+            .filter(dish__day__week__date__gte=first_day)\
+            .filter(dish__day__week__date__lt=last_day)\
+            .filter(count__gt=0)\
+            .all()
+            
+
 
         users = []
-        for user, seq in groupby(list(items), lambda i: i.order.user):
+        for user_id, seq in groupby(list(items), operator.itemgetter("order__user")):
+            if not user_id: continue
+            user = m.User.objects.get(pk=user_id)
             seq = list(seq)
+            total = 0
+            for menu in seq:
+                menu["dish__price_total"] = menu["dish__price"] * menu["count__sum"]
+                total += menu["dish__price_total"]
+
             users.append((
                 user,
-                group_by_materialize(groupby(seq, lambda i: i.dish.day)),
+                seq,
+                total
             ))
 
-        for user, days in users:
-            for day, seq in days:
-                day.cost = sum(i.dish.price*i.count for i in seq)
-            user.cost = sum(d.cost for d, seq in days)
+        min_day = m.Week.objects.aggregate(Min("date"))["date__min"]
+        max_day = m.Week.objects.aggregate(Max("date"))["date__max"]
+        monthes = []
+        while min_day <= max_day:
+            next_day = datetime(year = min_day.year, month=min_day.month, day=1)
+            monthes.append(next_day.strftime("%m.%Y"))
+            min_day = (next_day + timedelta(days=33)).date()
+
 
         return direct_to_template(request, 'dinner/report_taxes.html', {
             'week': week,
             'users': users,
+            'period_caption': period_caption,
+            'current_month': first_day.strftime("%m.%Y"),
+            'monthes': monthes
         })
 
 admin.site.register(m.Menu, MenuAdmin)

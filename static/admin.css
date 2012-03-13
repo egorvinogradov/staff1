@@ -15,7 +15,7 @@
 
     /* Print-styles */
     .page-break {
-        page-break-before:always;
+        page-break-before:always !important;
     }
 
     .print-link-captions a[href]:after { content: " (" attr(href) ")"; }
@@ -26,4 +26,12 @@
 	#header, #footer, .messagelist, .breadcrumbs, .noprint {
         display: none;
     }
+
+    .print-only {
+        display: block !important;
+    }
+}
+
+.print-only {
+    display: none;
 }

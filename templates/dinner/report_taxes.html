@@ -10,18 +10,45 @@
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
 {% spaceless %}
-        {% for user, days in users %}
-            <h4>{{ user.get_full_name }}</h4>
-            <table>
-            {% for day, items in days %}
+        <div class="noprint">
+            <form style="margin: 10px" method="GET" action="/admin/dinner/week/{{week.id}}">
+                <input type="hidden" name="r" value="taxes"/>
+                Месяц:
+                <select name="date">
+                {% for m in monthes %}
+                    <option value="{{m}}" {% if m == current_month %}selected="true"{% endif %}>{{m}}</option>
+                {% endfor %}
+                </select>
+                &nbsp;<input type="submit" value="выбрать"/>
+            </form>
+        </div>
+        {% for user, menu, total in users %}
+            <div class="noprint">
+                <h4>{{ user.get_full_name }}</h4>
+            </div>
+            <div class="print-only" style="margin-bottom: 2cm; width: 300px;">
+                <h4>{{user.get_full_name}}.<br/>Блюда за период {{period_caption}}.</h4>
+            </div>
+            <table width="650">
+            {% for item in menu %}
                 <tr>
-                    <td>{{ day }}</td><td>{{ day.cost }} руб.</td>
+                    <td>{{ item.dish__title|linebreaks }}</td>
+                    <td align="right" width="70">{{ item.dish__price }} руб.</td>
+                    <td>x{{ item.count__sum }}</td>
+                    <td align="right">{{ item.dish__price_total }}</td>
                 </tr>
             {% endfor %}
                 <tr style="font-weight: bold">
-                    <td>за неделю</td><td>{{ user.cost }} руб.</td>
+                    <td align="right"><strong>Итого:</strong></td>
+                    <td colspan="3" align="right">{{ total }} руб.</td>
                 </tr>
             </table>
+            <div align="right" class="print-only" style="margin-top: 2cm; width:300px">
+                        {{user.get_full_name}} __________________
+            </div>
+
+            <div class="page-break"></p>
+
         {% endfor %}
 {% endspaceless %}
     </div>
