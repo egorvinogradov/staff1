@@ -11,12 +11,14 @@ class Provider(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Week(models.Model):
     date = models.DateField(unique=True)
     closed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.date)
+
 
 class Menu(models.Model):
     week = models.ForeignKey(Week)
@@ -29,6 +31,7 @@ class Menu(models.Model):
     class Meta:
         unique_together = (("week", "provider"),)
 
+
 class Day(models.Model):
     week = models.ForeignKey(Week)
     day = models.PositiveIntegerField()
@@ -39,11 +42,13 @@ class Day(models.Model):
     class Meta:
         unique_together = [('week', 'day')]
 
+
 class Group(models.Model):
     title = models.CharField(max_length=100)
 
     def __unicode__(self):
         return self.title
+
 
 class Dish(models.Model):
     day = models.ForeignKey(Day)
@@ -58,6 +63,7 @@ class Dish(models.Model):
     def __unicode__(self):
         return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
 
+
 class Order(models.Model):
     user = models.ForeignKey(User)
     week = models.ForeignKey(Week)
@@ -68,6 +74,7 @@ class Order(models.Model):
 
     class Meta:
         unique_together = (('user', 'week'),)
+
 
 class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')

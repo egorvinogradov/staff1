@@ -1,5 +1,11 @@
 # coding: utf-8
+import csv
 import re
+import operator
+import models as m
+import forms as f
+import pyExcelerator as xls
+
 from pprint import pformat
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -7,33 +13,33 @@ from django.db.models.aggregates import Sum, Min, Max
 from django import forms
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
-import operator
-import models as m
-import forms as f
-import pyExcelerator as xls
 from django.db.transaction import commit_on_success
 from datetime import datetime, timedelta
 from itertools import count, groupby
 from utils import group_by_materialize
 from social_auth.models import UserSocialAuth
 from staff.models import Office
-import csv
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
 
+
 def _create_day_from_date(week, date):
     return m.Day.objects.get_or_create(day=(date - week.date).days, week=week)[0]
 
+
 def _create_day(week, day):
     return _create_day_from_date(week, _parse_day(day))
+
 
 def _get_group(title):
     title = title.replace(u'NEW ', '')
     return m.Group.objects.get_or_create(title=title)[0]
 
+
 def _get_weekobj(date):
     return m.Week.objects.get_or_create(date=date)[0]
+
 
 class MenuAdmin(admin.ModelAdmin):
     form = f.MenuForm
@@ -73,7 +79,6 @@ class MenuAdmin(admin.ModelAdmin):
                 next(rows) #Наши телефоны
                 next(rows) #Наименование,,Вес (гр.),Цена ,Кол-во
 
-
                 day = unicode(day, 'utf-8')
 
                 day = day.replace(u'октября', u'10')
@@ -95,7 +100,7 @@ class MenuAdmin(admin.ModelAdmin):
                     raise Exception('failed to parse day' + day)
 
                 if first_day:
-                    first_day=False
+                    first_day = False
                     week = menu.week = form.cleaned_data['week'] = _get_weekobj(day)
                     super(MenuAdmin, self).save_model(request, menu, form, change)
 
@@ -124,7 +129,7 @@ class MenuAdmin(admin.ModelAdmin):
 
                 if subtitle:
                     title += ' + ' + subtitle
-                
+
                 kwargs = dict(
                     index=idx,
                     title=title,
@@ -145,7 +150,7 @@ class MenuAdmin(admin.ModelAdmin):
         def __save_data(day, data, provider):
             for group, weight, title, price, index in data:
                 kwargs = dict(
-                    index=index+1000,
+                    index=index + 1000,
                     title=title,
                     weight=weight,
                     price=price,
@@ -165,11 +170,12 @@ class MenuAdmin(admin.ModelAdmin):
         # FILE MUST BE RED BEFORE super() call!!!!!
         rows = list(csv.reader(f, dialect='excel')) + ['', '', '']
 
-        week_date = datetime.now() + timedelta(days=7-datetime.now().weekday())
+        week_date = datetime.now() + timedelta(days=7 - datetime.now().weekday())
         week = menu.week = form.cleaned_data['week'] = _get_weekobj(week_date.date())
         super(MenuAdmin, self).save_model(request, menu, form, change)
 
-        days_map = dict((day_name.capitalize(), day_num) for day_num, day_name in enumerate(u'понедельник вторник среда четверг пятница суббота воскресенье'.split(' ')))
+        days_map = dict((day_name.capitalize(), day_num) for day_num, day_name in enumerate(
+            u'понедельник вторник среда четверг пятница суббота воскресенье'.split(' ')))
 
         data = []
 
@@ -197,10 +203,10 @@ class MenuAdmin(admin.ModelAdmin):
             #    group = row[1]
             #elif len(row)==5 and row[0] ==u'выход' or row[0]==u"":
             #    group = row[1]
-            elif len(row)==3 and re.search("\d$", row[2]):
+            elif len(row) == 3 and re.search("\d$", row[2]):
                 title, weight, price = row
 
-                if len(rows[i])==1 and rows[i][0][0] == '(':
+                if len(rows[i]) == 1 and rows[i][0][0] == '(':
                     title += "\n" + rows[i][0].decode('utf-8')
                     i += 1
 
@@ -211,7 +217,7 @@ class MenuAdmin(admin.ModelAdmin):
                 data.append((group, weight, title, price, index))
             else:
                 continue
-            
+
         #raise Exception(pformat(data).decode('unicode-escape'))
         __save_data(day, data, provider)
 
@@ -262,6 +268,7 @@ class MenuAdmin(admin.ModelAdmin):
 class WeekAdmin(admin.ModelAdmin):
     list_display = ('date', 'closed')
     list_editable = ('closed',)
+
     def change_view(self, request, object_id, extra_context=None):
         week = m.Week.objects.get(pk=object_id)
 
@@ -293,27 +300,25 @@ class WeekAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(request.path)
 
         orders = m.Order.objects.filter(week=week).select_related('user', 'user__profile__office')\
-            .extra(select = {
-                'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
-                    .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
-                'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
-                    .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
+        .extra(select={
+            'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
+            .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
+            'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
+            .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
             }).order_by('user__profile__office__id', 'user__last_name')
 
         orders = list(orders)
 
-
-
         donor_pks = [order.user.pk for order in orders if order.num_items > 0 and not order.donor]
         donor_widget = forms.Select(
-            {'class': 'donor'},
-            [(u'', u' - выдать меню - ')] + list(User.objects.filter(pk__in = donor_pks).values_list('pk', 'username')),
+                {'class': 'donor'},
+            [(u'', u' - выдать меню - ')] + list(User.objects.filter(pk__in=donor_pks).values_list('pk', 'username')),
         ).render('donor', None)
 
         missing_users = set(UserSocialAuth.objects.filter(provider='ostrovok').values_list('user__pk', flat=True))
         missing_users -= set(order.user.pk for order in orders)
 
-        for missing_user in User.objects.filter(pk__in = missing_users):
+        for missing_user in User.objects.filter(pk__in=missing_users):
             orders.append(m.Order.objects.get_or_create(user=missing_user, week=week)[0])
 
         offices = []
@@ -323,20 +328,23 @@ class WeekAdmin(admin.ModelAdmin):
         return direct_to_template(request, 'dinner/report.html', {
             'offices': offices,
             'donor_widget': donor_widget,
-        })
+            })
 
     def summary_view(self, request, week):
         items = m.OrderDayItem.objects\
-            .filter(order__week=week, count__gt=0)\
-            .values('order__user__profile__office__id', 'dish__provider__pk', 'dish__index', 'dish__title', 'dish__weight', 'dish__price', 'dish__group', 'dish__day')\
-            .annotate(Sum('count'))\
-            .order_by('-dish__provider__pk', 'order__user__profile__office__id', 'dish__day', 'dish__group', 'dish__index', 'dish__title', 'dish__pk')
+        .filter(order__week=week, count__gt=0)\
+        .values('order__user__profile__office__id', 'dish__provider__pk', 'dish__index', 'dish__title', 'dish__weight',
+            'dish__price', 'dish__group', 'dish__day')\
+        .annotate(Sum('count'))\
+        .order_by('-dish__provider__pk', 'order__user__profile__office__id', 'dish__day', 'dish__group', 'dish__index',
+            'dish__title', 'dish__pk')
 
         for i in items:
             i['cost'] = i['count__sum'] * i['dish__price']
 
         groups = []
-        for (provider, office), weekseq in groupby(list(items), operator.itemgetter('dish__provider__pk', 'order__user__profile__office__id')):
+        for (provider, office), weekseq in groupby(list(items),
+            operator.itemgetter('dish__provider__pk', 'order__user__profile__office__id')):
             days = []
             for day, seq in groupby(weekseq, operator.itemgetter('dish__day')):
                 seq = list(seq)
@@ -344,23 +352,24 @@ class WeekAdmin(admin.ModelAdmin):
                     seq,
                     unicode(m.Day.objects.get(pk=day)),
                     sum(map(operator.itemgetter('cost'), seq)),
-                ))
+                    ))
             groups.append((
                 m.Provider.objects.get(pk=provider),
                 Office.objects.get(id=office),
                 days
-            ))
+                ))
 
         return direct_to_template(request, 'dinner/report_summary.html', {
             'week': week,
             'groups': groups,
-        })
+            })
 
     def personal_view(self, request, week):
         items = m.OrderDayItem.objects\
-            .filter(order__week=week, count__gt=0)\
-            .select_related(depth=4)\
-            .order_by('order__user__profile__office__id', 'order__user__first_name', 'order__user__pk', 'dish__day__pk', 'dish__pk')
+        .filter(order__week=week, count__gt=0)\
+        .select_related(depth=4)\
+        .order_by('order__user__profile__office__id', 'order__user__first_name', 'order__user__pk', 'dish__day__pk',
+            'dish__pk')
 
         offices = []
         for office, usersseq in groupby(list(items), lambda i: i.order.user.get_profile().office):
@@ -370,15 +379,14 @@ class WeekAdmin(admin.ModelAdmin):
                 users.append((
                     user,
                     group_by_materialize(groupby(seq, lambda i: i.dish.day)),
-                ))
+                    ))
 
             offices.append(( office, users ))
-
 
         return direct_to_template(request, 'dinner/report_personal.html', {
             'week': week,
             'offices': offices,
-        })
+            })
 
     def taxes_view(self, request, week):
         if 'date' in request.GET:
@@ -387,26 +395,24 @@ class WeekAdmin(admin.ModelAdmin):
             now = datetime.now()
 
         first_day = datetime(
-            year = now.year,
-            month = now.month,
-            day = 1
+            year=now.year,
+            month=now.month,
+            day=1
         )
         last_day = datetime(
-            year = now.year if now.month < 12 else now.year + 1,
-            month = now.month + 1 if now.month < 12 else 1,
-            day = 1
+            year=now.year if now.month < 12 else now.year + 1,
+            month=now.month + 1 if now.month < 12 else 1,
+            day=1
         )
         period_caption = "%s - %s" % (first_day.strftime("%d.%m.%Y"), last_day.strftime("%d.%m.%Y"))
 
         items = m.OrderDayItem.objects.values("dish__title", "dish__price", "order__user")\
-            .annotate(Sum("count"))\
-            .order_by("order__user__last_name", "order__user__first_name")\
-            .filter(dish__day__week__date__gte=first_day)\
-            .filter(dish__day__week__date__lt=last_day)\
-            .filter(count__gt=0)\
-            .all()
-            
-
+        .annotate(Sum("count"))\
+        .order_by("order__user__last_name", "order__user__first_name")\
+        .filter(dish__day__week__date__gte=first_day)\
+        .filter(dish__day__week__date__lt=last_day)\
+        .filter(count__gt=0)\
+        .all()
 
         users = []
         for user_id, seq in groupby(list(items), operator.itemgetter("order__user")):
@@ -422,16 +428,15 @@ class WeekAdmin(admin.ModelAdmin):
                 user,
                 seq,
                 total
-            ))
+                ))
 
         min_day = m.Week.objects.aggregate(Min("date"))["date__min"]
         max_day = m.Week.objects.aggregate(Max("date"))["date__max"]
         monthes = []
         while min_day <= max_day:
-            next_day = datetime(year = min_day.year, month=min_day.month, day=1)
+            next_day = datetime(year=min_day.year, month=min_day.month, day=1)
             monthes.append(next_day.strftime("%m.%Y"))
             min_day = (next_day + timedelta(days=33)).date()
-
 
         return direct_to_template(request, 'dinner/report_taxes.html', {
             'week': week,
