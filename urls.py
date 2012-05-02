@@ -3,7 +3,7 @@ from django.conf.urls.defaults import patterns, include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 
-
+import team.urls
 import dinner.urls
 import staff.urls
 

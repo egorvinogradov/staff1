@@ -6,7 +6,7 @@ from dinner.models import Day, WEEK_DAYS, Dish
 class ReserveDishesResource(ModelResource):
 
     class Meta:
-        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=3)))
+        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=10)))
         resource_name = 'day'
 
     def dehydrate(self, bundle):
