@@ -69,8 +69,11 @@ def reserve(request):
         return redirect('dinner.views.order_view', order.pk)
 
     try:
-        week = m.Week.objects.get(date__gt = datetime.now() - timedelta(3))
-    except m.Week.DoesNotExist:
+        week = m.Week.objects\
+            .filter(date__gt = datetime.now() - timedelta(3))\
+            .order_by('date')\
+            .all()[-1]
+    except m.Week.DoesNotExist, IndexError:
         return direct_to_template(request, 'dinner/empty.html')
 
     order = m.Order.objects.get_or_create(user=order_user, week=week)[0]
