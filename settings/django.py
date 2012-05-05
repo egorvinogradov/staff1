@@ -18,7 +18,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'team_test',                      # Or path to database file if using sqlite3.
+        'NAME': 'staff_test_2',                      # Or path to database file if using sqlite3.
         'USER': 'postgres',                       # Not used with sqlite3.
         'PASSWORD': '2minutes2midnight',                  # Not used with sqlite3.
         'HOST': 'dev4-db.ostrovok.ru',                      # Set to empty string for localhost. Not used with sqlite3.

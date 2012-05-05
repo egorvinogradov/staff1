@@ -1,4 +1,5 @@
 import datetime
+from django.shortcuts import redirect
 import models as m
 from tastypie.resources import ModelResource
 from dinner.models import Day, WEEK_DAYS, Dish
@@ -20,30 +21,31 @@ class ReserveDishesResource(ModelResource):
         return bundle
 
     def hydrate(self, bundle):
-        week = m.Week.objects.get(pk=bundle.request.POST['week'])
-
-        order = m.Order.objects.get(user=order_user, week=week)
-
-        if week.closed:
-            return redirect('dinner.views.order_view', order.pk)
-
-        updated = False
-        for key, value in request.POST.items():
-            if key.startswith('dish#') and value:
-                dish_id = int(key[5:])
-                try:
-                    item = m.OrderDayItem.objects.get(order=order, dish__id=dish_id)
-                    if item.count != int(value):
-                        updated = True
-                        item.count = int(value)
-                        item.save()
-
-                except m.OrderDayItem.DoesNotExist:
-                    if int(value):
-                        m.OrderDayItem(order=order, dish_id=dish_id, count=int(value)).save()
-        if updated:
-            order.donor = None
-            order.save()
+        pass
+#        week = m.Week.objects.get(pk=bundle.request.POST['week'])
+#
+#        order = m.Order.objects.get(user=order_user, week=week)
+#
+#        if week.closed:
+#            return redirect('dinner.views.order_view', order.pk)
+#
+#        updated = False
+#        for key, value in request.POST.items():
+#            if key.startswith('dish#') and value:
+#                dish_id = int(key[5:])
+#                try:
+#                    item = m.OrderDayItem.objects.get(order=order, dish__id=dish_id)
+#                    if item.count != int(value):
+#                        updated = True
+#                        item.count = int(value)
+#                        item.save()
+#
+#                except m.OrderDayItem.DoesNotExist:
+#                    if int(value):
+#                        m.OrderDayItem(order=order, dish_id=dish_id, count=int(value)).save()
+#        if updated:
+#            order.donor = None
+#            order.save()
 
 
     def get_grouped_dishes(self, day):
