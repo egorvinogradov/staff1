@@ -1,6 +1,4 @@
 import datetime
-from django.shortcuts import redirect
-import models as m
 from tastypie.resources import ModelResource
 from dinner.models import Day, WEEK_DAYS, Dish
 
