@@ -2,11 +2,12 @@ import datetime
 
 from annoying.decorators import JsonResponse
 from tastypie.resources import ModelResource
-from dinner.models import Day, WEEK_DAYS, Dish, Week, OrderDayItem, Order
+from dinner.models import Day, WEEK_DAYS, Dish, Week, OrderDayItem, Order, DishDay
 
 class ReserveDishesResource(ModelResource):
+
     class Meta:
-        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=10)))
+        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=7)))
         resource_name = 'day'
 
     def dehydrate(self, bundle):
@@ -56,11 +57,12 @@ class ReserveDishesResource(ModelResource):
 
 
     def __get_grouped_dishes(self, day):
-        dishes = Dish.objects.filter(day=day).order_by('index').select_related('provider', 'group')
+        dish_days = DishDay.objects.filter(day=day)
 
         providers = {}
 
-        for dish in dishes:
+        for dish_day in dish_days:
+            dish = dish_day.dish
             provider_name = dish.provider.name
             providers[provider_name] = providers.get(provider_name, {})
 
@@ -71,7 +73,7 @@ class ReserveDishesResource(ModelResource):
                     {
                     'id': dish.id,
                     'name': dish.title,
-                    'price': dish.price,
+                    #'price': dish.price,
                     'weight': dish.weight,
                     }
             )

@@ -51,17 +51,32 @@ class Group(models.Model):
 
 
 class Dish(models.Model):
-    day = models.ForeignKey(Day)
     provider = models.ForeignKey(Provider)
     group = models.ForeignKey(Group)
 
     index = models.PositiveIntegerField()
     title = models.CharField(max_length=200)
-    weight = models.CharField(max_length=60, null=True) # встречаются записи в стиле "150/180"
-    price = models.PositiveIntegerField()
+    weight = models.CharField(max_length=60, null=True)
 
     def __unicode__(self):
         return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
+
+
+class DishDay(models.Model):
+    dish = models.ForeignKey(Dish)
+    day = models.ForeignKey(Day)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+
+    class Meta:
+        unique_together = (('day', 'dish'),)
+
+
+class FavoriteDish(models.Model):
+    dish = models.ForeignKey(Dish)
+    user = models.ForeignKey(User)
+
+    class Meta:
+        unique_together = (('dish', 'user'),)
 
 
 class Order(models.Model):
@@ -78,7 +93,7 @@ class Order(models.Model):
 
 class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')
-    dish = models.ForeignKey(Dish, verbose_name=u'Блюдо')
+    dish = models.ForeignKey(DishDay, verbose_name=u'Блюдо')
     count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
     updated = models.DateTimeField(auto_now=True)
 
