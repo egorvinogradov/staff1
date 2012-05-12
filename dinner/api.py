@@ -73,7 +73,7 @@ class ReserveDishesResource(ModelResource):
                     {
                     'id': dish.id,
                     'name': dish.title,
-                    #'price': dish.price,
+                    'price': dish_day.price,
                     'weight': dish.weight,
                     }
             )
