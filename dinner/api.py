@@ -78,4 +78,6 @@ class ReserveDishesResource(ModelResource):
                     }
             )
 
+        print providers.keys()
+
         return providers
