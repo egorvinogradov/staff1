@@ -130,12 +130,13 @@ class MenuAdmin(admin.ModelAdmin):
                 if subtitle:
                     title += ' + ' + subtitle
 
-                kwargs = dict(
-                    index=idx,
-                    title=title,
-                    weight=weight,
-                    price=price,
-                )
+                kwargs = {
+                    'index': idx,
+                    'title': title,
+                    'weight': weight,
+                    'price': price
+                }
+
                 idx += 1
 
                 dish = m.Dish(
