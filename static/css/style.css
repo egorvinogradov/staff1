@@ -8,6 +8,10 @@ html, body, h1, h2, h3, h4, ul, ol, li, p, blockquote, dl, dd, dt, input, button
     border: 0;
 }
 
+a:focus, a:active {
+    outline: none;
+}
+
 html {
     height: 100%;
 }
