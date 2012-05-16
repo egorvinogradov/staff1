@@ -6,6 +6,14 @@ var AppModel = Backbone.Model.extend({
 });
 
 
+//var OrderModel = Backbone.Model.extend({
+//	url: '/api/day',
+//	initialize: function () {
+//        console.log('app model init:', this, this.get('options'));
+//	}
+//});
+
+
 
 var AppView = Backbone.View.extend({
 
@@ -78,7 +86,7 @@ var AppView = Backbone.View.extend({
             slider:         'm-column-slider'
         },
         order: {
-            restaurant:           'content__order-restaurant',
+            restaurant:     'content__order-restaurant',
             slimming:       'content__order-slimming'
         }
     },
@@ -423,15 +431,6 @@ var AppView = Backbone.View.extend({
 
         this.hideDayActions();
     },
-//    toggleProvider: function(event){
-//
-//        this.els.header.provider
-//            .removeClass(this.classes.header.providerActive);
-//
-//        $(event.currentTarget)
-//            .addClass(this.classes.header.providerActive);
-//
-//    },
     resetPage: function(){
 
         _.each(this.classes.page, function(className){
@@ -576,7 +575,6 @@ var AppView = Backbone.View.extend({
     },
     bindEventsForOrder: function(date){
 
-
 //        data = {
 //            '30-09-1989': {
 //                'dishes' : {
@@ -589,19 +587,10 @@ var AppView = Backbone.View.extend({
 //        }
 
 
-        this.order = {};
-
-
-
-        console.log('--- switch order', this);
-
-
         this.els.menu.name = $(this.selectors.menu.item.name);
-        this.els.menu.plus = $(this.selectors.menu.item);
-        this.els.menu.minus = $(this.selectors.menu.item);
+        this.els.menu.plus = $(this.selectors.menu.item.plus);
+        this.els.menu.minus = $(this.selectors.menu.item.minus);
         this.els.menu.countControls = this.els.menu.plus.add(this.els.menu.minus);
-
-
 
         this.els.menu.name.click($.proxy(function(event){
 
@@ -626,7 +615,6 @@ var AppView = Backbone.View.extend({
         }, this));
 
 
-
         this.els.menu.countControls.click($.proxy(function(event){
 
             var els = {},
@@ -639,9 +627,9 @@ var AppView = Backbone.View.extend({
             els.number = els.count.find(this.selectors.menu.item.number);
             id = els.container.data('id');
 
-            count.original = +els.count.html() || 1;
-            count.increment = count.original++;
-            count.decrement = count.original > 1 ? count.original-- : 1;
+            count.original = +els.number.html() || 1;
+            count.increment = count.original + 1;
+            count.decrement = count.original > 1 ? count.original - 1 : 1;
             count.changed = els.button.is(this.selectors.menu.item.plus)
                 ? count.increment
                 : count.decrement;
@@ -662,8 +650,6 @@ var AppView = Backbone.View.extend({
             els.number.html(count.changed);
 
         }, this));
-
-
 
     },
     renderOverlay: function(){
