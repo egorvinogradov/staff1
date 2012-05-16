@@ -32,6 +32,7 @@ html {
     color: #3F464D;
     min-width: 1000px;
     height: 100%;
+    overflow-y: scroll;
 }
 
 .page__wrapper {
@@ -182,6 +183,11 @@ html {
     -webkit-border-radius: 5px;
        -moz-border-radius: 5px;
             border-radius: 5px;
+}
+
+.header__day.m-active .header__day-title {
+    margin: -1px;
+    border:  2px solid #FFC800;
 }
 
 .header__day.m-completed .header__day-title {
@@ -660,14 +666,15 @@ html {
     color: #696A63;
 }
 
+.content__menu-count.m-one .content__menu-number,
+.content__menu-count.m-one .content__menu-minus {
+    display: none;
+}
+
 .content__menu-plus,
 .content__menu-minus {
     cursor: pointer;
     font-size: 20px;
-}
-
-.content__menu-count .m-hidden {
-    display: none;
 }
 
 .content__menu-number {
