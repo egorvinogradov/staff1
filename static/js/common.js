@@ -8,6 +8,7 @@ var AppModel = Backbone.Model.extend({
 
 var AppView = Backbone.View.extend({
 
+<<<<<<< HEAD
     selectors:{
         page:'.page',
         wrapper:'.page__wrapper',
@@ -52,6 +53,53 @@ var AppView = Backbone.View.extend({
         order:{
             luch:'content__order-restaurant',
             slimming:'content__order-slimming'
+=======
+    selectors: {
+        page:       '.page',
+        wrapper:    '.page__wrapper',
+        header: {
+            container:      '.header',
+            day:            '.header__day',
+            dayTitle:       '.header__day-title',
+            dayActions:     '.header__day-variants',
+            dayActionsItem: '.header__day-select-item',
+            dayComment:     '.header__day-comment',
+            providers:      '.header__providers-list',
+            provider:       '.header__provider',
+            providerName:   '.header__provider-c'
+        },
+        content: {
+            container:      '.content',
+            wrapper:        '.content__wrapper'
+        },
+        menu: {
+            groupList:      '.content__menu-list',
+            groupHeader:    '.content__menu-header'
+        }
+    },
+    classes: {
+        page: {
+            order:          'm-order',
+            favourites:     'm-favourites'
+        },
+        header: {
+            dayOpened:      'm-opened',
+            dayHasPrice:    'm-has-price',
+            dayCompleted:   'm-completed',
+            dayInactive:    'm-inactive',
+            providerActive: 'm-active'
+        },
+        content: {
+            order:          'content__order',
+            favourites:     'content__favourites'
+        },
+        favourites: {
+            slider:         'm-column-slider'
+        },
+        order: {
+            luch:           'content__order-restaurant',
+            slimming:       'content__order-slimming'
+>>>>>>> 93c4180cdc318809252dbf9812c7b6a7e1cfba6b
         }
     },
     els:{
@@ -60,12 +108,22 @@ var AppView = Backbone.View.extend({
         header:{},
         content:{}
     },
+<<<<<<< HEAD
     templates:{
         page:_.template($('#template_page').html()),
         header:_.template($('#template_header').html()),
         menu:{},
         order:{},
         favourites:{}
+=======
+    templates: {
+        page: _.template($('#template_page').html()),
+        header: _.template($('#template_header').html()),
+        headerProvider: _.template($('#template_header-provider').html()),
+        menu: {},
+        order: {},
+        favourites: {}
+>>>>>>> 93c4180cdc318809252dbf9812c7b6a7e1cfba6b
     },
     objects:null,
     menu:null,
@@ -156,10 +214,22 @@ var AppView = Backbone.View.extend({
                 misc:4
             }
         },
+<<<<<<< HEAD
             trim = function (str) {
                 return str.toLowerCase().replace(/\s+/g, ' ');
             },
             weekMenu = {};
+=======
+        trim = function(str){
+
+            return str
+                    .toLowerCase()
+                    .replace(/^\s+/, '')
+                    .replace(/\s+$/, '')
+                    .replace(/\s+/g, ' ');
+        },
+        weekMenu = {};
+>>>>>>> 93c4180cdc318809252dbf9812c7b6a7e1cfba6b
 
         _.each(this.objects, function (day) {
 
@@ -168,8 +238,7 @@ var AppView = Backbone.View.extend({
 
             _.each(day.providers, function (categories, provider) {
 
-                var providerName = config.providers[ trim(provider) ],
-                    providerMenu = dayMenu[providerName] = {};
+                var providerMenu = dayMenu[provider] = {};
 
                 _.each(categories, function (dishes, category) {
 
@@ -267,8 +336,7 @@ var AppView = Backbone.View.extend({
     renderHeader:function () {
 
         this.els.header.container.html(this.templates.header());
-        this.els.header.provider = $(this.selectors.header.provider);
-        this.els.header.providerName = $(this.selectors.header.providerName);
+        this.els.header.providers = $(this.selectors.header.providers);
         this.els.header.day = $(this.selectors.header.day);
         this.els.header.dayTitle = $(this.selectors.header.dayTitle);
         this.els.header.dayActionsItem = $(this.selectors.header.dayActionsItem);
@@ -302,7 +370,6 @@ var AppView = Backbone.View.extend({
         }, this));
 
 
-        this.els.header.provider.click($.proxy(this.toggleProvider, this));
         this.els.header.dayActionsItem.click($.proxy(this.selectDayAction, this));
 
         console.log('render header:', this.els.header.container, this.model.get('objects'));
@@ -391,6 +458,26 @@ var AppView = Backbone.View.extend({
         menu.sort(function (a, b) {
             return a.order < b.order ? -1 : 1;
         });
+
+
+
+
+        _.each(this.menu[day], $.proxy(function(provider, day){
+
+            
+
+
+
+        }, this));
+
+
+        this.els.header.provider = $(this.selectors.header.provider);
+        this.els.header.providerName = $(this.selectors.header.providerName);
+
+        this.els.header.provider.click($.proxy(this.toggleProvider, this));
+
+
+
 
 
         this.els.header.provider
