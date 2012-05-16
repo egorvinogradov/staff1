@@ -1,7 +1,7 @@
 var AppModel = Backbone.Model.extend({
 	url: '/api/day',
 	initialize: function () {
-        console.log('app model init:', this);
+        console.log('app model init:', this, this.get('options'));
 	}
 });
 
@@ -29,8 +29,17 @@ var AppView = Backbone.View.extend({
         },
         menu: {
             groupList:      '.content__menu-list',
-            groupHeader:    '.content__menu-header'
-        }
+            groupHeader:    '.content__menu-header',
+            item: {
+                container:  '.content__menu-item',
+                name:       '.content__menu-name',
+                count:      '.content__menu-count',
+                number:     '.content__menu-number',
+                plus:       '.content__menu-plus',
+                minus:      '.content__menu-minus'
+            }
+        },
+        overlay:            '.content__overlay'
     },
     classes: {
         page: {
@@ -39,6 +48,7 @@ var AppView = Backbone.View.extend({
         },
         header: {
             dayOpened:      'm-opened',
+            dayActive:      'm-active',
             dayHasPrice:    'm-has-price',
             dayCompleted:   'm-completed',
             dayInactive:    'm-inactive',
@@ -48,11 +58,27 @@ var AppView = Backbone.View.extend({
             order:          'content__order',
             favourites:     'content__favourites'
         },
+        menu: {
+            selected:       'm-selected',
+            countOne:       'm-one'
+        },
+        overlay: {
+            start:          'm-overlay-start',
+            slimming: {
+                day:        'm-overlay-day-slimming',
+                week:       'm-overlay-week-slimming'
+            },
+            restaurant: {
+                day:        'm-overlay-day-restaurant',
+                week:       'm-overlay-week-restaurant'
+            },
+            attention:      'm-overlay-attention'
+        },
         favourites: {
             slider:         'm-column-slider'
         },
         order: {
-            luch:           'content__order-restaurant',
+            restaurant:           'content__order-restaurant',
             slimming:       'content__order-slimming'
         }
     },
@@ -60,7 +86,8 @@ var AppView = Backbone.View.extend({
         page: null,
         wrapper: null,
         header: {},
-        content: {}
+        content: {},
+        menu: {}
     },
     templates: {
         page: _.template($('#template_page').html()),
@@ -72,6 +99,7 @@ var AppView = Backbone.View.extend({
     },
     objects: null,
     menu: null,
+    order: {},
     defaults: {
         day: 'monday',
         provider: 'fusion'
@@ -94,22 +122,26 @@ var AppView = Backbone.View.extend({
 
         this.model.bind('change:page', this.renderContent, this);
         this.model.bind('change:options', this.renderContent, this);
+        this.model.bind('toggle', this.renderContent, this);
 
         //console.log('app view init:', this.page, this.model, this.model.get('objects'));
 
     },
+    lolo: function(){
+        alert('MODEL CHANGE')
+    },
     modelFetchSuccess: function(){
+
+        console.log('model fetch success:', this.model, this.objects);
 
         this.objects = this.model.get('objects');
         this.menu    = this.getMenu();
-        this.options = {};
         this.render();
 
         //this.objects[0].weekday = 'Воскресенье'
         //delete this.objects[1].providers.fusion;
         //console.log('--- delete', this.objects[1]);
 
-        console.log('model fetch success:', this.model, this.objects, this.options);
 
     },
     modelFetchError: function(){
@@ -118,6 +150,64 @@ var AppView = Backbone.View.extend({
         console.log('model fetch error:', this.model.get('objects'));
     },
     getMenu: function(){
+
+
+        var mock1 = {
+            'бутерброды, выпечка': [{
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            },
+            {
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            }],
+            'горячие блюда': [{
+                id: 233,
+                name: "1111111",
+                price: "40.00",
+                weight: "35/30"
+            },
+            {
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            }]
+        };
+        var mock2 = {
+            'бутерброды, выпечка': [{
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            },
+            {
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            }],
+            'горячие блюда': [{
+                id: 233,
+                name: "2222222",
+                price: "40.00",
+                weight: "35/30"
+            },
+            {
+                id: 233,
+                name: "Бутерброд с ветчиной",
+                price: "40.00",
+                weight: "35/30"
+            }]
+        };
+        this.objects[0].providers['Хлеб-соль'] = mock1;
+        this.objects[1].providers['Хлеб-соль'] = mock2;
+
+
 
         var config = {
 
@@ -129,10 +219,6 @@ var AppView = Backbone.View.extend({
                 'пятница': 'friday',
                 'суббота': 'saturday',
                 'воскресенье': 'sunday'
-            },
-            providers: {
-                'fusion': 'fusion',
-                'hleb-sol.ru': 'hlebsol'
             },
             categories: {
                 'первые блюда': 'primary',
@@ -172,11 +258,14 @@ var AppView = Backbone.View.extend({
         _.each(this.objects, function(day){
 
             var weekday = config.days[ trim(day.weekday) ],
-                dayMenu = weekMenu[ weekday ] = {};
+                dayMenu = weekMenu[ weekday ] = {
+                    providers: {},
+                    date: day.date
+                };
 
             _.each(day.providers, function(categories, provider){
 
-                var providerMenu = dayMenu[provider] = {};
+                var providerMenu = dayMenu.providers[provider] = {};
 
                 _.each(categories, function(dishes, category){
 
@@ -213,16 +302,17 @@ var AppView = Backbone.View.extend({
                 day: options.day || 'monday',
                 provider: options.provider || 'fusion'
             },
+            //p = this.,
             check = function(){
 
-                if ( menu[defaults.day] && menu[defaults.day][defaults.provider] ) {
+                if ( menu[defaults.day] && menu[defaults.day].providers[defaults.provider] ) {
                     return;
                 }
                 else {
 
                     if ( menu[defaults.day] ) {
-                        if ( !menu[defaults.provider] ) {
-                            for ( var provider in menu[defaults.day] ) {
+                        if ( !menu[defaults.day].providers[defaults.provider] ) {
+                            for ( var provider in menu[defaults.day].providers ) {
                                 defaults.provider = provider;
                                 break;
                             }
@@ -248,15 +338,17 @@ var AppView = Backbone.View.extend({
     },
     render: function(){
 
+        console.log('app view render:', this.menu, this.model, arguments);
+
         if ( !this.menu ) return;
 
         this.renderHeader();
         this.renderContent();
 
-        console.log('app view render:', this.menu, this.model, arguments);
-
     },
     renderContent: function(){
+
+        console.log('RENDER CONTENT:', this.model, this.page, this.menu);
 
         if ( !this.menu ) return;
 
@@ -265,10 +357,9 @@ var AppView = Backbone.View.extend({
 
 
         this.page.menu            && this.renderMenu();
+        this.page.overlay         && this.renderOverlay();
         this.page.order           && this.renderOrder();
         this.page.favourites      && this.renderFavourites();
-
-        console.log('render content:', this.model, this.page, this.menu);
 
     },
     renderHeader: function(){
@@ -284,7 +375,7 @@ var AppView = Backbone.View.extend({
             .addClass(this.classes.header.dayInactive);
 
 
-        _.each(this.menu, function(providers, day){
+        _.each(this.menu, function(data, day){
             this.els.header.day
                 .filter('[rel=' + day + ']')
                 .removeClass(this.classes.header.dayInactive);
@@ -332,15 +423,15 @@ var AppView = Backbone.View.extend({
 
         this.hideDayActions();
     },
-    toggleProvider: function(event){
-
-        this.els.header.provider
-            .removeClass(this.classes.header.providerActive);
-
-        $(event.currentTarget)
-            .addClass(this.classes.header.providerActive);
-
-    },
+//    toggleProvider: function(event){
+//
+//        this.els.header.provider
+//            .removeClass(this.classes.header.providerActive);
+//
+//        $(event.currentTarget)
+//            .addClass(this.classes.header.providerActive);
+//
+//    },
     resetPage: function(){
 
         _.each(this.classes.page, function(className){
@@ -354,41 +445,55 @@ var AppView = Backbone.View.extend({
     },
     renderMenu: function(){
 
-        var options = this.model.get('options') || {},
+        var previousProvider = this.els.content.wrapper.data('menu-provider'),
+            previousDay = this.els.content.wrapper.data('menu-day'),
+            currentOptions = this.model.get('options') || {},
+            options = {
+                day: currentOptions.day || previousDay,
+                provider: currentOptions.provider || previousProvider
+            },
             corrected = this.correctOptions(options),
             menuHTML = [],
             menu = [],
             day,
+            date,
             provider,
-            isOptionsCorrect =
-                options.day && options.provider &&
-                options.day === corrected.day &&
-                options.provider === corrected.provider;
+            context = this,
+            bindEventsForOrder = function(){
+                context.bindEventsForOrder.call(context, date)
+            },
+            isDayCorrect = options.day && options.day === corrected.day,
+            isProviderCorrect = options.provider && options.provider === corrected.provider;
 
-        if ( isOptionsCorrect ) {
-            console.log('options CORRECT:', options.day, options.provider, '\n\n');
-            this.options = options;
+
+        if ( !isDayCorrect ) {
+            options.day = corrected.day;
         }
-        else {
-            console.log('options INCORRECT:', '#/menu/' + corrected.day + '/' + corrected.provider + '/', '\n\n');
-            document.location.hash = '#/menu/' + corrected.day + '/' + corrected.provider + '/';
-            this.model.set({
-                options: {
-                    day: corrected.day,
-                    provider: corrected.provider
-                }
-            });
+
+        if ( !isProviderCorrect ) {
+            options.provider = corrected.provider
+        }
+
+
+        console.log('render menu TOP:', corrected, options, this.menu, '|', previousDay, previousProvider, '|', isDayCorrect, isProviderCorrect);
+
+        
+        if ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) {
+
+            console.log('options INCORRECT:', options.day, options.provider, '\n\n');
+            document.location.hash = '#/menu/' + options.day + '/' + options.provider + '/';
             return;
         }
+        else {
+            console.log('options CORRECT:', options.day, options.provider, '\n\n');
+        }
 
-        console.log('render menu TOP:', this.options.day, this.options.provider, this.menu);
+        day = options.day;
+        provider = options.provider;
+        date = this.menu[day].date;
 
 
-        day = this.options.day;
-        provider = this.options.provider;
-
-
-        _.each(this.menu[day][provider], function(item){
+        _.each(this.menu[day].providers[provider], function(item){
             menu.push(item);
         });
 
@@ -398,38 +503,40 @@ var AppView = Backbone.View.extend({
         });
 
 
+        if ( options.day !== previousDay ) {
+
+            this.els.header.providers.empty();
+
+            _.each(this.menu[day].providers, $.proxy(function(dishes, provider){
+                this.els.header.providers.append(this.templates.headerProvider({
+                    name: provider,
+                    day: options.day
+                }));
+            }, this));
+
+            this.els.header.day
+                .removeClass(this.classes.header.dayActive)
+                .filter('[rel=' + options.day + ']')
+                .addClass(this.classes.header.dayActive);
+
+            this.els.content.wrapper.data({ 'menu-day': options.day });
+            this.els.content.wrapper.data({ 'menu-date': date });
+        }
 
 
-        _.each(this.menu[day], $.proxy(function(provider, day){
-
-            
-
-
-
-        }, this));
+        if ( options.provider !== previousProvider ) {
+            this.els.content.wrapper.data({ 'menu-provider': options.provider });
+        }
 
 
         this.els.header.provider = $(this.selectors.header.provider);
         this.els.header.providerName = $(this.selectors.header.providerName);
 
-        this.els.header.provider.click($.proxy(this.toggleProvider, this));
-
-
-
-
 
         this.els.header.provider
             .removeClass(this.classes.header.providerActive)
-            .filter('[rel=' + this.options.provider + ']')
+            .filter('[rel=' + options.provider + ']')
             .addClass(this.classes.header.providerActive);
-
-        this.els.header.providerName.each(function(){
-
-            var element = $(this),
-                href = element.attr('href'),
-                newHref = href.replace(/^(#\/menu\/)[a-z]+(\/[a-z]+)/, '$1' + day + '$2');
-            element.attr({ href: newHref });
-        });
 
 
         this.templates.menu.group = _.template($('#template_menu-group').html());
@@ -437,8 +544,6 @@ var AppView = Backbone.View.extend({
 
 
         _.each(menu, function(items){
-
-            console.log('--- dishes ', items);
 
             var groupHTML = [];
 
@@ -462,7 +567,183 @@ var AppView = Backbone.View.extend({
             .hide()
             .fadeIn();
 
+
+        
+        setTimeout(bindEventsForOrder, 0); // make order
+
         console.log('render menu:', menu, day, provider);
+
+    },
+    bindEventsForOrder: function(date){
+
+
+//        data = {
+//            '30-09-1989': {
+//                'dishes' : {
+//                    1124342: 1,
+//                    342423423: 2
+//                },
+//
+//                restaurant: null
+//            }
+//        }
+
+
+        this.order = {};
+
+
+
+        console.log('--- switch order', this);
+
+
+        this.els.menu.name = $(this.selectors.menu.item.name);
+        this.els.menu.plus = $(this.selectors.menu.item);
+        this.els.menu.minus = $(this.selectors.menu.item);
+        this.els.menu.countControls = this.els.menu.plus.add(this.els.menu.minus);
+
+
+
+        this.els.menu.name.click($.proxy(function(event){
+
+            var els = {},
+                id;
+
+            els.dish = $(event.currentTarget);
+            els.container = els.dish.parents(this.selectors.menu.item.container);
+            id = els.container.data('id');
+
+            els.container.addClass(this.classes.menu.selected);
+
+            if ( !this.order[date] ) {
+                this.order[date] = {
+                    dishes: {},
+                    restaurant: null
+                };
+            }
+
+            this.order[date].dishes[id] = 1;
+
+        }, this));
+
+
+
+        this.els.menu.countControls.click($.proxy(function(event){
+
+            var els = {},
+                count = {},
+                id;
+
+            els.button = $(event.currentTarget);
+            els.container = els.button.parents(this.selectors.menu.item.container);
+            els.count = els.container.find(this.selectors.menu.item.count);
+            els.number = els.count.find(this.selectors.menu.item.number);
+            id = els.container.data('id');
+
+            count.original = +els.count.html() || 1;
+            count.increment = count.original++;
+            count.decrement = count.original > 1 ? count.original-- : 1;
+            count.changed = els.button.is(this.selectors.menu.item.plus)
+                ? count.increment
+                : count.decrement;
+
+            if ( !this.order[date] ) {
+                this.order[date] = {
+                    dishes: {},
+                    restaurant: null
+                };
+            }
+
+            this.order[date].dishes[id] = count.changed;
+
+            count.changed > 1
+                ? els.count.removeClass(this.classes.menu.countOne)
+                : els.count.addClass(this.classes.menu.countOne);
+
+            els.number.html(count.changed);
+
+        }, this));
+
+
+
+    },
+    renderOverlay: function(){
+
+        var options = this.model.get('options'),
+            content,
+            template,
+            config = {
+                days: {
+                    monday:     'по понедельникам',
+                    tuesday:    'по вторникам',
+                    wednesday:  'по средам',
+                    thursday:   'по четвергам',
+                    friday:     'по пятницам',
+                    saturday:   'по субботам',
+                    sunday:     'по воскресеньям',
+                    week:       'всю неделю'
+                },
+                start: {
+                    message:        'Начните ',
+                    days: {
+                        monday:     'с понедельника',
+                        tuesday:    'со вторника',
+                        wednesday:  'со среды',
+                        thursday:   'с четверга',
+                        friday:     'с пятницы',
+                        saturday:   'с субботы',
+                        sunday:     'с воскресенья'
+                    }
+                },
+                slimming: {
+                    message:    'Худею ',
+                    link: {
+                        href:   'http://ru.wikipedia.org/',
+                        text:   'Худейте правильно!'
+                    }
+                },
+                restaurant: {
+                    message:    'Луч гламура ',
+                    link: {
+                        href:   'http://maps.yandex.ru/',
+                        text:   'Где это клёвое место?'
+                    }
+                }
+            };
+
+
+        config.slimming.days = config.days;
+        config.restaurant.days = config.days;
+
+        console.log('render overlay:', options);
+
+        if ( !options.type && ( ( options.type === 'restaurant' || options.type === 'none' ) && !options.day ) ) {
+            return;
+        }
+
+
+        this.templates.overlayCommon = _.template($('#template_overlay').html());
+        this.templates.overlayAttention = _.template($('#template_overlay').html());
+
+
+        content = {
+            className: this.classes.overlay[options.type][ options.day === 'week' ? 'week' : 'day' ],
+            message: config[options.type].message + config.days[options.day],
+            link: {
+                href: config[options.type].link.href,
+                text: config[options.type].link.text
+            }
+        };
+
+
+        template = options.type === 'attention'
+            ? this.templates.overlayAttention
+            : this.templates.overlayCommon;
+
+        this.els.content.wrapper
+            .find(this.selectors.overlay)
+            .remove()
+            .end()
+            .append(template(content))
 
     },
     renderOrder: function(){
@@ -561,7 +842,7 @@ var AppView = Backbone.View.extend({
 
                 luch: {
                     text: 'Луч гламура',
-                    className: this.classes.order.luch
+                    className: this.classes.order.restaurant
                 },
                 nothing: {
                     text: 'Худею',
@@ -758,56 +1039,111 @@ var Router = Backbone.Router.extend({
         'menu/:day/':           'menu',
         'menu/:day/:provider':  'menu',
         'menu/:day/:provider/': 'menu',
+        'luch/:day':            'overlayLuch',
+        'luch/:day/':           'overlayLuch',
+        'none/:day':            'overlayNone',
+        'none/:day/':           'overlayNone',
         'order':                'order',
         'order/':               'order',
         'favourites':           'favourites',
         'favourites/':          'favourites'
+        
     },
-    page: {},
-    options: {},
     start: function(){
 
         console.log('router start');
 
-        this.page = { menu: true };
-        this.refreshModel();
+        this.refreshModel({
+            page: {
+                menu: true
+            }
+        });
     },
     menu: function(day, provider){
 
         console.log('router menu', day, provider);
 
-        this.page = {
-            menu: true
-        };
+        this.refreshModel({
+            page: {
+                menu: true
+            },
+            options: {
+                provider: provider,
+                day: day
+            }
+        });
+    },
+    overlayLuch: function(day){
 
-        this.options = {
-            provider: provider,
-            day: day
-        };
+        console.log('router overlay luch:', day);
 
-        this.refreshModel();
+        this.refreshModel({
+            page: {
+                overlay: true
+            },
+            options: {
+                type: 'restaurant',
+                day: day
+            }
+        });
+
+    },
+    overlayNone: function(day){
+
+        console.log('router overlay none:', day);
+
+        this.refreshModel({
+            page: {
+                overlay: true
+            },
+            options: {
+                type: 'slimming',
+                day: day
+            }
+        });
+
     },
     order: function(){
 
         console.log('router order');
 
-        this.page = { order: true };
-        this.refreshModel();
+        this.refreshModel({
+            page: {
+                order: true
+            }
+        });
     },
     favourites: function(){
 
         console.log('router favourites');
 
-        this.page = { favourites: true };
-        this.refreshModel();
+        this.refreshModel({
+            page: {
+                favourites: true
+            }
+        });
     },
-    refreshModel: function(model){
+    refreshModel: function(data){
 
-        console.log('refresh model:', this.page, this.options);
+        console.log('refresh model:', data.page, data.options, app.model, app.model.get('options'));
+
+        var model = app.model,
+            options = model.get('options'),
+            page = model.get('page'),
+            day = model.day,
+            provider = model.provider,
+            condition =
+                data.page && data.page === page ||
+                data.options && data.options.day === day && data.options.provider === provider;
+
+        if ( !condition ) {
+            app.model.trigger('toggle');
+            console.log('TOGGLE');
+        }
 
         app.model.set({
-            page: this.page,
-            options: this.options
+            page: data.page,
+            options: data.options
         });
 
     }
