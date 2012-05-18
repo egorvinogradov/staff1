@@ -27,7 +27,7 @@ def reserve(request):
     if not request.user.get_profile().office:
         return direct_to_template(request, 'staff/config.html', {'offices': Office.objects.all()})
 
-    return direct_to_template(request, 'bb_dinner/reserve.html')
+    return direct_to_template(request, 'bb_dinner/main.html')
 
 
 @login_required
