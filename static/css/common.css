@@ -708,6 +708,7 @@ html {
 
 .content__menu-item:hover .content__menu-name {
     height: auto;
+    min-height: 39px;
     margin-bottom: 44px;
     -webkit-animation: mouseover 400ms;
        -moz-animation: mouseover 400ms;
