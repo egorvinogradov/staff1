@@ -12,7 +12,7 @@ class DayResource(ModelResource):
 
 
     class Meta:
-        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=7)))
+        queryset = Day.objects.filter(week__date__gt=(datetime.datetime.now() - datetime.timedelta(days=14)))
         resource_name = 'day'
 
 
