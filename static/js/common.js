@@ -12,6 +12,17 @@ var AppModel = Backbone.Model.extend({
 });
 
 
+
+var OrderModel = Backbone.Model.extend({
+	url: '/api/v1/order',
+	initialize: function () {
+        console.log('order model init:', this, this.get('options'));
+    }
+});
+
+
+
+
 //var OrderModel = Backbone.Model.extend({
 //	url: '/api/day',
 //	initialize: function () {
@@ -38,7 +49,8 @@ var AppView = Backbone.View.extend({
             providers:      '.header__providers',
             providerList:   '.header__providers-list',
             provider:       '.header__provider',
-            providerName:   '.header__provider-c'
+            providerName:   '.header__provider-c',
+            completeButton: '.header__complete-button'
         },
         content: {
             container:      '.content',
@@ -413,6 +425,7 @@ var AppView = Backbone.View.extend({
         this.els.header.day = $(this.selectors.header.day);
         this.els.header.dayTitle = $(this.selectors.header.dayTitle);
         this.els.header.dayActionsItem = $(this.selectors.header.dayActionsItem);
+        this.els.header.completeButton = $(this.selectors.header.completeButton);
 
 
         this.els.header.day
@@ -441,6 +454,33 @@ var AppView = Backbone.View.extend({
                 condition = ( event.type === 'click' && !target.parents().is(this.selectors.header.day) ) ||
                             ( event.type === 'keydown' && event.which === 27 );
             condition && this.hideDayActions(event);
+        }, this));
+
+
+        this.els.header.completeButton.click($.proxy(function(){
+
+            if ( _.isEmpty(this.order) ) return;
+
+            var success = function(data){
+                    console.log('order OK', data);
+                },
+                error = function(data){
+                    console.log('order FAIL', data);
+                };
+
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/api/v1/order/',
+                data: JSON.stringify(this.order), // TODO: make crossbrowser
+                success: function(data){
+                    data.status === 'ok'
+                        ? success(data)
+                        : error(data);
+                },
+                error: error
+            });
+
         }, this));
 
 
@@ -607,7 +647,6 @@ var AppView = Backbone.View.extend({
             }));
 
         }, this);
-
 
 
         // render menu
@@ -1325,6 +1364,7 @@ $(function(){
         model: new AppModel()
     });
 
+    window.order = new OrderModel();
     window.router = new Router();
 
     Backbone.history.start();
