@@ -35,7 +35,8 @@ var AppView = Backbone.View.extend({
             dayRestaurant:  '.header__day-restaurant',
             daySlimming:    '.header__day-none',
             dayComment:     '.header__day-comment',
-            providers:      '.header__providers-list',
+            providers:      '.header__providers',
+            providerList:   '.header__providers-list',
             provider:       '.header__provider',
             providerName:   '.header__provider-c'
         },
@@ -63,12 +64,13 @@ var AppView = Backbone.View.extend({
             favourites:     'm-favourites'
         },
         header: {
-            dayOpened:      'm-opened',
-            dayActive:      'm-active',
-            dayHasPrice:    'm-has-price',
-            dayCompleted:   'm-completed',
-            dayInactive:    'm-inactive',
-            providerActive: 'm-active'
+            dayOpened:          'm-opened',
+            dayActive:          'm-active',
+            dayHasPrice:        'm-has-price',
+            dayCompleted:       'm-completed',
+            dayInactive:        'm-inactive',
+            providerActive:     'm-active',
+            providersInactive:  'm-inactive'
         },
         content: {
             order:          'content__order',
@@ -251,8 +253,8 @@ var AppView = Backbone.View.extend({
                 weight: "35/30"
             }]
         }; // TODO: remove
-        this.objects[0].providers['Хлеб-соль'] = mock1;  // TODO: remove
-        this.objects[1].providers['Хлеб-соль'] = mock2;  // TODO: remove
+        this.objects[3].providers['Хлеб-соль'] = mock1;  // TODO: remove
+        this.objects[4].providers['Хлеб-соль'] = mock2;  // TODO: remove
 
 
 
@@ -398,7 +400,7 @@ var AppView = Backbone.View.extend({
 
 
         this.page.menu            && this.renderMenu();
-        this.page.overlay         && this.renderOverlay();
+        //this.page.overlay         && this.renderOverlay();
         this.page.order           && this.renderOrder();
         this.page.favourites      && this.renderFavourites();
 
@@ -407,6 +409,7 @@ var AppView = Backbone.View.extend({
 
         this.els.header.container.html(this.templates.header());
         this.els.header.providers = $(this.selectors.header.providers);
+        this.els.header.providerList = $(this.selectors.header.providerList);
         this.els.header.day = $(this.selectors.header.day);
         this.els.header.dayTitle = $(this.selectors.header.dayTitle);
         this.els.header.dayActionsItem = $(this.selectors.header.dayActionsItem);
@@ -441,7 +444,7 @@ var AppView = Backbone.View.extend({
         }, this));
 
 
-        this.els.header.dayActionsItem.click($.proxy(this.selectDayAction, this));
+        this.els.header.dayActionsItem.click($.proxy(this.hideDayActions, this));
 
         //console.log('render header:', this.els.header.container, this.model.get('objects'));
 
@@ -457,16 +460,16 @@ var AppView = Backbone.View.extend({
     },
     selectDayAction: function(event){
 
-        this.els.header.day.removeClass(this.classes.header.dayActive);
-
-        var target = $(event.target);
-        target
-            .parents(this.selectors.header.day)
-            .addClass(this.classes.header.dayActive)
-            .find(this.selectors.header.dayComment)
-            .html( target.html() );
-
-        this.hideDayActions();
+//        this.els.header.day.removeClass(this.classes.header.dayActive);
+//
+//        var target = $(event.target);
+//        target
+//            .parents(this.selectors.header.day)
+//            .addClass(this.classes.header.dayActive)
+//            .find(this.selectors.header.dayComment)
+//            .html( target.html() );
+//
+//        this.hideDayActions();
     },
     resetPage: function(){
 
@@ -512,7 +515,7 @@ var AppView = Backbone.View.extend({
             options.provider = corrected.provider
         }
         
-        if ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) {
+        if ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider && !currentOptions.overlayType ) {
 
             console.log('options INCORRECT:', options.day, options.provider, '\n\n');
             document.location.hash = '#/menu/' + options.day + '/' + options.provider + '/';
@@ -537,25 +540,36 @@ var AppView = Backbone.View.extend({
         });
 
 
-        if ( options.day !== previousDay ) {
+//        if ( options.day !== previousDay ) {
+//
+//        }
 
-            this.els.header.providers.empty();
+        this.els.header.providers.removeClass(this.classes.header.providersInactive);
+        this.els.header.providerList.empty();
 
-            _.each(this.menu[day].providers, $.proxy(function(dishes, provider){
-                this.els.header.providers.append(this.templates.headerProvider({
-                    name: provider,
-                    day: options.day
-                }));
-            }, this));
+        _.each(this.menu[day].providers, $.proxy(function(dishes, provider){
+            this.els.header.providerList.append(this.templates.headerProvider({
+                name: provider,
+                day: options.day
+            }));
+        }, this));
 
-            this.els.content.wrapper.data({ 'menu-day': options.day });
-            this.els.content.wrapper.data({ 'menu-date': date });
-        }
+        this.els.header.day
+            .removeClass(this.classes.header.dayActive)
+            .filter('[rel=' + options.day + ']')
+            .addClass(this.classes.header.dayActive);
+
+        this.els.content.wrapper.data({ 'menu-day': options.day });
+        this.els.content.wrapper.data({ 'menu-date': date });
 
 
-        if ( options.provider !== previousProvider ) {
-            this.els.content.wrapper.data({ 'menu-provider': options.provider });
-        }
+
+//        if ( options.provider !== previousProvider ) {
+//
+//        }
+
+
+        this.els.content.wrapper.data({ 'menu-provider': options.provider });
 
 
         this.els.header.provider = $(this.selectors.header.provider);
@@ -578,12 +592,7 @@ var AppView = Backbone.View.extend({
 
             _.each(items.dishes, function(dish){
 
-                console.log('--- CHECK EACH DISH', dish, this.order, this.order[date]);
-
                 if ( !_.isEmpty(this.order) && this.order[date] && this.order[date].dishes[dish.id] ) {
-
-                    console.log('BINGO!!!', dish, dish.id);
-
                     dish.isSelected = this.order[date].dishes[dish.id];
                     dish.count = this.order[date].dishes[dish.id];
                 }
@@ -613,13 +622,85 @@ var AppView = Backbone.View.extend({
 
 
 
-        // highlight selected dished
+        // render overlay
 
-        if ( !_.isEmpty(this.order) && this.order[date] && !this.order[date].restaurant && !this.order[date].none ) {
+        if ( currentOptions.overlayType ) {
 
-            console.log('highlight selected dishes');
+            console.log('111 currentOptions.overlayType ', currentOptions.overlayType, this.els.header.providers, '------', this.els.header.provider);
 
+            this.els.header.providers.addClass(this.classes.header.providersInactive);
+            this.els.header.provider.removeAttr('href');
+
+            this.renderOverlay({
+                day: day,
+                date: date,
+                type: currentOptions.overlayType
+            });
+
+            if ( !this.order[options.date] ) {
+                this.order[options.date] = {
+                    dishes: {},
+                    restaurant: false,
+                    none: true
+                };
+            }
+
+            this.order[options.date].restaurant = false;
+            this.order[options.date].none = false;
+            this.order[options.date].dishes = {};
+            this.order[options.date][currentOptions.overlayType] = true;
         }
+
+
+
+
+
+//
+//        if ( currentOptions.overlayType === 'restaurant' ) {
+//
+//            this.renderOverlay({
+//                day: day,
+//                date: date,
+//                type: 'restaurant'
+//            });
+//
+//            if ( !this.order[options.date] ) {
+//                this.order[options.date] = {
+//                    dishes: {},
+//                    restaurant: false,
+//                    none: true
+//                };
+//            }
+//
+//            this.order[options.date].restaurant = true;
+//            this.order[options.date].none = false;
+//            this.order[options.date].dishes = {};
+//
+//        }
+//
+//
+//        if ( currentOptions.type === 'slimming' ) {
+//
+//            this.renderOverlay({
+//                day: day,
+//                date: date,
+//                type: 'slimming'
+//            });
+//
+//            if ( !this.order[options.date] ) {
+//                this.order[options.date] = {
+//                    dishes: {},
+//                    restaurant: false,
+//                    none: true
+//                };
+//            }
+//
+//            this.order[options.date].restaurant = false;
+//            this.order[options.date].none = true;
+//            this.order[options.date].dishes = {};
+//
+//        }
+
 
         // render overlay if restaurant or nothing selected
 
@@ -652,9 +733,9 @@ var AppView = Backbone.View.extend({
     },
     bindEventsForOrder: function(date){
 
-        this.els.header.dayRestaurant = $(this.selectors.header.dayRestaurant);
-        this.els.header.daySlimming = $(this.selectors.header.daySlimming);
-        this.els.header.dayControls = this.els.header.dayRestaurant.add(this.els.header.daySlimming);
+//        this.els.header.dayRestaurant = $(this.selectors.header.dayRestaurant);
+//        this.els.header.daySlimming = $(this.selectors.header.daySlimming);
+//        this.els.header.dayControls = this.els.header.dayRestaurant.add(this.els.header.daySlimming);
 
         this.els.menu.name = $(this.selectors.menu.item.name);
         this.els.menu.plus = $(this.selectors.menu.item.plus);
@@ -665,43 +746,43 @@ var AppView = Backbone.View.extend({
         console.log('bind events for order:', { elements: this.els.menu.name });
 
 
-        this.els.header.dayControls.click($.proxy(function(){
-
-            var button = $(event.currentTarget),
-                container = button.parents(this.selectors.header.day),
-                options = {
-                    day: container.attr('rel'),
-                    date: container.data('date'),
-                    type: button.data('type')
-                };
-
-            this.renderOverlay({
-                day: options.day,
-                date: options.date,
-                type: options.type
-            });
-
-            if ( !this.order[options.date] ) {
-                this.order[options.date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: true
-                };
-            }
-
-            if ( options.type === 'restaurant' ) {
-                this.order[options.date].restaurant = true;
-                this.order[options.date].none = false;
-                this.order[options.date].dishes = {};
-            }
-
-            if ( options.type === 'slimming' ) {
-                this.order[options.date].restaurant = false;
-                this.order[options.date].none = true;
-                this.order[options.date].dishes = {};
-            }
-
-        }, this));
+//        this.els.header.dayControls.click($.proxy(function(){
+//
+//            var button = $(event.currentTarget),
+//                container = button.parents(this.selectors.header.day),
+//                options = {
+//                    day: container.attr('rel'),
+//                    date: container.data('date'),
+//                    type: button.data('type')
+//                };
+//
+//            this.renderOverlay({
+//                day: options.day,
+//                date: options.date,
+//                type: options.type
+//            });
+//
+//            if ( !this.order[options.date] ) {
+//                this.order[options.date] = {
+//                    dishes: {},
+//                    restaurant: false,
+//                    none: true
+//                };
+//            }
+//
+//            if ( options.type === 'restaurant' ) {
+//                this.order[options.date].restaurant = true;
+//                this.order[options.date].none = false;
+//                this.order[options.date].dishes = {};
+//            }
+//
+//            if ( options.type === 'slimming' ) {
+//                this.order[options.date].restaurant = false;
+//                this.order[options.date].none = true;
+//                this.order[options.date].dishes = {};
+//            }
+//
+//        }, this));
 
 
         this.els.menu.name.click($.proxy(function(event){
@@ -1156,10 +1237,10 @@ var Router = Backbone.Router.extend({
 
         this.refreshModel({
             page: {
-                overlay: true
+                menu: true
             },
             options: {
-                type: 'restaurant',
+                overlayType: 'restaurant',
                 day: day
             }
         });
@@ -1171,10 +1252,10 @@ var Router = Backbone.Router.extend({
 
         this.refreshModel({
             page: {
-                overlay: true
+                menu: true
             },
             options: {
-                type: 'slimming',
+                overlayType: 'none',
                 day: day
             }
         });
