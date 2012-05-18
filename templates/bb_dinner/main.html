@@ -1,0 +1,346 @@
+{% load static %}<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Обеды @ Ostrovok.ru</title>
+<link rel="stylesheet" type="text/css" href="{% get_media_prefix %}css/common.css">
+<!--[if lte IE 8]>
+<link rel="stylesheet" type="text/css" href="{% get_media_prefix %}css/common.ie.css">
+<![endif]-->
+<!--[if lte IE 7 ]>
+    <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+<![endif]-->
+
+</head>
+<body class="page">
+    <div class="page__wrapper"></div>
+
+
+    <!-- page -->
+
+    <script type="application/template" id="template_page" class="template">
+        <div class="header"></div>
+        <div class="content">
+            <div class="content__wrapper"></div>
+        </div>
+    </script>
+
+    <!-- / page -->
+
+
+    <!-- header -->
+
+    <script type="application/template" id="template_header" class="template">
+
+        <div class="header__top">
+            <div class="header__top-wrapper">
+                <div class="header__logo">
+                    <a class="header__logo-link" href="/#/"></a>
+                </div>
+                <div class="header__message">Что изволит кушать мисьё Дмитрий на неделе с 1 по 5 мая?</div>
+                <ul class="header__nav">
+                    <li class="header__nav-item">
+                        <a class="header__nav-link header__favourites" href="/#/favourites/">
+                            <i class="header__favourites-icon"></i>
+                            Любимые блюда
+                        </a>
+                    </li>
+                    <li class="header__nav-item header__exit">
+                        <a class="header__nav-link" href="/accounts/base/logout/">Выход есть</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="header__bottom">
+
+            <div class="header__bottom-wrapper">
+
+                <ul class="header__week">
+
+                    <li class="header__day" rel="monday">
+                        <span class="header__day-title">Понедельник</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/monday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day m-active" rel="tuesday">
+                        <span class="header__day-title">Вторник</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/tuesday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="wednesday">
+                        <span class="header__day-title">Среда</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/wednesday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="thursday">
+                        <span class="header__day-title">Четверг</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/thursday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="friday">
+                        <span class="header__day-title">Пятница</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/friday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="saturday">
+                        <span class="header__day-title">Суббота</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/saturday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="sunday">
+                        <span class="header__day-title">Воскресенье</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <a class="header__day-select-item header__day-office" href="/#/menu/sunday/">ем в офисе</a>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li><li class="header__day" rel="week">
+                        <span class="header__day-title">Все неделя</span>
+                        <span class="header__day-comment"></span>
+                        <div class="header__day-variants">
+                            <div class="header__day-variants-wrapper">
+                                <div class="header__day-select">
+                                    <span class="header__day-select-item header__day-restaurant" data-type="restaurant">иду в Луч</span>
+                                    <span class="header__day-select-item header__day-none" data-type="slimming">худею</span>
+                                </div>
+                                <div class="header__day-price">
+                                    <span class="header__day-price-big"></span>р.
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+
+                </ul>
+
+                <div class="header__complete">
+                    <span class="header__complete-fork"></span>
+                    <a class="header__complete-button" href="/#/order/">
+                        <span class="header__complete-button-wrapper">ням-ням</span>
+                    </a>
+                    <span class="header__complete-spoon"></span>
+                </div>
+
+                <div class="header__providers">
+                    <ul class="header__providers-list"></ul>
+                </div>
+
+                <div class="header__change">
+                    <span class="header__change-l"></span>
+                    <a class="header__change-c" href="/#/menu/monday/fusion/">Исправить</a>
+                    <span class="header__change-r"></span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </script>
+
+    <script type="application/template" id="template_header-provider" class="template">
+        <li class="header__provider" rel="<%= name %>">
+            <span class="header__provider-l"></span>
+            <a href="#/menu/<%= day %>/<%= name %>" class="header__provider-c"><%= name %></a>
+            <span class="header__provider-r"></span>
+        </li>
+    </script>
+
+    <!-- / header -->
+
+
+    <!-- menu -->
+
+    <script type="application/template" id="template_menu-group" class="template">
+        <div class="content__menu-group">
+            <h1 class="content__menu-header" data-order="<%= order %>"><%= name %></h1>
+            <ul class="content__menu-list"><%= items %></ul>
+        </div>
+    </script>
+
+    <script type="application/template" id="template_menu-item" class="template">
+        <li class="content__menu-item <% if ( typeof isSelected !== 'undefined' && isSelected ) { %>m-selected<% } %>" data-id="<%= id %>" <% if ( typeof provider !== 'undefined' && typeof category !== 'undefined' ) { %>title="<%= provider %>: <%= category %>"<% } %>>
+            <div class="content__menu-item-wrapper">
+                <div class="content__menu-name"><%= name %></div>
+                <span class="content__menu-count m-one">
+                    <span class="content__menu-plus">+</span>
+                    <span class="content__menu-number"><% if ( typeof count !== 'undefined' && count ) { %><%= count %><% } else { %>0<% } %></span>
+                    <span class="content__menu-minus">&minus;</span>
+                </span>
+                <span class="content__menu-price">
+                    <span class="content__menu-price-big"><%= price %></span>р.
+                </span>
+            </div>
+        </li>
+    </script>
+
+    <!-- / menu -->
+
+
+    <!-- favourites -->
+
+    <script type="application/template" id="template_favourites" class="template">
+        <div class="content__favourites-message">
+            Перед вами все доступное меню. Выберете ваши любимые блюда и они буду отмечаться автоматически,<br>
+            если вы по какой-либо причине не сделаете заказ на новую неделю.
+        </div>
+        <div class="header__complete">
+            <span class="header__complete-fork"></span>
+            <span class="header__complete-button">
+                <span class="header__complete-button-wrapper">ням-ням</span>
+            </span>
+            <span class="header__complete-spoon"></span>
+        </div>
+        <div class="content__favourites-categories">
+            <%= categories %>
+            <div class="content__favourites-category-align-justify"></div>
+        </div>
+    </script>
+
+    <script type="application/template" id="template_favourites-category" class="template">
+        <div class="content__favourites-category m-small" rel="<%= category %>">
+            <h1 class="content__favourites-header"><%= name %></h1>
+            <ul class="content__favourites-list">
+                <%= items %>
+            </ul>
+        </div>
+    </script>
+
+    <script type="application/template" id="template_favourites-item" class="template">
+        <li class="content__favourites-item" title="<%= provider %>" data-id="<%= id %>">
+            <span class="content__favourites-icon"></span>
+            <%= name %>
+        </li>
+    </script>
+
+    <!-- / favourites  -->
+
+
+    <!-- order -->
+
+    <script type="application/template" id="template_order-group-dishes" class="template">
+        <div class="content__menu-group" data-date="<%= date %>">
+            <h1 class="content__menu-header"><%= day %><span class="content__order-day-price">/ <%= price %>р.</span></h1>
+            <ul class="content__menu-list">
+                <%= dishes %>
+            </ul>
+        </div>
+    </script>
+
+    <script type="application/template" id="template_order-group-message" class="template">
+        <div class="content__menu-group" data-date="<%= date %>">
+            <h1 class="content__menu-header"><%= day %></h1>
+            <div class="content__menu-list">
+                <span class="<%= className %>"><%= message %></span>
+            </div>
+        </div>
+    </script>
+
+    <!-- / order -->
+
+
+    <!-- overlay -->
+
+    <script type="application/template" id="template_overlay" class="template">
+        <div class="content__overlay <%= className %>">
+            <div class="content__overlay-header">
+                <div class="content__overlay-header-wrapper">
+                    <%= message %>
+                </div>
+                <a class="content__overlay-header-link" href="<%= link.href %>" target="_blank"><%= link.text %></a>
+            </div>
+        </div>
+    </script>
+
+    <script type="application/template" id="template_overlay-attention" class="template">
+        <div class="content__overlay m-overlay-attention">
+            <div class="content__overlay-header">
+                <div class="content__overlay-header-wrapper">
+                    Ахтунг!
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- / overlay -->
+
+
+    <script type="text/javascript" src="{% get_media_prefix %}js/jquery.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/json2.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/underscore.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/backbone.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/models.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/views.js"></script>
+    <script type="text/javascript" src="{% get_media_prefix %}js/common.js"></script>
+
+
+</body>
+</html>
