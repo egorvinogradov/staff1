@@ -5,7 +5,7 @@ String.prototype.capitalize = function(){
 
 
 var AppModel = Backbone.Model.extend({
-	url: '/api/day',
+	url: '/api/v1/day',
 	initialize: function () {
         console.log('app model init:', this, this.get('options'));
 	}
@@ -578,7 +578,12 @@ var AppView = Backbone.View.extend({
 
             _.each(items.dishes, function(dish){
 
+                console.log('--- CHECK EACH DISH', dish, this.order, this.order[date]);
+
                 if ( !_.isEmpty(this.order) && this.order[date] && this.order[date].dishes[dish.id] ) {
+
+                    console.log('BINGO!!!', dish, dish.id);
+
                     dish.isSelected = this.order[date].dishes[dish.id];
                     dish.count = this.order[date].dishes[dish.id];
                 }
