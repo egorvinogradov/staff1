@@ -1,7 +1,7 @@
 # Django settings for staff project.
 import os
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -11,7 +11,7 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
     ('Yasha', 'jjay@ostrovok.ru'),
     ('dkr', 'dkr@ostrovok.ru'),
-)
+    )
 
 MANAGERS = ADMINS
 
@@ -25,7 +25,7 @@ DATABASES = {
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
         'OPTIONS': {
             'autocommit': False,
-        }
+            }
     }
 }
 
@@ -68,9 +68,9 @@ ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
+# Put strings here, like "/home/html/static" or "C:/www/django/static".
+# Always use forward slashes, even on Windows.
+# Don't forget to use absolute paths, not relative paths.
 )
 
 # List of finder classes that know how to find static files in
@@ -78,8 +78,8 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    )
 
 AUTH_PROFILE_MODULE = 'staff.UserProfile'
 
@@ -90,8 +90,8 @@ SECRET_KEY = 'lhut*arex%a$%z*masg72c$mq4x#e9r6a+b61m3eyvmj(!i!r8'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
+    #     'django.template.loaders.eggs.Loader',
+    )
 
 MIDDLEWARE_CLASSES = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
@@ -101,7 +101,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_openid_consumer.middleware.OpenIDMiddleware',
-)
+    )
 
 ROOT_URLCONF = 'urls'
 
@@ -110,18 +110,18 @@ DEBUG_TOOLBAR_CONFIG = {
     'EXTRA_SIGNALS': [],
     'HIDE_DJANGO_SQL': False,
     'TAG': 'div',
-}
+    }
 
 INTERNAL_IPS = (
     '188.254.43.246',  '89.221.51.34', # office
     '178.140.56.36', '80.250.237.100',
     '95.84.198.12', '89.179.244.26', '95.31.16.175',
-)
+    )
 
 
 TEMPLATE_DIRS = (
     ROOT + '/templates/',
-)
+    )
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -138,7 +138,8 @@ INSTALLED_APPS = (
     'staff',
     'south',
     'tastypie',
-)
+    'django_nose',
+    )
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -159,8 +160,8 @@ LOGGING = {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
-        },
-    }
+            },
+        }
 }
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -168,7 +169,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",
     "django.core.context_processors.request",
     "social_auth.context_processors.social_auth_by_type_backends",
-)
+    )
 
 SOCIAL_AUTH_ENABLED_BACKENDS = ('ostrovok',)
 LOGIN_REDIRECT_URL = '/'
@@ -177,12 +178,16 @@ LOGIN_URL = '/accounts/login/ostrovok/'
 AUTHENTICATION_BACKENDS = (
     'team.auth_backends.OstrovokBackend',
     'django.contrib.auth.backends.ModelBackend',
-)
+    )
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 SOCIAL_AUTH_IMPORT_BACKENDS = (
     'team.auth_backends',
-)
+    )
 LOGIN_ERROR_URL = '/auth-error/'
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+UPLOAD_TO = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/static/data/'
+LANGUAGES = ()
