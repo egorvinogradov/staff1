@@ -20,6 +20,14 @@ var OrderModel = Backbone.Model.extend({
     }
 });
 
+var FavouritesModel = Backbone.Model.extend({
+	url: '/api/v1/favorite',
+	initialize: function () {
+        console.log('favourites model init:', this, this.get('options'));
+    }
+});
+
+
 
 
 
@@ -1137,74 +1145,16 @@ var AppView = Backbone.View.extend({
         this.els.page.addClass(this.classes.page.order);
 
     },
+    favouritesModelFetchSuccess: function(){
+
+    },
+    favouritesModelFetchError: function(){
+
+    },
     renderFavourites: function(){
-
-        var favourites = {},
-            favouritesHTML = [];
-
-        this.templates.favourites.container = _.template($('#template_favourites').html());
-        this.templates.favourites.category  = _.template($('#template_favourites-category').html());
-        this.templates.favourites.item      = _.template($('#template_favourites-item').html());
-
-
-        _.each(this.menu, function(providers, day){
-
-            _.each(providers, function(categories, provider){
-
-                _.each(categories, function(menu, category){
-
-                    if ( !favourites[category] ) favourites[category] = [];
-
-                    _.each(menu.dishes, function(dish){
-
-                        favourites[category].push({
-                            id:         dish.id,
-                            name:       dish.name,
-                            provider:   provider
-                        });
-
-                    }, this);
-
-                }, this);
-
-            }, this);
-
-        }, this);
-
-
-        _.each(favourites, function(category, categoryName){
-
-            var categoryHTML = [];
-
-            category.sort(function(a, b){
-                return a.name > a.name ? -1 : 1;
-            });
-
-            _.each(category, function(dish){
-                categoryHTML.push(this.templates.favourites.item(dish));
-            }, this);
-
-            favouritesHTML.push(this.templates.favourites.category({
-                name:       categoryName,
-                category:   categoryName,
-                items:      categoryHTML.join('')
-            }));
-
-        }, this);
-
-
-        this.resetPage();
-
-        this.els.content.wrapper
-            .empty()
-            .addClass(this.classes.content.favourites)
-            .append(this.templates.favourites.container({ categories: favouritesHTML.join('') }))
-            .hide()
-            .fadeIn();
-
-        this.els.page.addClass(this.classes.page.favourites);
-
-        console.log('render favourites:', this.model.get('objects'), '|', favourites);
+        var favourites = new FavouritesView({
+            model: new FavouritesModel()
+        });
     }
 });
 
@@ -1212,6 +1162,236 @@ var AppView = Backbone.View.extend({
 
 
 
+
+
+
+var config = {
+
+    selectors: {
+        page:       '.page',
+        wrapper:    '.page__wrapper',
+        header: {
+            container:      '.header',
+            day:            '.header__day',
+            dayTitle:       '.header__day-title',
+            dayActions:     '.header__day-variants',
+            dayActionsItem: '.header__day-select-item',
+            dayRestaurant:  '.header__day-restaurant',
+            daySlimming:    '.header__day-none',
+            dayComment:     '.header__day-comment',
+            providers:      '.header__providers',
+            providerList:   '.header__providers-list',
+            provider:       '.header__provider',
+            providerName:   '.header__provider-c',
+            completeButton: '.header__complete-button'
+        },
+        content: {
+            container:      '.content',
+            wrapper:        '.content__wrapper'
+        },
+        menu: {
+            groupList:      '.content__menu-list',
+            groupHeader:    '.content__menu-header',
+            item: {
+                container:  '.content__menu-item',
+                name:       '.content__menu-name',
+                count:      '.content__menu-count',
+                number:     '.content__menu-number',
+                plus:       '.content__menu-plus',
+                minus:      '.content__menu-minus'
+            }
+        },
+        overlay:            '.content__overlay'
+    },
+    classes: {
+        page: {
+            order:          'm-order',
+            favourites:     'm-favourites'
+        },
+        header: {
+            dayOpened:          'm-opened',
+            dayActive:          'm-active',
+            dayHasPrice:        'm-has-price',
+            dayCompleted:       'm-completed',
+            dayInactive:        'm-inactive',
+            providerActive:     'm-active',
+            providersInactive:  'm-inactive'
+        },
+        content: {
+            order:          'content__order',
+            favourites:     'content__favourites'
+        },
+        menu: {
+            selected:       'm-selected',
+            countOne:       'm-one'
+        },
+        overlay: {
+            start:          'm-overlay-start',
+            slimming: {
+                day:        'm-overlay-day-slimming',
+                week:       'm-overlay-week-slimming'
+            },
+            restaurant: {
+                day:        'm-overlay-day-restaurant',
+                week:       'm-overlay-week-restaurant'
+            },
+            attention:      'm-overlay-attention'
+        },
+        favourites: {
+            slider:         'm-column-slider'
+        },
+        order: {
+            restaurant:     'content__order-restaurant',
+            slimming:       'content__order-slimming'
+        }
+    },
+    text: {
+        days: {
+            monday:     'понедельник',
+            tuesday:    'вторник',
+            wednesday:  'среда',
+            thursday:   'четверг',
+            friday:     'пятница',
+            saturday:   'суббота',
+            sunday:     'воскресенье'
+        },
+        days1: {
+            monday:     'по понедельникам',
+            tuesday:    'по вторникам',
+            wednesday:  'по средам',
+            thursday:   'по четвергам',
+            friday:     'по пятницам',
+            saturday:   'по субботам',
+            sunday:     'по воскресеньям',
+            week:       'всю неделю'
+        },
+        days2: {
+            monday:     'с понедельника',
+            tuesday:    'со вторника',
+            wednesday:  'со среды',
+            thursday:   'с четверга',
+            friday:     'с пятницы',
+            saturday:   'с субботы',
+            sunday:     'с воскресенья'
+        },
+        categories: {
+            'первые блюда': 'primary',
+            'вторые блюда': 'secondary',
+            'горячие блюда': 'secondary',
+            'салаты': 'snack',
+            'холодные блюда и закуски': 'snack',
+            'бутерброды, выпечка': 'dessert',
+            'пирожное': 'dessert',
+            'прочее': 'misc'
+        },
+        standardizedCategories: {
+            primary:    'Первые блюда',
+            secondary:  'Горячие блюда',
+            snack:      'Холодные блюда и закуски',
+            dessert:    'Бутерброды и выпечка',
+            misc:       'Прочее'
+        }
+    }
+};
+
+
+
+
+
+
+
+
+
+
+var FavouritesView = Backbone.View.extend({
+
+    selectors: {},
+
+    templates: {
+        container: _.template($('#template_favourites').html()),
+        category: _.template($('#template_favourites-category').html()),
+        item: _.template($('#template_favourites-item').html())
+    },
+
+    els: {},
+
+    initialize: function(){
+
+        console.log('FAVOURITES view initialize', this.model, this.model.get('objects'));
+
+        this.els.page = $(config.selectors.page);
+        this.els.content = $(config.selectors.content.wrapper);
+
+        this.model.fetch({
+            success: $.proxy(this.modelFetchSuccess, this),
+            error: $.proxy(this.modelFetchError, this)
+        });
+
+    },
+    modelFetchSuccess: function(model, data){
+        console.log('FAVOURITES model fetch success', model, data);
+
+        this.favourites = this.model.get('objects');
+        this.render();
+    },
+    modelFetchError: function(){
+        console.log('FAVOURITES model fetch error');
+    },
+    render: function(){
+
+        console.log('FAVOURITES view render', this.favourites, this.favourites ? true : false);
+
+        if ( !this.favourites || !this.favourites.length ) return;
+
+        var favourites = {},
+            favouritesHTML = [];
+
+        _.each(this.favourites, function(dish){
+            var category = config.text.categories[dish.category];
+            if ( !favourites[category] ) favourites[category] = [];
+            favourites[category].push(dish);
+        });
+
+        _.each(favourites, function(dishes){
+            dishes.sort(function(a, b){
+                return a.provider > b.provider ? -1 : 1;
+            });
+        });
+
+        _.each(favourites, $.proxy(function(dishes, category){
+
+            var categoryHTML = [];
+
+            _.each(category, function(dish){
+                categoryHTML.push(this.templates.item(dish));
+            }, this);
+
+            favouritesHTML.push(this.templates.category({
+                name:       config.text.standardizedCategories[category],
+                category:   category,
+                items:      categoryHTML.join('')
+            }));
+
+        }));
+
+        _.each(config.classes.page, function(className){
+            this.els.page.removeClass(className);
+        }, this);
+
+        _.each(config.classes.content, function(className){
+            this.els.content.removeClass(className);
+        }, this);
+
+        this.els.content
+            .empty()
+            .addClass(config.classes.content.favourites)
+            .append(this.templates.container({ categories: favouritesHTML.join('') }))
+            .hide()
+            .fadeIn();
+
+        this.els.page.addClass(this.classes.page.favourites);
+    }
+});
 
 
 
@@ -1365,7 +1545,8 @@ $(function(){
         model: new AppModel()
     });
 
-    window.order = new OrderModel();
+    window.favouritesModel = new FavouritesModel();
+    window.orderModel = new OrderModel();
     window.router = new Router();
 
     Backbone.history.start();
