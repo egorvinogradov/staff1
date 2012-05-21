@@ -265,8 +265,8 @@ var AppView = Backbone.View.extend({
                 weight: "35/30"
             }]
         }; // TODO: remove
-        this.objects[3].providers['Хлеб-соль'] = mock1;  // TODO: remove
-        this.objects[4].providers['Хлеб-соль'] = mock2;  // TODO: remove
+//        this.objects[3].providers['Хлеб-соль'] = mock1;  // TODO: remove
+//        this.objects[4].providers['Хлеб-соль'] = mock2;  // TODO: remove
 
 
 
@@ -979,6 +979,7 @@ var AppView = Backbone.View.extend({
             orderObj = {},
             orderArr = [],
             orderHTML = [];
+
 
         _.each(this.menu, $.proxy(function(dayMenu, day){
             menu[dayMenu.date] = {
