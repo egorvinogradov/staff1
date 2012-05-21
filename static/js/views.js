@@ -250,14 +250,6 @@ var MenuView = Backbone.View.extend({
 
         this.el = $(this.el);
         this.app = data.app;
-
-        this.app.model.bind('change', this.lolo, this);
-        //this.model.bind('change', this.lolo, this);
-
-    },
-    lolo: function(){
-        //alert('model change');
-        this.render();
     },
     modelFetchSuccess: function(model, data){
         this.menu = this.assembleMenu(this.model.get('objects'));
@@ -412,7 +404,11 @@ var MenuView = Backbone.View.extend({
         this.app.header.bindDayEvents(this.menu);
 
         var _this = this,
-            currentOptions = params.options || this.app.options || {},
+            currentOptions = params && params.options // TODO: fix
+                    ? params.options
+                    : this.app && this.app.options
+                        ? this.app.options
+                        : {},
             options = {
                 day: currentOptions.day || this.app.els.content.data('menu-day'),
                 provider: currentOptions.provider || this.app.els.content.data('menu-provider')
@@ -601,10 +597,7 @@ var MenuView = Backbone.View.extend({
 
         }, this));
 
-
     },
-
-
     renderOverlay: function(options){
 
         console.log('render overlay:', options);
@@ -652,7 +645,6 @@ var MenuView = Backbone.View.extend({
                 text: config[options.type].link.text
             }
         };
-
 
         template = options.type === 'attention'
             ? this.templates.overlayAttention

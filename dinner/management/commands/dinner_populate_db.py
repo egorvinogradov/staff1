@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         import_menu(
             process_function=fusion_hleb_sol.process,
-            provider_name=u'Хлеб-Соль 2',
+            provider_name=u'Фьюжн',
             path='dinner/fixtures/hlebsol.xls'
         )
 
