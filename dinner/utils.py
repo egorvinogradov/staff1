@@ -5,12 +5,8 @@ def group_by_materialize(seq):
     return [(k, list(v)) for k, v in seq]
 
 
-
 def get_week_start_day(day):
-
-    while day.weekday():
-        day -= timedelta(days=1)
-
+    day -= timedelta(days=day.weekday())
     return day
 
 

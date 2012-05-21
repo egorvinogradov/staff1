@@ -1,4 +1,5 @@
 #coding: utf-8
+from dinner.management.commands.dinner_populate_db import download_latest_hlebsol
 from django.contrib.auth.models import User
 
 from django.utils.unittest.case import TestCase
@@ -7,6 +8,9 @@ from tastypie.test import ResourceTestCase
 from utils import import_menu
 
 class ProviderXlsParseTestCase(TestCase):
+    def setUp(self):
+        download_latest_hlebsol()
+
     def test_parse_helobsl(self):
         self.do_parse('dinner/fixtures/hlebsol.xls')
 
@@ -39,9 +43,9 @@ class ProviderXlsParseTestCase(TestCase):
         self.assertTrue(cnt_imported_day_dishes != 0)
 
 
-class DayResourceTest(ResourceTestCase):
+class RestApiTest(ResourceTestCase):
     def setUp(self):
-        super(DayResourceTest, self).setUp()
+        super(RestApiTest, self).setUp()
 
         import_menu(
             process_function=fusion_hleb_sol.process,
@@ -49,20 +53,14 @@ class DayResourceTest(ResourceTestCase):
             path='dinner/fixtures/hlebsol.xls'
         )
 
-        import_menu(
-            process_function=fusion_hleb_sol.process,
-            provider_name=u'Хлеб-Соль',
-            path='dinner/fixtures/fusion.xls'
-        )
-
         self.day_url = '/api/v1/day/'
         self.order_url = '/api/v1/order/'
+        self.favorite_url = '/api/v1/favorite/'
 
         self.username = 'testuser'
         self.password = 'testpassword'
 
         self.user = User.objects.create_user(self.username, 'test@test.ru', self.password)
-
         self.api_client.client.login(username=self.username, password=self.password)
 
 
@@ -88,12 +86,44 @@ class DayResourceTest(ResourceTestCase):
             post_data[date] = {
                 'dishes': {}
             }
+
+            count = 0
             for provider, categories in data['providers'].items():
                 for category in categories:
                     for dish in data['providers'][provider][category]:
-                        dish_id = dish['id']
-                        post_data[date]['dishes'][dish_id] =  1
+                        if count >= 5:
+                            break
 
-        resp = self.api_client.post(self.order_url, format='json', data=post_data, authentication=self.get_credentials())
-        #self.assertTrue(False, resp)
+                        dish_id = dish['id']
+                        post_data[date]['dishes'][dish_id] = 1
+
+                        count += 1
+
+        resp = self.api_client.post(self.order_url, format='json', data=post_data,
+            authentication=self.get_credentials())
         self.assertHttpCreated(resp)
+
+        resp = self.api_client.get(self.order_url, format='json', authentication=self.get_credentials())
+        objects = self.deserialize(resp)['objects']
+        self.assertTrue(len(objects) != 0)
+
+    def test_favorites(self):
+        resp = self.api_client.get(self.favorite_url, format='json', authentication=self.get_credentials())
+        objects = self.deserialize(resp)['objects']
+        self.assertTrue(len(objects) != 0)
+
+        ids = []
+        for object in objects:
+            if object['id'] % 2 == 0:
+                ids.append(object['id'])
+
+        resp = self.api_client.post(self.favorite_url, format='json', data={'objects': ids}, authentication=self.get_credentials())
+        self.assertHttpCreated(resp)
+
+        resp = self.api_client.get(self.favorite_url, format='json', authentication=self.get_credentials())
+        objects = self.deserialize(resp)['objects']
+        created_ids = [o['id'] for o in objects if o['favorite']]
+
+        self.assertEqual(sorted(created_ids), sorted(ids))
+
+

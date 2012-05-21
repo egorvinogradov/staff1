@@ -1,4 +1,5 @@
 #coding: utf-8
+import datetime
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -35,6 +36,10 @@ class Menu(models.Model):
 class Day(models.Model):
     week = models.ForeignKey(Week)
     day = models.PositiveIntegerField()
+
+    @property
+    def date(self):
+        return self.week.date + datetime.timedelta(days=self.day)
 
     def __unicode__(self):
         return WEEK_DAYS[self.day]
@@ -93,9 +98,9 @@ class Order(models.Model):
 
 class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')
-    dish = models.ForeignKey(DishDay, verbose_name=u'Блюдо')
+    dish_day = models.ForeignKey(DishDay, verbose_name=u'Блюдо')
     count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (('order', 'dish'),)
+        unique_together = (('order', 'dish_day'),)

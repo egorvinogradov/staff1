@@ -7,3 +7,4 @@ django-social-auth==0.6.0
 -e git+https://github.com/toastdriven/django-tastypie.git#egg=master
 pyexcelerator==0.6.4.1
 django-annoying
+django-nose==1.1
