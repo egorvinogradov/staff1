@@ -8,3 +8,4 @@ django-social-auth==0.6.0
 pyexcelerator==0.6.4.1
 django-annoying
 django-nose==1.1
+pbs
