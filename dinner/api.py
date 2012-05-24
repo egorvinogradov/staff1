@@ -163,6 +163,9 @@ class FavoriteDishResource(ModelResource):
 
     def dehydrate(self, bundle):
         bundle.data['favorite'] = FavoriteDish.objects.filter(dish=bundle.obj).exists()
+        bundle.data['provider'] = bundle.obj.provider.name
+        bundle.data['group'] = bundle.obj.group.title
+
         return bundle
 
 
