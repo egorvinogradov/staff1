@@ -1,4 +1,5 @@
 #coding: utf-8
+import datetime
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
@@ -11,12 +12,14 @@ class Provider(models.Model):
     def __unicode__(self):
         return self.name
 
+
 class Week(models.Model):
     date = models.DateField(unique=True)
     closed = models.BooleanField(default=False)
 
     def __unicode__(self):
         return unicode(self.date)
+
 
 class Menu(models.Model):
     week = models.ForeignKey(Week)
@@ -29,9 +32,14 @@ class Menu(models.Model):
     class Meta:
         unique_together = (("week", "provider"),)
 
+
 class Day(models.Model):
     week = models.ForeignKey(Week)
     day = models.PositiveIntegerField()
+
+    @property
+    def date(self):
+        return self.week.date + datetime.timedelta(days=self.day)
 
     def __unicode__(self):
         return WEEK_DAYS[self.day]
@@ -39,24 +47,42 @@ class Day(models.Model):
     class Meta:
         unique_together = [('week', 'day')]
 
+
 class Group(models.Model):
     title = models.CharField(max_length=100)
 
     def __unicode__(self):
         return self.title
 
+
 class Dish(models.Model):
-    day = models.ForeignKey(Day)
     provider = models.ForeignKey(Provider)
     group = models.ForeignKey(Group)
 
     index = models.PositiveIntegerField()
     title = models.CharField(max_length=200)
-    weight = models.CharField(max_length=60, null=True) # встречаются записи в стиле "150/180"
-    price = models.PositiveIntegerField()
+    weight = models.CharField(max_length=60, null=True)
 
     def __unicode__(self):
         return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
+
+
+class DishDay(models.Model):
+    dish = models.ForeignKey(Dish)
+    day = models.ForeignKey(Day)
+    price = models.DecimalField(max_digits=20, decimal_places=2)
+
+    class Meta:
+        unique_together = (('day', 'dish'),)
+
+
+class FavoriteDish(models.Model):
+    dish = models.ForeignKey(Dish)
+    user = models.ForeignKey(User)
+
+    class Meta:
+        unique_together = (('dish', 'user'),)
+
 
 class Order(models.Model):
     user = models.ForeignKey(User)
@@ -69,11 +95,12 @@ class Order(models.Model):
     class Meta:
         unique_together = (('user', 'week'),)
 
+
 class OrderDayItem(models.Model):
     order = models.ForeignKey(Order, verbose_name=u'День')
-    dish = models.ForeignKey(Dish, verbose_name=u'Блюдо')
+    dish_day = models.ForeignKey(DishDay, verbose_name=u'Блюдо')
     count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = (('order', 'dish'),)
+        unique_together = (('order', 'dish_day'),)

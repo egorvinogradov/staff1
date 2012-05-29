@@ -1,10 +1,12 @@
 from django import template
 from django.template.defaultfilters import linebreaksbr
 from django.utils.html import escape
+
 try:
     from django.utils.safestring import mark_safe
 except ImportError: # v0.96 and 0.97-pre-autoescaping compat
     def mark_safe(x): return x
+
 from pprint import pformat
 
 def rawdump(x):
