@@ -44,6 +44,8 @@ class ProviderXlsParseTestCase(TestCase):
 
 
 class RestApiTest(ResourceTestCase):
+
+
     def setUp(self):
         super(RestApiTest, self).setUp()
 
@@ -107,6 +109,7 @@ class RestApiTest(ResourceTestCase):
         objects = self.deserialize(resp)['objects']
         self.assertTrue(len(objects) != 0)
 
+
     def test_favorites(self):
         resp = self.api_client.get(self.favorite_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
@@ -117,8 +120,10 @@ class RestApiTest(ResourceTestCase):
             if object['id'] % 2 == 0:
                 ids.append(object['id'])
 
-        resp = self.api_client.post(self.favorite_url, format='json', data={'objects': ids}, authentication=self.get_credentials())
+        resp = self.api_client.post(self.favorite_url, format='json', data={'objects': ids},
+            authentication=self.get_credentials())
         self.assertHttpCreated(resp)
+
 
         resp = self.api_client.get(self.favorite_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']

@@ -7,8 +7,6 @@ from django.core.management.base import BaseCommand
 def download_latest_hlebsol():
     from pbs import wget, mv, rm
 
-    return
-
     rm('dinner/fixtures/hlebsol.xls')
     wget('http://hleb-sol.biz/templates/2.xls')
     mv('2.xls', 'dinner/fixtures/hlebsol.xls')

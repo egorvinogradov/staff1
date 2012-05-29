@@ -110,7 +110,7 @@ class OrderDayItemResource(ModelResource):
 
 
     def full_hydrate(self, bundle):
-        current_week = Week.objects.filter(date__gte=get_week_start_day(datetime.datetime.today()))[0]
+        current_week = Week.objects.get(date=get_week_start_day(datetime.datetime.today()))
 
         if current_week.closed:
             raise ValueError('Week is already closed')
