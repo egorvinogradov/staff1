@@ -18,8 +18,8 @@ class OstrovokBackend(OpenIDBackend):
         http://axschema.org/contact/email"""
 
         email = details['email']
-        if not email.lower().endswith(DOMAIN):
-            raise WrongDomain(email, DOMAIN)
+        #if not email.lower().endswith(DOMAIN):
+        #    raise WrongDomain(email, DOMAIN)
 
         details[USERNAME] = email.split('@')[0]
         return details['email']
