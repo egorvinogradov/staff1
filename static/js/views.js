@@ -740,96 +740,36 @@ var OrderView = Backbone.View.extend({
 //            //menu = ''
 //        }
 
-        this.order = this.assembleOrder(this.model.get('objects'));
+        this.order = this.assembleOrder(this.model.get('objects')[0]);
+        //this.order = this.model.get('objects')[0];
         this.render();
 
     },
     modelFetchError: function(){
         console.log('ORDER model fetch error');
     },
-    assembleOrder: function(objects, menu){
+    assembleOrder: function(objects){
 
+        var order = [];
 
+        _.each(objects, function(data, date){
 
+            data.date = date;
+            data.weekdayEn = config.text.daysRu2En[ data.weekday.toLowerCase() ];
+            data.order = config.text.dayOrder[ data.weekdayEn ];
+            order.push(data);
+        });
 
+        order.sort(function(a ,b){
+            return a.order > b.order ? -1 : 1;
+        });
 
-//{
-//    "meta": {
-//        "limit": 20,
-//        "next": null,
-//        "offset": 0,
-//        "previous": null,
-//        "total_count": 1
-//    },
-//    "objects": [{
-//        "2012-05-26": {
-//            "providers": {
-//                "Fusion": {
-//                    "первые блюда": [{
-//                        "count": 1,
-//                        "name": "Суп-пюре томатный с сырными гренками",
-//                        "price": "80.00"
-//                    }],
-//                    "пирожное": [{
-//                        "count": 1,
-//                        "name": "Штрудель с творогом и сливой",
-//                        "price": "70.00"
-//                    }],
-//                    "прочее": [{
-//                        "count": 1,
-//                        "name": "Кока-кола 0,5",
-//                        "price": "35.00"
-//                    }, {
-//                        "count": 1,
-//                        "name": "Чай \"Липтон\" в ассортименте",
-//                        "price": "40.00"
-//                    }, {
-//                        "count": 1,
-//                        "name": "Чай Nestea 0,5",
-//                        "price": "45.00"
-//                    }]
-//                }
-//            },
-//            "weekday": "Суббота"
-//        }
-//    }]
-//}
-
-
-
-
-        
-
-
-
-
-
-
-
-
-//
-//
-//        var order = [],
-//            days = {};
-//
-//        _.each(menu, function(data, day){
-//            days[data.date] = day;
-//        });
-//
-//        _.each(objects, function(data, date){
-//            data.date = date;
-//            data.weekday = days[date];
-//            order.push(data);
-//        });
-//
-//        //order.sort(fun);
-//
-//        return order;
+        return order;
 
     },
     render: function(){
 
-        return;
+
 
 //        $.ajax({
 //            url: '/api/v1/order/',
@@ -863,10 +803,46 @@ var OrderView = Backbone.View.extend({
 
 
 
-        if ( !this.order ) return;
+
+        var a = {
+            "2012-05-26": {
+                "providers": {
+                    "Fusion": {
+                        "первые блюда": [{
+                            "count": 1,
+                            "name": "Суп-пюре томатный с сырными гренками",
+                            "price": "80.00"
+                        }],
+                        "пирожное": [{
+                            "count": 1,
+                            "name": "Штрудель с творогом и сливой",
+                            "price": "70.00"
+                        }],
+                        "прочее": [{
+                            "count": 1,
+                            "name": "Кока-кола 0,5",
+                            "price": "35.00"
+                        }, {
+                            "count": 1,
+                            "name": "Чай \"Липтон\" в ассортименте",
+                            "price": "40.00"
+                        }, {
+                            "count": 1,
+                            "name": "Чай Nestea 0,5",
+                            "price": "45.00"
+                        }]
+                    }
+                },
+                restaurant: false,
+                none: false
+            }
+        }
+
+        console.log('ORDER view render', this.order);
+
+        if ( !this.order || !this.order.length ) return;
 
         var orderHTML = [];
-
 
         _.each(this.order, function(data){
 
@@ -875,8 +851,19 @@ var OrderView = Backbone.View.extend({
                 template,
                 content;
 
-            _.each(data.items, function(item){
-                dayHTML.push(this.templates.item(item));
+            _.each(data.providers, function(categories, provider){
+
+                _.each(categories, function(dishes, category){
+
+                    _.each(dishes, function(dish){
+
+                        dish.id = 100;
+                        dish.provider = provider;
+                        dish.category = config.text.categoriesRu2En[ config.text.categoriesEn2Ru[ category ] ];
+                        dayHTML.push(this.templates.item(dish));
+                        
+                    }, this);
+                }, this);
             }, this);
 
             if ( hasDishes ) {
@@ -884,7 +871,7 @@ var OrderView = Backbone.View.extend({
                 template = this.templates.dishes;
                 content = {
                     date: data.date,
-                    day: config.text.daysEn2Ru[data.weekday].capitalize(),
+                    day: data.weekday.capitalize(),
                     price: '400',       
                     dishes: dayHTML.join('')
                 };
@@ -905,7 +892,7 @@ var OrderView = Backbone.View.extend({
                 template = this.templates.message;
                 content = {
                     date: data.date,
-                    day: config.text.daysEn2Ru[data.weekday],
+                    day: data.weekday.capitalize(),
                     message: message + config.text.daysEn2RuInflect1[data.weekday],
                     className: className
                 };

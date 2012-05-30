@@ -83,6 +83,15 @@ var config = {
         }
     },
     text: {
+        dayOrder: {
+            monday:     0,
+            tuesday:    1,
+            wednesday:  2,
+            thursday:   3,
+            friday:     4,
+            saturday:   5,
+            sunday:     6
+        },
         daysRu2En: {
             'понедельник':  'monday',
             'вторник':      'tuesday',
@@ -120,16 +129,6 @@ var config = {
             saturday:   'с субботы',
             sunday:     'с воскресенья'
         },
-        categoriesRu2En: {
-            'первые блюда': 'primary',
-            'вторые блюда': 'secondary',
-            'горячие блюда': 'secondary',
-            'прочее': 'misc',
-            'салаты': 'snack',
-            'холодные блюда и закуски': 'snack',
-            'бутерброды, выпечка': 'dessert',
-            'пирожное': 'dessert'
-        },
         categoriesEn2Ru: {
             primary:    'Первые блюда',
             secondary:  'Горячие блюда',
@@ -143,6 +142,16 @@ var config = {
             snack:      'Салаты',
             dessert:    'Выпечка',
             misc:       'Прочее'
+        },
+        categoriesRu2En: {
+            'первые блюда':             'primary',
+            'вторые блюда':             'secondary',
+            'горячие блюда':            'secondary',
+            'прочее':                   'misc',
+            'салаты':                   'snack',
+            'холодные блюда и закуски': 'snack',
+            'бутерброды, выпечка':      'dessert',
+            'пирожное':                 'dessert'
         }
     }
 };
