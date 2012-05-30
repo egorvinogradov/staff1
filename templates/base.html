@@ -275,7 +275,7 @@
     </script>
 
     <script type="application/template" id="template_favourites-item" class="template">
-        <li class="content__favourites-item" title="<%= provider %>" data-id="<%= id %>">
+        <li class="content__favourites-item<% if ( isSelected ) { %> m-selected<% } %>" title="<%= provider %>" data-id="<%= id %>">
             <span class="content__favourites-icon"></span>
             <%= name %>
         </li>

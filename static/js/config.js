@@ -34,6 +34,9 @@ var config = {
                 minus:      '.content__menu-minus'
             }
         },
+        favourites: {
+            item:           '.content__favourites-item'
+        },
         overlay:            '.content__overlay'
     },
     classes: {
@@ -60,7 +63,7 @@ var config = {
         },
         overlay: {
             start:          'm-overlay-start',
-            slimming: {
+            none: {
                 day:        'm-overlay-day-slimming',
                 week:       'm-overlay-week-slimming'
             },
@@ -71,7 +74,8 @@ var config = {
             attention:      'm-overlay-attention'
         },
         favourites: {
-            slider:         'm-column-slider'
+            slider:         'm-column-slider',
+            selected:       'm-selected'
         },
         order: {
             restaurant:     'content__order-restaurant',
@@ -131,6 +135,13 @@ var config = {
             secondary:  'Горячие блюда',
             snack:      'Холодные блюда и закуски',
             dessert:    'Бутерброды и выпечка',
+            misc:       'Прочее'
+        },
+        categoriesEn2RuShort: {
+            primary:    'Первое',
+            secondary:  'Второе',
+            snack:      'Салаты',
+            dessert:    'Выпечка',
             misc:       'Прочее'
         }
     }
