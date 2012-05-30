@@ -101,6 +101,7 @@ class RestApiTest(ResourceTestCase):
 
                         count += 1
 
+        self.assertTrue(0, post_data)
         resp = self.api_client.post(self.order_url, format='json', data=post_data,
             authentication=self.get_credentials())
         self.assertHttpCreated(resp)

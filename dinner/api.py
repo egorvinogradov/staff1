@@ -76,6 +76,8 @@ class OrderDayItemResource(ModelResource):
             date = day.date
             data_date = data[str(date)] = data.get(str(date), {})
             data_date['weekday'] = WEEK_DAYS[date.weekday()]
+            data_date['restaurant'] = False
+            data_date['none'] = False
             data_providers = data_date['providers'] = data_date.get('providers', {})
             data_provider = data_providers[dish.provider.name] = data_providers.get(dish.provider.name, {})
             data_cat = data_provider[dish.group.title] = data_provider.get(dish.group.title, [])
