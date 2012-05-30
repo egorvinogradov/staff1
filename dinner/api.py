@@ -85,6 +85,7 @@ class OrderDayItemResource(ModelResource):
                 'name': dish.title,
                 'price': price,
                 'count': count,
+                'id': dish.id,
                 })
 
         bundle.data = data
