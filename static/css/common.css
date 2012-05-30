@@ -187,7 +187,7 @@ html {
 
 .header__day.m-active .header__day-title {
     margin: -1px;
-    border:  2px solid #FFC800;
+    border:  2px solid #83DAF5;
 }
 
 .header__day.m-completed .header__day-title {
@@ -197,6 +197,7 @@ html {
 .header__day.m-inactive .header__day-title {
     background: transparent;
     color: #989FA5;
+    cursor: default;
 }
 
 .header__day-comment {
@@ -312,7 +313,7 @@ html {
 
 .header__provider + .header__provider {
     margin-left: -13px;
-    z-index: 1;
+    /*z-index: 1;*/
 }
 
 .header__provider.m-active + .header__provider {
@@ -633,6 +634,7 @@ html {
     margin: 0 -1px -1px 0;
     background: #fff;
     color: #41454E;
+    cursor: pointer;
     -webkit-border-radius: 5px;
        -moz-border-radius: 5px;
             border-radius: 5px;
@@ -644,7 +646,6 @@ html {
     height: 39px;
     overflow: hidden;
     margin: 9px 9px 0 9px;
-    cursor: pointer;
 }
 
 .content__menu-count {
