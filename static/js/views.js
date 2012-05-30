@@ -251,24 +251,30 @@ var MenuView = Backbone.View.extend({
             attention: _.template($('#template_overlay-attention').html())
         }
     },
-    initialize: function(data){
+    initialize: function(data, initOptions){
 
         console.log('MENU view init', data, this.el, data.app, data.app.els.page);
 
-        this.model.fetch({
-            success: $.proxy(this.modelFetchSuccess, this),
-            error: $.proxy(this.modelFetchError, this)
-        });
-
+        this.initOptions = initOptions || {};
         this.el = $(this.el);
         this.app = data.app;
+        this.getModel(this.render);
     },
-    modelFetchSuccess: function(){
-        this.menu = this.assembleMenu(this.model.get('objects'));
-        this.render();
-    },
-    modelFetchError: function(){
-        console.log('MENU model fetch error');
+    getModel: function(callback){
+
+        var success = function(data){
+                this.menu = this.assembleMenu(this.model.get('objects'));
+                callback.call(this, this.menu);
+            },
+            error = function(error){
+                console.log('MENU model fetch error', error);
+            };
+
+        this.model.fetch({
+            success: $.proxy(success, this),
+            error: $.proxy(error, this)
+        });
+
     },
     assembleMenu: function(objects){
 
@@ -409,9 +415,9 @@ var MenuView = Backbone.View.extend({
     },
     render: function(params){
 
-        if ( !this.menu || _.isEmpty(this.menu) ) return;
+        console.log('MENU view render:', this,  this.menu, this.el, _.clone(this.app.options), _.clone(params));
 
-        console.log('MENU view render:', this.menu, this.el, _.clone(this.app.options), _.clone(params));
+        if ( !this.menu || _.isEmpty(this.menu) || this.initOptions.silent ) return;
 
         this.app.header.bindDayEvents(this.menu);
 
@@ -717,38 +723,63 @@ var OrderView = Backbone.View.extend({
 
         console.log('ORDER view initialize', this.model, this.model.get('objects'));
 
+
+        this.app = data.app;
+        this.el = $(this.el);
+
         this.model.fetch({
             success: $.proxy(this.modelFetchSuccess, this),
             error: $.proxy(this.modelFetchError, this)
         });
 
-        this.app = data.app;
-        this.el = $(this.el);
     },
     modelFetchSuccess: function(){
 
-
         console.log('-- order model', this.model);
 
+        var objects = this.model.get('objects')[0],
+            menu = this.app && this.app.menu ? this.app.menu.menu : null;
 
-//
-//        var menu = this.app.menu.menu;
-//
-//        if ( !this.app.menu.menu || _.isEmpty(this.app.menu.menu) ) {
-//            console.warn('--- no menu!');
-//            // model fetch
-//            //menu = ''
-//        }
+        if ( !menu || _.isEmpty(menu) ) {
 
-        this.order = this.assembleOrder(this.model.get('objects')[0]);
-        //this.order = this.model.get('objects')[0];
+            this.app.menu = new MenuView({
+                model: new MenuModel(),
+                el: this.app.els.wrapper,
+                app: this.app
+            },
+            { silent: true });
+
+            this.app.menu.getModel(ok);
+
+
+
+            console.log('--- no menu!');
+
+            // model fetch
+            //menu = ''
+
+
+            var ok = function(data){
+
+
+                console.log('111111111', data, this, '|', this.app.menu.menu);
+                
+            };
+
+            this.app.menu.getModel(ok);
+
+
+
+        }
+
+        this.order = this.assembleOrder(objects, menu);
         this.render();
 
     },
     modelFetchError: function(){
         console.log('ORDER model fetch error');
     },
-    assembleOrder: function(objects){
+    assembleOrder: function(objects, menu){
 
         var order = [];
 
@@ -847,6 +878,7 @@ var OrderView = Backbone.View.extend({
         _.each(this.order, function(data){
 
             var dayHTML = [],
+                dayPrice = 0,
                 hasDishes = !data.restaurant && !data.none,
                 template,
                 content;
@@ -857,10 +889,10 @@ var OrderView = Backbone.View.extend({
 
                     _.each(dishes, function(dish){
 
-                        dish.id = 100;
                         dish.provider = provider;
-                        dish.category = config.text.categoriesRu2En[ config.text.categoriesEn2Ru[ category ] ];
+                        dish.category = config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trim(category).toLowerCase() ] ];
                         dayHTML.push(this.templates.item(dish));
+                        dayPrice += +dish.price;
                         
                     }, this);
                 }, this);
@@ -872,7 +904,7 @@ var OrderView = Backbone.View.extend({
                 content = {
                     date: data.date,
                     day: data.weekday.capitalize(),
-                    price: '400',       
+                    price: dayPrice,
                     dishes: dayHTML.join('')
                 };
             }
