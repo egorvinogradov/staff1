@@ -727,59 +727,20 @@ var OrderView = Backbone.View.extend({
     },
     modelFetchSuccess: function(){
 
-        var mock = {
 
-            '2012-05-22': {
-                dishes: {
-                    21: 1,
-                    7: 2,
-                    56: 1,
-                    89: 1
-                },
-                restaurant: false,
-                none: false
-            },
-            '2012-05-23': {
-                dishes: {
-                    21: 1,
-                    7: 2,
-                    56: 1,
-                    89: 1
-                },
-                restaurant: false,
-                none: false
-            },
-            '2012-05-24': {
-                dishes: {},
-                restaurant: true,
-                none: false
-            },
-            '2012-05-25': {
-                restaurant: false,
-                none: true
-            },
-            '2012-05-26': {
-                dishes: {
-                    21: 1,
-                    7: 2,
-                    56: 1,
-                    89: 1
-                },
-                restaurant: false,
-                none: false
-            }
-        };
+        console.log('-- order model', this.model);
 
-        var menu = this.app.menu.menu;
 
-        if ( !this.app.menu.menu || _.isEmpty(this.app.menu.menu) ) {
-            console.warn('--- no menu!');
-            // model fetch
-            //menu = ''
-        }
+//
+//        var menu = this.app.menu.menu;
+//
+//        if ( !this.app.menu.menu || _.isEmpty(this.app.menu.menu) ) {
+//            console.warn('--- no menu!');
+//            // model fetch
+//            //menu = ''
+//        }
 
-        //this.order = this.assembleOrder(this.model.get('objects'), menu);
-        this.order = this.assembleOrder(mock, menu);
+        this.order = this.assembleOrder(this.model.get('objects'));
         this.render();
 
     },
@@ -788,25 +749,87 @@ var OrderView = Backbone.View.extend({
     },
     assembleOrder: function(objects, menu){
 
-        var order = [],
-            days = {};
 
-        _.each(menu, function(data, day){
-            days[data.date] = day;
-        });
 
-        _.each(objects, function(data, date){
-            data.date = date;
-            data.weekday = days[date];
-            order.push(data);
-        });
 
-        //order.sort(fun);
 
-        return order;
+//{
+//    "meta": {
+//        "limit": 20,
+//        "next": null,
+//        "offset": 0,
+//        "previous": null,
+//        "total_count": 1
+//    },
+//    "objects": [{
+//        "2012-05-26": {
+//            "providers": {
+//                "Fusion": {
+//                    "первые блюда": [{
+//                        "count": 1,
+//                        "name": "Суп-пюре томатный с сырными гренками",
+//                        "price": "80.00"
+//                    }],
+//                    "пирожное": [{
+//                        "count": 1,
+//                        "name": "Штрудель с творогом и сливой",
+//                        "price": "70.00"
+//                    }],
+//                    "прочее": [{
+//                        "count": 1,
+//                        "name": "Кока-кола 0,5",
+//                        "price": "35.00"
+//                    }, {
+//                        "count": 1,
+//                        "name": "Чай \"Липтон\" в ассортименте",
+//                        "price": "40.00"
+//                    }, {
+//                        "count": 1,
+//                        "name": "Чай Nestea 0,5",
+//                        "price": "45.00"
+//                    }]
+//                }
+//            },
+//            "weekday": "Суббота"
+//        }
+//    }]
+//}
+
+
+
+
+        
+
+
+
+
+
+
+
+
+//
+//
+//        var order = [],
+//            days = {};
+//
+//        _.each(menu, function(data, day){
+//            days[data.date] = day;
+//        });
+//
+//        _.each(objects, function(data, date){
+//            data.date = date;
+//            data.weekday = days[date];
+//            order.push(data);
+//        });
+//
+//        //order.sort(fun);
+//
+//        return order;
 
     },
     render: function(){
+
+        return;
 
 //        $.ajax({
 //            url: '/api/v1/order/',
