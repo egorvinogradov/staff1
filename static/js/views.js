@@ -258,13 +258,79 @@ var MenuView = Backbone.View.extend({
         this.initOptions = initOptions || {};
         this.el = $(this.el);
         this.app = data.app;
-        this.getModel(this.render);
+        this.getData(this.render);
     },
-    getModel: function(callback){
+    getData: function(callback){
+
+
+//        var success = function(data){
+//
+//                var objects = this.model.get('objects'),
+//                    order = this.app && this.app.order
+//                        ? this.app.order.order
+//                        : null,
+//                    getOrder = function(){
+//
+//                        this.app.order = new OrderView({
+//                            model: new OrderModel(),
+//                            el: this.app.els.wrapper,
+//                            app: this.app
+//                        },
+//                        { silent: true });
+//
+//                        this.app.order.getData($.proxy(function(){
+//                            order = this.app.order.order;
+//                            this.menu = this.assembleMenu(objects, order);
+//                            //callback.call(this);
+//                        }, this));
+//                    };
+//
+//                if ( !order || _.isEmpty(order) ) {
+//                    getOrder.call(this);
+//                }
+//                else {
+//                    this.menu = this.assembleMenu(objects, order);
+//                    //callback.call(this);
+//                }
+//
+//            },
+//            error = function(error){
+//                console.log('MENU model fetch error', error);
+//            };
+//
+//        this.model.fetch({
+//            success: $.proxy(success, this),
+//            error: $.proxy(error, this)
+//        });
+
+
+
+
+
 
         var success = function(data){
-                this.menu = this.assembleMenu(this.model.get('objects'));
-                callback.call(this, this.menu);
+
+                var objects = this.model.get('objects'),
+                    order = this.app && this.app.order ? this.app.order.order : null;
+
+                if ( !order || _.isEmpty(order) ) {
+
+                    var setOrder = function(data){
+                        order = this.app.order.order;
+                    };
+
+                    this.app.order = new OrderView({
+                        model: new OrderModel(),
+                        el: this.app.els.wrapper,
+                        app: this.app
+                    },
+                    { silent: true });
+
+                    this.app.order.getData(setOrder);
+                }
+
+                this.menu = this.assembleMenu(objects, order);
+                callback.call(this);
             },
             error = function(error){
                 console.log('MENU model fetch error', error);
@@ -276,7 +342,9 @@ var MenuView = Backbone.View.extend({
         });
 
     },
-    assembleMenu: function(objects){
+    assembleMenu: function(objects, order){
+        
+        console.log('--- ASSEMBLE MENU', objects, order);
 
         var weekMenu = {},
             categoriesOrder = {
@@ -285,18 +353,11 @@ var MenuView = Backbone.View.extend({
                 snack: 2,
                 dessert: 3,
                 misc: 4
-            },
-            trim = function(str){
-                return str
-                    .toLowerCase()
-                    .replace(/^\s+/, '')
-                    .replace(/\s+$/, '')
-                    .replace(/\s+/g, ' ');
             };
 
         _.each(objects, function(day){
 
-            var weekday = config.text.daysRu2En[ trim(day.weekday) ],
+            var weekday = config.text.daysRu2En[ $.trimAll(day.weekday) ],
                 dayMenu = weekMenu[ weekday ] = {
                     providers: {},
                     date: day.date
@@ -308,7 +369,7 @@ var MenuView = Backbone.View.extend({
 
                 _.each(categories, function(dishes, category){
 
-                    var categoryName = config.text.categoriesRu2En[ trim(category) ],
+                    var categoryName = config.text.categoriesRu2En[ $.trimAll(category) ],
                         categoryMenu = providerMenu[categoryName] = {
                             name:   config.text.categoriesEn2Ru[categoryName],
                             order:  categoriesOrder[categoryName],
@@ -415,7 +476,7 @@ var MenuView = Backbone.View.extend({
     },
     render: function(params){
 
-        console.log('MENU view render:', this,  this.menu, this.el, _.clone(this.app.options), _.clone(params));
+        console.log('MENU view render:',  this.menu, this.app.order.order, this.el, _.clone(this.app.options), _.clone(params));
 
         if ( !this.menu || _.isEmpty(this.menu) || this.initOptions.silent ) return;
 
@@ -719,86 +780,102 @@ var OrderView = Backbone.View.extend({
         message: _.template($('#template_order-group-message').html()),
         item: _.template($('#template_menu-item').html())
     },
-    initialize: function(data){
+    initialize: function(data, initOptions){
 
-        console.log('ORDER view initialize', this.model, this.model.get('objects'));
+        console.log('ORDER view initialize', arguments);
 
-
-        this.app = data.app;
+        this.initOptions = initOptions || {};
         this.el = $(this.el);
+        this.app = data.app;
+        this.getData(this.render);
+    },
+    getData: function(callback){
+
+        var success = function(data){
+
+                var objects = this.model.get('objects')[0],
+                    menu = this.app && this.app.menu
+                        ? this.app.menu.menu
+                        : null,
+                    getMenu = function(){
+
+                        this.app.menu = new MenuView({
+                            model: new MenuModel(),
+                            el: this.app.els.wrapper,
+                            app: this.app
+                        },
+                        { silent: true });
+
+                        this.app.menu.getData($.proxy(function(){
+                            menu = this.app.menu.menu;
+                            this.order = this.assembleOrder(objects, menu);
+                            callback.call(this, this.menu);
+                        }, this));
+                    };
+
+                if ( !menu || _.isEmpty(menu) ) {
+                    getMenu.call(this);
+                }
+                else {
+                    this.order = this.assembleOrder(objects, menu);
+                    callback.call(this);
+                }
+
+            },
+            error = function(error){
+                console.log('MENU model fetch error', error);
+            };
 
         this.model.fetch({
-            success: $.proxy(this.modelFetchSuccess, this),
-            error: $.proxy(this.modelFetchError, this)
+            success: $.proxy(success, this),
+            error: $.proxy(error, this)
         });
 
     },
-    modelFetchSuccess: function(){
-
-        console.log('-- order model', this.model);
-
-        var objects = this.model.get('objects')[0],
-            menu = this.app && this.app.menu ? this.app.menu.menu : null;
-
-        if ( !menu || _.isEmpty(menu) ) {
-
-            this.app.menu = new MenuView({
-                model: new MenuModel(),
-                el: this.app.els.wrapper,
-                app: this.app
-            },
-            { silent: true });
-
-            this.app.menu.getModel(ok);
-
-
-
-            console.log('--- no menu!');
-
-            // model fetch
-            //menu = ''
-
-
-            var ok = function(data){
-
-
-                console.log('111111111', data, this, '|', this.app.menu.menu);
-                
-            };
-
-            this.app.menu.getModel(ok);
-
-
-
-        }
-
-        this.order = this.assembleOrder(objects, menu);
-        this.render();
-
-    },
-    modelFetchError: function(){
-        console.log('ORDER model fetch error');
-    },
     assembleOrder: function(objects, menu){
 
-        var order = [];
+        var order = [],
+            days = {};
+
+        _.each(menu, function(data, day){
+
+            data.weekdayEn = day;
+            data.weekday = config.text.daysEn2Ru[day];
+            data.providers = null,
+            data.restaurant = false;
+            data.none = true;
+            days[data.date] = data;
+        });
+
+
+        console.log('--- dys', days, menu);
 
         _.each(objects, function(data, date){
 
             data.date = date;
             data.weekdayEn = config.text.daysRu2En[ data.weekday.toLowerCase() ];
             data.order = config.text.dayOrder[ data.weekdayEn ];
+            days[date] = data;
+        });
+
+        _.each(days, function(data){
             order.push(data);
         });
 
         order.sort(function(a ,b){
-            return a.order > b.order ? -1 : 1;
+            return a.order < b.order ? -1 : 1;
         });
 
         return order;
 
     },
     render: function(){
+
+
+        if ( this.initOptions.silent ) {
+            console.log('--- SILENT ORDER RENDER', this.order);
+            return;
+        }
 
 
 
@@ -867,7 +944,7 @@ var OrderView = Backbone.View.extend({
                 restaurant: false,
                 none: false
             }
-        }
+        };
 
         console.log('ORDER view render', this.order);
 
@@ -890,7 +967,7 @@ var OrderView = Backbone.View.extend({
                     _.each(dishes, function(dish){
 
                         dish.provider = provider;
-                        dish.category = config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trim(category).toLowerCase() ] ];
+                        dish.category = config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trimAll(category) ] ];
                         dayHTML.push(this.templates.item(dish));
                         dayPrice += +dish.price;
                         
