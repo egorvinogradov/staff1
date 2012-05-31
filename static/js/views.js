@@ -94,6 +94,15 @@ var AppView = Backbone.View.extend({
             this.els.content.removeClass(className);
         }, this);
 
+    },
+    fetchModel: function(model, callback, context){
+
+        model.fetch({
+            success: $.proxy(callback, context || window),
+            error: function(error){
+                console.log('FETCH MODEL ERROR', error);
+            }
+        });
     }
 });
 
@@ -262,89 +271,43 @@ var MenuView = Backbone.View.extend({
     },
     getData: function(callback){
 
+        var menu = this.model.get('objects'),
+            order = this.app && this.app.order
+                ? this.app.order.model
+                : null,
+            setData = function(){
 
-//        var success = function(data){
-//
-//                var objects = this.model.get('objects'),
-//                    order = this.app && this.app.order
-//                        ? this.app.order.order
-//                        : null,
-//                    getOrder = function(){
-//
-//                        this.app.order = new OrderView({
-//                            model: new OrderModel(),
-//                            el: this.app.els.wrapper,
-//                            app: this.app
-//                        },
-//                        { silent: true });
-//
-//                        this.app.order.getData($.proxy(function(){
-//                            order = this.app.order.order;
-//                            this.menu = this.assembleMenu(objects, order);
-//                            //callback.call(this);
-//                        }, this));
-//                    };
-//
-//                if ( !order || _.isEmpty(order) ) {
-//                    getOrder.call(this);
-//                }
-//                else {
-//                    this.menu = this.assembleMenu(objects, order);
-//                    //callback.call(this);
-//                }
-//
-//            },
-//            error = function(error){
-//                console.log('MENU model fetch error', error);
-//            };
-//
-//        this.model.fetch({
-//            success: $.proxy(success, this),
-//            error: $.proxy(error, this)
-//        });
+                console.log('-- set data', menu, order);
 
-
-
-
-
-
-        var success = function(data){
-
-                var objects = this.model.get('objects'),
-                    order = this.app && this.app.order ? this.app.order.order : null;
-
-                if ( !order || _.isEmpty(order) ) {
-
-                    var setOrder = function(data){
-                        order = this.app.order.order;
+                if ( !menu || !order ) return;
+                this.menu = this.assembleMenu(menu.get('objects'));
+                if ( this.app && !this.app.order ) {
+                    this.app.order = {
+                        model: order
                     };
-
-                    this.app.order = new OrderView({
-                        model: new OrderModel(),
-                        el: this.app.els.wrapper,
-                        app: this.app
-                    },
-                    { silent: true });
-
-                    this.app.order.getData(setOrder);
                 }
-
-                this.menu = this.assembleMenu(objects, order);
                 callback.call(this);
-            },
-            error = function(error){
-                console.log('MENU model fetch error', error);
+                
             };
 
-        this.model.fetch({
-            success: $.proxy(success, this),
-            error: $.proxy(error, this)
-        });
+        if ( !menu ) {
+            this.app.fetchModel(this.model, function(model){
+                menu = model;
+                setData.call(this);
+            }, this);
+        }
+
+        if ( !order ) {
+            this.app.fetchModel(new OrderModel(), function(model){
+                order = model;
+                setData.call(this);
+            }, this);
+        }
+
+        setData.call(this);
 
     },
-    assembleMenu: function(objects, order){
-        
-        console.log('--- ASSEMBLE MENU', objects, order);
+    assembleMenu: function(objects){
 
         var weekMenu = {},
             categoriesOrder = {
@@ -476,7 +439,7 @@ var MenuView = Backbone.View.extend({
     },
     render: function(params){
 
-        console.log('MENU view render:',  this.menu, this.app.order.order, this.el, _.clone(this.app.options), _.clone(params));
+        console.log('MENU view render:',  this.menu, this.app.order.model.attributes, this.el, _.clone(this.app.options), _.clone(params));
 
         if ( !this.menu || _.isEmpty(this.menu) || this.initOptions.silent ) return;
 
@@ -791,48 +754,52 @@ var OrderView = Backbone.View.extend({
     },
     getData: function(callback){
 
-        var success = function(data){
 
-                var objects = this.model.get('objects')[0],
-                    menu = this.app && this.app.menu
-                        ? this.app.menu.menu
-                        : null,
-                    getMenu = function(){
+        var order = this.model.get('objects'),
+            menu = this.app && this.app.menu
+                ? this.app.menu.model
+                : null,
+            setData = function(){
 
-                        this.app.menu = new MenuView({
-                            model: new MenuModel(),
-                            el: this.app.els.wrapper,
-                            app: this.app
-                        },
-                        { silent: true });
+                console.log('-- set data ORDER', menu, order);
 
-                        this.app.menu.getData($.proxy(function(){
-                            menu = this.app.menu.menu;
-                            this.order = this.assembleOrder(objects, menu);
-                            callback.call(this, this.menu);
-                        }, this));
+                if ( !menu || !order ) return;
+                this.order = this.assembleOrder(order.get('objects')[0], menu);
+
+                if ( this.app && !this.app.menu ) {
+                    this.app.menu = {
+                        model: menu
                     };
-
-                if ( !menu || _.isEmpty(menu) ) {
-                    getMenu.call(this);
                 }
-                else {
-                    this.order = this.assembleOrder(objects, menu);
-                    callback.call(this);
-                }
+                callback.call(this);
 
-            },
-            error = function(error){
-                console.log('MENU model fetch error', error);
             };
 
-        this.model.fetch({
-            success: $.proxy(success, this),
-            error: $.proxy(error, this)
-        });
+        if ( !order || !order.length ) {
+            this.app.fetchModel(this.model, function(model){
+                order = model;
+                setData.call(this);
+            }, this);
+        }
+
+        if ( !menu ) {
+            this.app.fetchModel(new MenuModel(), function(model){
+                menu = model;
+                setData.call(this);
+            }, this);
+        }
+
+        setData.call(this);
+
+        console.log('ОХУЕННО РАБОТАЕТ!');
+
 
     },
     assembleOrder: function(objects, menu){
+
+        console.log('-- assemble order olol', objects, menu);
+
+        return;
 
         var order = [],
             days = {};
