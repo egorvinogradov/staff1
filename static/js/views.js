@@ -525,11 +525,13 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.app || !this.app.order || !this.app.order.model ) return;
 
-        
-        this.app.order.model.get('objects')[0][date] =
-                _.clone(this.app.order.model.get('objects')[0]['2012-05-26']); // TODO: remove
-        var ids = []; // TODO: remove
+        {
 
+            this.app.order.model.get('objects')[0][date] =
+                    _.clone(this.app.order.model.get('objects')[0]['2012-05-26']); // TODO: remove
+            var ids = []; // TODO: remove
+
+        }
 
         order = this.app.order.model.get('objects')[0];
 
@@ -601,15 +603,95 @@ var MenuView = Backbone.View.extend({
     },
     bindEventsForOrder: function(date){
 
+        var mock = {
+            '2012-06-01': {
+                'dishes': {
+                    720: 1,
+                    721: 1,
+                    722: 1,
+                    723: 1,
+                    673: 1
+                }
+            }
+        };
+
+
+        window.order = {};
+
+        this.els.item = this.els.item || $(config.selectors.menu.item.container);
+        this.els.plus = $(config.selectors.menu.item.plus);
+        this.els.minus = $(config.selectors.menu.item.minus);
+        this.els.countControls = this.els.plus.add(this.els.minus);
+
+
+        this.els.item.click($.proxy(function(event){
+
+            var selected = config.classes.menu.selected,
+                element = $(event.currentTarget),
+                id = element.data('id');
+
+            if ( !order[date] ) {
+                order[date] = {
+                    dishes: {},
+                    restaurant: false,
+                    none: false
+                };
+            }
+
+            if ( element.hasClass(selected) ) {
+                delete order[date].dishes[id];
+                element.removeClass(selected);
+            }
+            else {
+                order[date].dishes[id] = 1;
+                element.addClass(selected);
+            }
+
+        }, this));
+
+
+        this.els.countControls.click($.proxy(function(event){
+
+            var els = {},
+                count = {},
+                id;
+
+            els.button = $(event.currentTarget);
+            els.container = els.button.parents(config.selectors.menu.item.container);
+            els.count = els.container.find(config.selectors.menu.item.count);
+            els.number = els.count.find(config.selectors.menu.item.number);
+            id = els.container.data('id');
+
+            count.original = +els.number.html() || 1;
+            count.increment = count.original < 9 ? count.original + 1 : 9;
+            count.decrement = count.original > 1 ? count.original - 1 : 1;
+            count.changed = els.button.is(config.selectors.menu.item.plus)
+                ? count.increment
+                : count.decrement;
+
+            if ( !order[date] ) {
+                order[date] = {
+                    dishes: {},
+                    restaurant: false,
+                    none: false
+                };
+            }
+
+            order[date].dishes[id] = count.changed;
+
+            count.changed > 1
+                ? els.count.removeClass(config.classes.menu.countOne)
+                : els.count.addClass(config.classes.menu.countOne);
+
+            els.number.html(count.changed);
+
+        }, this));
+
+
 
 //        this.els.header.dayRestaurant = $(config.selectors.header.dayRestaurant);
 //        this.els.header.daySlimming = $(config.selectors.header.daySlimming);
 //        this.els.header.dayControls = this.els.header.dayRestaurant.add(this.els.header.daySlimming);
-
-        this.els.item = $(config.selectors.menu.item.container);
-        this.els.plus = $(config.selectors.menu.item.plus);
-        this.els.minus = $(config.selectors.menu.item.minus);
-        this.els.countControls = this.els.plus.add(this.els.minus);
 
 
 //        this.els.header.dayControls.click($.proxy(function(){
@@ -651,72 +733,7 @@ var MenuView = Backbone.View.extend({
 //        }, this));
 
 
-        this.els.item.click($.proxy(function(event){
 
-            var selected = config.classes.menu.selected,
-                els = {},
-                id;
-
-            els.dish = $(event.currentTarget);
-            els.container = els.dish.parents(config.selectors.menu.item.container);
-            id = els.container.data('id');
-
-            if ( !this.order[date] ) {
-                this.order[date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: false
-                };
-            }
-
-            if ( els.container.hasClass(selected) ) {
-                delete this.order[date].dishes[id];
-                els.container.removeClass(selected);
-            }
-            else {
-                this.order[date].dishes[id] = 1;
-                els.container.addClass(selected);
-            }
-
-        }, this));
-
-
-        this.els.countControls.click($.proxy(function(event){
-
-            var els = {},
-                count = {},
-                id;
-
-            els.button = $(event.currentTarget);
-            els.container = els.button.parents(config.selectors.menu.item.container);
-            els.count = els.container.find(config.selectors.menu.item.count);
-            els.number = els.count.find(config.selectors.menu.item.number);
-            id = els.container.data('id');
-
-            count.original = +els.number.html() || 1;
-            count.increment = count.original < 9 ? count.original + 1 : 9;
-            count.decrement = count.original > 1 ? count.original - 1 : 1;
-            count.changed = els.button.is(config.selectors.menu.item.plus)
-                ? count.increment
-                : count.decrement;
-
-            if ( !this.order[date] ) {
-                this.order[date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: false
-                };
-            }
-
-            this.order[date].dishes[id] = count.changed;
-
-            count.changed > 1
-                ? els.count.removeClass(config.classes.menu.countOne)
-                : els.count.addClass(config.classes.menu.countOne);
-
-            els.number.html(count.changed);
-
-        }, this));
 
     },
     renderOverlay: function(options){
