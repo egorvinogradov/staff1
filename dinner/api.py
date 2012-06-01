@@ -10,7 +10,7 @@ from dinner.utils import get_week_start_day
 
 class DayResource(ModelResource):
     class Meta:
-        queryset = Day.objects.filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=7)))
+        queryset = Day.objects.filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=0)))
         resource_name = 'day'
 
 
@@ -128,7 +128,7 @@ class OrderDayItemResource(ModelResource):
         for date, data in bundle.data.items():
             dishes = data.get('dishes', {})
 
-            if dishes is not None:
+            if dishes:
                 for dish_id, count in dishes.items():
                     item, created = OrderDayItem.objects.get_or_create(
                         order=order,
