@@ -79,7 +79,7 @@ var config = {
         },
         order: {
             restaurant:     'content__order-restaurant',
-            slimming:       'content__order-slimming'
+            none:       'content__order-slimming'
         }
     },
     text: {
@@ -120,16 +120,6 @@ var config = {
             saturday:   'с субботы',
             sunday:     'с воскресенья'
         },
-        categoriesRu2En: {
-            'первые блюда': 'primary',
-            'вторые блюда': 'secondary',
-            'горячие блюда': 'secondary',
-            'прочее': 'misc',
-            'салаты': 'snack',
-            'холодные блюда и закуски': 'snack',
-            'бутерброды, выпечка': 'dessert',
-            'пирожное': 'dessert'
-        },
         categoriesEn2Ru: {
             primary:    'Первые блюда',
             secondary:  'Горячие блюда',
@@ -143,6 +133,16 @@ var config = {
             snack:      'Салаты',
             dessert:    'Выпечка',
             misc:       'Прочее'
+        },
+        categoriesRu2En: {
+            'первые блюда':             'primary',
+            'вторые блюда':             'secondary',
+            'горячие блюда':            'secondary',
+            'прочее':                   'misc',
+            'салаты':                   'snack',
+            'холодные блюда и закуски': 'snack',
+            'бутерброды, выпечка':      'dessert',
+            'пирожное':                 'dessert'
         }
     }
 };

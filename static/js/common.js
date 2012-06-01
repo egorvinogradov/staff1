@@ -104,7 +104,7 @@ var Router = Backbone.Router.extend({
 //                    data.options && data.options.day === day && data.options.provider === provider;
 //
 //        if ( !condition ) {
-//            app.model.trigger('toggle');
+                                        //            app.model.trigger('toggle');
 //            console.log('TOGGLE');
 //        }
 
