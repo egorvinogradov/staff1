@@ -229,25 +229,25 @@ var AppView = Backbone.View.extend({
 //
 //            if ( _.isEmpty(order) ) return;
 //
-//            var success = function(data){
-//                    console.log('order OK', data);
-//                },
-//                error = function(data){
-//                    console.log('order FAIL', data);
-//                };
-//
-//            $.ajax({
-//                type: 'POST',
-//                contentType: 'application/json',
-//                url: '/api/v1/order/',
-//                data: $.stringify(order),
-//                success: function(data){
-//                    data.status === 'ok'
-//                        ? success(data)
-//                        : error(data);
-//                },
-//                error: error
-//            });
+            var success = function(data){
+                    console.log('order OK', data);
+                },
+                error = function(data){
+                    console.log('order FAIL', data);
+                };
+
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/api/v1/order/',
+                data: JSON.stringify(zzz),
+                success: function(data){
+                    data.status === 'ok'
+                        ? success(data)
+                        : error(data);
+                },
+                error: error
+            });
 //
 //        }, this));
     }
