@@ -676,6 +676,7 @@ html {
 .content__menu-minus {
     cursor: pointer;
     font-size: 20px;
+    line-height: 25px;
 }
 
 .content__menu-number {

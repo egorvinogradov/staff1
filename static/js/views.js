@@ -124,6 +124,114 @@ var AppView = Backbone.View.extend({
                 console.log('FETCH MODEL ERROR', error);
             }
         });
+    },
+    getLocalData: function(key){
+
+        var value;
+
+        if ( typeof localStorage == 'undefined' ) {
+            console.log('ERROR: local storage is not supported');
+            return;
+        }
+
+        try {
+            console.log('-- local data', localStorage.getItem(key));
+            var data = localStorage.getItem(key);
+            value = typeof data === 'object'
+                ? JSON.parse(data)
+                : {};
+        }
+        catch (e) {
+            console.log('ERROR: local storage');
+            value = {};
+        }
+
+        console.log('GET LOCAL DATA', value);
+
+        return value;
+
+    },
+    setLocalData: function(key, value){
+
+        if ( typeof localStorage == 'undefined' ) {
+            console.log('ERROR: local storage is not supported');
+            return;
+        }
+
+        console.log('SET LOCAL DATA', value);
+
+        localStorage.setItem(key, JSON.stringify(value));
+        return value;
+    },
+    addToOrder: function(date, data){
+
+//        console.log('--- addToOrder', order[date], data);
+
+
+//        data = {
+//            dish: {
+//                id: 1,
+//                count: 1
+//            },
+//            restaurant: true,
+//            none: true
+//        };
+
+
+
+
+        var order = this.getLocalData('order');
+
+        if ( !order[date] ) {
+            order[date] = {
+                dishes: {},
+                restaurant: false,
+                none: false
+            };
+        }
+
+        if ( data.dish && data.dish.id ) {
+
+            console.log('OK', data.dish.id);
+
+            order[date].dishes[data.dish.id] = data.dish.count || 1;
+            order[date].restaurant = false;
+            order[date].none = false;
+
+            console.log('111', order[date].dishes[data.dish.id]);
+
+        }
+        else {
+
+            if ( data.restaurant || data.restaurant === false ) {
+                order[date].restaurant = data.restaurant;
+                if ( data.restaurant ) {
+                    order[date].none = false;
+                }
+            }
+
+            if ( data.none || data.none === false ) {
+                order[date].none = data.none;
+                if ( data.none ) {
+                    order[date].restaurant = false;
+                }
+            }
+        }
+
+        this.setLocalData('order', order);
+
+    },
+    removeDishFromOrder: function(date, id){
+
+        var order = this.getLocalData('order');
+
+        console.log('--- removeDishFromOrder', order[date], id);
+
+        if ( order[date] && order[date].dishes && order[date].dishes[id] ) {
+            delete order[date].dishes[id];
+        }
+
+        this.setLocalData('order', order);
     }
 });
 
@@ -628,22 +736,25 @@ var MenuView = Backbone.View.extend({
 
             var selected = config.classes.menu.selected,
                 element = $(event.currentTarget),
-                id = element.data('id');
+                id = element.data('id'),
+                target = $(event.target),
+                number = element.find(config.selectors.menu.item.number);
 
-            if ( !order[date] ) {
-                order[date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: false
-                };
-            }
+            if ( target.is(number) ) return;
 
             if ( element.hasClass(selected) ) {
-                delete order[date].dishes[id];
+                this.app.removeDishFromOrder(date, id);
                 element.removeClass(selected);
             }
             else {
-                order[date].dishes[id] = 1;
+
+                this.app.addToOrder(date, {
+                    dish: {
+                        id: id,
+                        count: 1
+                    }
+                });
+
                 element.addClass(selected);
             }
 
@@ -669,21 +780,20 @@ var MenuView = Backbone.View.extend({
                 ? count.increment
                 : count.decrement;
 
-            if ( !order[date] ) {
-                order[date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: false
-                };
-            }
-
-            order[date].dishes[id] = count.changed;
+            this.app.addToOrder(date, {
+                dish: {
+                    id: id,
+                    count: count.changed
+                }
+            });
 
             count.changed > 1
                 ? els.count.removeClass(config.classes.menu.countOne)
                 : els.count.addClass(config.classes.menu.countOne);
 
             els.number.html(count.changed);
+
+            event.stopPropagation();
 
         }, this));
 
@@ -767,6 +877,10 @@ var MenuView = Backbone.View.extend({
             };
 
 
+
+
+
+
 //        TODO: set to order
 //
 //        if ( !this.order[options.date] ) {
@@ -787,6 +901,15 @@ var MenuView = Backbone.View.extend({
             alert('overlay error');
             return;
         }
+
+
+        if ( options.overlayType === 'restaurant' || options.overlayType === 'none' ) {
+            var order = {};
+            order[options.overlayType] = true;
+            this.app.addToOrder(options.date, order);
+        }
+
+
 
 
         content = {
