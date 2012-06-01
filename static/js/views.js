@@ -804,22 +804,27 @@ var OrderView = Backbone.View.extend({
         });
 
         _.each(objects, function(data, date){
-
             data.date = date;
-            data.weekdayEn = config.text.daysRu2En[ data.weekday.toLowerCase() ];
-            data.order = config.text.dayOrder[ data.weekdayEn ];
             days[date] = data;
         });
-
-
-        console.log('--- days olol', days);
 
         _.each(days, function(data){
             order.push(data);
         });
 
         order.sort(function(a ,b){
-            return a.order < b.order ? -1 : 1;
+
+            var str = {
+                a: a.date.split('-'),
+                b: b.date.split('-')
+            },
+            date = {
+                a: new Date(+str.a[0], +str.a[1] - 1, +str.a[2]),
+                b: new Date(+str.b[0], +str.b[1] - 1, +str.b[2])
+            };
+
+            return +date.a < +date.b ? -1 : 1;
+
         });
 
         return order;
@@ -899,7 +904,7 @@ var OrderView = Backbone.View.extend({
                 content = {
                     date: data.date,
                     day: data.weekday.capitalize(),
-                    message: message + config.text.daysEn2RuInflect1[data.weekday],
+                    message: message + config.text.daysEn2RuInflect1[data.weekdayEn],
                     className: className
                 };
             }

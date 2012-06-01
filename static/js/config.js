@@ -79,19 +79,10 @@ var config = {
         },
         order: {
             restaurant:     'content__order-restaurant',
-            slimming:       'content__order-slimming'
+            none:       'content__order-slimming'
         }
     },
     text: {
-        dayOrder: {
-            monday:     0,
-            tuesday:    1,
-            wednesday:  2,
-            thursday:   3,
-            friday:     4,
-            saturday:   5,
-            sunday:     6
-        },
         daysRu2En: {
             'понедельник':  'monday',
             'вторник':      'tuesday',
