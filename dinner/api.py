@@ -10,7 +10,7 @@ from dinner.utils import get_week_start_day
 
 class DayResource(ModelResource):
     class Meta:
-        queryset = Day.objects.filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=14)))
+        queryset = Day.objects.filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=7)))
         resource_name = 'day'
 
 
