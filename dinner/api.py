@@ -43,6 +43,7 @@ class DayResource(ModelResource):
                     'name': dish.title,
                     'price': dish_day.price,
                     'weight': dish.weight,
+                    'favorite': FavoriteDish.objects.filter(dish=dish).exists()
                     }
             )
 
