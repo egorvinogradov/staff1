@@ -127,7 +127,7 @@ class OrderDayItemResource(ModelResource):
         for date, data in bundle.data.items():
             dishes = data.get('dishes', {})
 
-            if dishes:
+            if dishes is not None:
                 for dish_id, count in dishes.items():
                     item, created = OrderDayItem.objects.get_or_create(
                         order=order,
