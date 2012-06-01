@@ -295,8 +295,6 @@ var MenuView = Backbone.View.extend({
                 : null,
             setData = function(){
 
-                console.log('-- set data', menu, order);
-
                 if ( !menu || !order ) return;
                 this.menu = this.assembleMenu(menu.get('objects'));
                 if ( this.app && !this.app.order ) {
@@ -463,8 +461,7 @@ var MenuView = Backbone.View.extend({
 
         this.app.header.bindDayEvents(this.menu);
 
-        var _this = this,
-            currentOptions = params && params.options // TODO: fix
+        var currentOptions = params && params.options // TODO: fix
                     ? params.options
                     : this.app && this.app.options
                         ? this.app.options
@@ -516,9 +513,90 @@ var MenuView = Backbone.View.extend({
             });
         }
 
-        setTimeout(function(){
-            _this.bindEventsForOrder.call(_this, options.date);
-        }, 0);
+        setTimeout($.proxy(function(){
+            this.setSelectedDishes.call(this, options.date);
+            this.bindEventsForOrder.call(this, options.date);
+        }, this), 0);
+
+    },
+    setSelectedDishes: function(date){
+
+        var order;
+
+        if ( !this.app || !this.app.order || !this.app.order.model ) return;
+
+        
+        this.app.order.model.get('objects')[0][date] =
+                _.clone(this.app.order.model.get('objects')[0]['2012-05-26']); // TODO: remove
+        var ids = []; // TODO: remove
+
+
+        order = this.app.order.model.get('objects')[0];
+
+        if ( !order[date] || !order[date].providers ) return;
+
+        this.els.item = $(config.selectors.menu.item.container);
+
+        _.each(order[date].providers, function(categories, provider){
+            _.each(categories, function(dishes, category){
+                _.each(dishes, function(dish){
+
+                    ids.push(dish.id); // TODO: remove
+                    var id = dish.id + 100; // TODO: remove
+
+                    var element = this.els.item.filter('[data-id=' + id + ']'); // TODO: change id variable
+                    if ( element.length ) {
+                        
+                        element
+                            .addClass(config.classes.menu.selected)
+                            .find(config.selectors.menu.item.number)
+                            .html(dish.count);
+
+                        dish.count > 1
+                            && element
+                                .find(config.selectors.menu.count)
+                                .addClass(config.classes.menu.countOne);
+                    }
+
+                }, this);
+            }, this);
+        }, this);
+
+
+
+
+
+
+        {
+            var ids2 = [],
+                s = function(a,b){ return a < b ? -1 : 1 },
+                p = function(arr){
+                    var s = arr[0],
+                        res = [];
+                    for ( var i = 1, l = arr.length; i < l; i++ ) {
+                        if ( arr[i] !== arr[i-1] + 1 ) {
+                            s == arr[i-1]
+                                ? res.push( s )
+                                : res.push( s + ' - ' + arr[i-1] );
+
+                            s = arr[i];
+                        }
+                    }
+                    return res;
+                };
+
+            this.els.item.each(function(i, e){
+                ids2.push( $(e).data('id') );
+            });
+
+            ids.sort(s);
+            ids2.sort(s);
+
+            console.log('--- ids', ids);
+            console.log('--- ids2', p(ids2));
+
+        }
+
 
     },
     bindEventsForOrder: function(date){
@@ -828,7 +906,7 @@ var OrderView = Backbone.View.extend({
 
 //        $.ajax({
 //            url: '/api/v1/order/',
-//            method: 'POST',
+//            type: 'POST',
 //            contentType: 'application/json',
 //            data: { '2012-06-01': { 'dishes': { 720: 1, 721: 1, 722: 1, 723: 1, 673: 1 } } },
 //            success: function(data){
