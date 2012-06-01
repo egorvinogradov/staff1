@@ -10,9 +10,9 @@ var MenuModel = Backbone.Model.extend({
 });
 
 var OrderModel = Backbone.Model.extend({
-	url: '/api/v1/order'
+	url: '/api/v1/order/'
 });
 
 var FavouritesModel = Backbone.Model.extend({
-	url: '/api/v1/favorite'
+	url: '/api/v1/favorite/'
 });

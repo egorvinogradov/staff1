@@ -207,6 +207,49 @@ var AppView = Backbone.View.extend({
         }
 
         this.setLocalData('order', order);
+    },
+    makeOrder: function(order){
+
+
+        var model = ( this.order && this.order.model ) || new OrderModel();
+
+        model.set({
+            objects: this.getLocalData('order')
+        });
+
+        
+
+
+
+
+
+//        // TODO: save model
+//
+//        this.els.complete.click($.proxy(function(){
+//
+//            if ( _.isEmpty(order) ) return;
+//
+//            var success = function(data){
+//                    console.log('order OK', data);
+//                },
+//                error = function(data){
+//                    console.log('order FAIL', data);
+//                };
+//
+//            $.ajax({
+//                type: 'POST',
+//                contentType: 'application/json',
+//                url: '/api/v1/order/',
+//                data: $.stringify(order),
+//                success: function(data){
+//                    data.status === 'ok'
+//                        ? success(data)
+//                        : error(data);
+//                },
+//                error: error
+//            });
+//
+//        }, this));
     }
 });
 
@@ -316,36 +359,6 @@ var HeaderView = Backbone.View.extend({
             .filter('[rel="' + day + '"]')
             .addClass(config.classes.header.dayActive);
 
-    },
-    makeOrder: function(order){
-
-        // TODO: save model
-
-        this.els.complete.click($.proxy(function(){
-
-            if ( _.isEmpty(order) ) return;
-
-            var success = function(data){
-                    console.log('order OK', data);
-                },
-                error = function(data){
-                    console.log('order FAIL', data);
-                };
-
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/v1/order/',
-                data: $.stringify(order),
-                success: function(data){
-                    data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
-            });
-
-        }, this));
     }
 });
 
@@ -880,26 +893,6 @@ var MenuView = Backbone.View.extend({
             };
 
 
-
-
-
-
-//        TODO: set to order
-//
-//        if ( !this.order[options.date] ) {
-//            this.order[options.date] = {
-//                dishes: {},
-//                restaurant: false,
-//                none: true
-//            };
-//        }
-//
-//        this.order[options.date].restaurant = false;
-//        this.order[options.date].none = false;
-//        this.order[options.date].dishes = {};
-//        this.order[options.date][options.overlayType] = true;
-
-
         if ( !options.overlayType || !options.day ) { // TODO: don't forget attention overlay
             alert('overlay error');
             return;
@@ -907,13 +900,10 @@ var MenuView = Backbone.View.extend({
 
 
         if ( options.overlayType === 'restaurant' || options.overlayType === 'none' ) {
-            var order = {};
-            order[options.overlayType] = true;
-            this.app.addToOrder(options.date, order);
+            var dayOrderData = {};
+            dayOrderData[options.overlayType] = true;
+            this.app.addToOrder(options.date, dayOrderData);
         }
-
-
-
 
         content = {
             className: config.classes.overlay[options.overlayType][ options.day === 'week' ? 'week' : 'day' ],
