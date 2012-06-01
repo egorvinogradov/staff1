@@ -55,7 +55,31 @@ var AppView = Backbone.View.extend({
             }
         }
     },
-    render: function(){
+    render: function(page){
+//
+//        var config = {
+//
+//            menu: {
+//                model: MenuModel,
+//                view: MenuView
+//            },
+//            order: {
+//                model: OrderModel,
+//                view: OrderView
+//            },
+//            favourites: {
+//                model: FavouritesModel,
+//                view: FavouritesView
+//            }
+//        };
+//
+//        this[page] = new config[page].view({
+//            model: new config[page].model,
+//            el: this.els.wrapper,
+//            app: this
+//        });
+//
+//
 
         if ( this.page.menu ) {
             this.menu = new MenuView({
@@ -81,9 +105,6 @@ var AppView = Backbone.View.extend({
             });
         }
     },
-    renderMenu: function(options){
-        this.menu.render(options);
-    },
     resetPage: function(){
 
         _.each(config.classes.page, function(className){
@@ -105,8 +126,6 @@ var AppView = Backbone.View.extend({
         });
     }
 });
-
-
 
 
 
@@ -444,29 +463,6 @@ var MenuView = Backbone.View.extend({
 
         this.app.header.bindDayEvents(this.menu);
 
-
-//        var currentOptions;
-//
-//
-//        if ( params && params.options ) {
-//            currentOptions = params.options
-//            console.log('-- params exist');
-//        }
-//        else {
-//
-//            if ( this.app && this.app.options ) {
-//                currentOptions = this.app.options;
-//                console.log('-- this app exists');
-//            }
-//            else {
-//                currentOptions = {};
-//                console.log('-- options don\'t exist');
-//            }
-//        }
-//        console.log('-- finally: options =', _.clone(currentOptions));
-
-
-
         var _this = this,
             currentOptions = params && params.options // TODO: fix
                     ? params.options
@@ -731,10 +727,6 @@ var MenuView = Backbone.View.extend({
 
 
 
-
-
-
-
 var OrderView = Backbone.View.extend({
     els: {},
     templates: {
@@ -931,19 +923,6 @@ var OrderView = Backbone.View.extend({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 var FavouritesView = Backbone.View.extend({
     els: {},
     templates: {
@@ -955,27 +934,27 @@ var FavouritesView = Backbone.View.extend({
 
         console.log('FAVOURITES view initialize', this.model, this.model.get('objects'));
 
-        this.model.fetch({
-            success: $.proxy(this.modelFetchSuccess, this),
-            error: $.proxy(this.modelFetchError, this)
-        });
-
         this.app = data.app;
         this.el = $(this.el);
+        this.getData(this.render);
     },
-    modelFetchSuccess: function(){
+    getData: function(callback){
 
-        this.model.get('objects')[0].favorite = true;
-        this.model.get('objects')[3].favorite = true;
-        this.model.get('objects')[7].favorite = true;
-        this.model.get('objects')[13].favorite = true;
-        this.model.get('objects')[18].favorite = true;
+        var favourites = this.model.get('objects');
 
-        this.favourites = this.assertFavourites(this.model.get('objects'));
-        this.render();
-    },
-    modelFetchError: function(){
-        console.log('FAVOURITES model fetch error');
+        if ( !favourites || !favourites.length ) {
+            this.app.fetchModel(this.model, function(model){
+
+                model.get('objects')[0].favorite = true;
+                model.get('objects')[3].favorite = true;
+                model.get('objects')[7].favorite = true;
+                model.get('objects')[13].favorite = true;
+                model.get('objects')[18].favorite = true;
+
+                this.favourites = this.assertFavourites(model.get('objects'));
+                callback.call(this);
+            }, this);
+        }
     },
     assertFavourites: function(objects){
 
