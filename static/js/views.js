@@ -260,11 +260,10 @@ var MenuView = Backbone.View.extend({
             attention: _.template($('#template_overlay-attention').html())
         }
     },
-    initialize: function(data, initOptions){
+    initialize: function(data){
 
         console.log('MENU view init', data, this.el, data.app, data.app.els.page);
 
-        this.initOptions = initOptions || {};
         this.el = $(this.el);
         this.app = data.app;
         this.getData(this.render);
@@ -441,7 +440,7 @@ var MenuView = Backbone.View.extend({
 
         console.log('MENU view render:',  this.menu, this.app.order.model.attributes, this.el, _.clone(this.app.options), _.clone(params));
 
-        if ( !this.menu || _.isEmpty(this.menu) || this.initOptions.silent ) return;
+        if ( !this.menu || _.isEmpty(this.menu) ) return;
 
         this.app.header.bindDayEvents(this.menu);
 
@@ -743,17 +742,15 @@ var OrderView = Backbone.View.extend({
         message: _.template($('#template_order-group-message').html()),
         item: _.template($('#template_menu-item').html())
     },
-    initialize: function(data, initOptions){
+    initialize: function(data){
 
         console.log('ORDER view initialize', arguments);
 
-        this.initOptions = initOptions || {};
         this.el = $(this.el);
         this.app = data.app;
         this.getData(this.render);
     },
     getData: function(callback){
-
 
         var order = this.model.get('objects'),
             menu = this.app && this.app.menu
@@ -761,10 +758,8 @@ var OrderView = Backbone.View.extend({
                 : null,
             setData = function(){
 
-                console.log('-- set data ORDER', menu, order);
-
                 if ( !menu || !order ) return;
-                this.order = this.assembleOrder(order.get('objects')[0], menu);
+                this.order = this.assembleOrder(order.get('objects')[0], menu.get('objects'));
 
                 if ( this.app && !this.app.menu ) {
                     this.app.menu = {
@@ -791,31 +786,22 @@ var OrderView = Backbone.View.extend({
 
         setData.call(this);
 
-        console.log('ОХУЕННО РАБОТАЕТ!');
-
-
     },
     assembleOrder: function(objects, menu){
-
-        console.log('-- assemble order olol', objects, menu);
-
-        return;
 
         var order = [],
             days = {};
 
-        _.each(menu, function(data, day){
-
-            data.weekdayEn = day;
-            data.weekday = config.text.daysEn2Ru[day];
-            data.providers = null,
-            data.restaurant = false;
-            data.none = true;
-            days[data.date] = data;
+        _.each(menu, function(data){
+            days[data.date] = {
+                date: data.date,
+                weekday: data.weekday,
+                weekdayEn: config.text.daysRu2En[ $.trimAll(data.weekday) ],
+                providers: null,
+                restaurant: false,
+                none: true
+            };
         });
-
-
-        console.log('--- dys', days, menu);
 
         _.each(objects, function(data, date){
 
@@ -824,6 +810,9 @@ var OrderView = Backbone.View.extend({
             data.order = config.text.dayOrder[ data.weekdayEn ];
             days[date] = data;
         });
+
+
+        console.log('--- days olol', days);
 
         _.each(days, function(data){
             order.push(data);
@@ -837,12 +826,6 @@ var OrderView = Backbone.View.extend({
 
     },
     render: function(){
-
-
-        if ( this.initOptions.silent ) {
-            console.log('--- SILENT ORDER RENDER', this.order);
-            return;
-        }
 
 
 
@@ -859,59 +842,6 @@ var OrderView = Backbone.View.extend({
 //            }
 //        });
 
-
-
-//
-//
-//
-//        return;
-//
-//        console.log('ORDER view render');
-//
-//        if ( !this.order || _.isEmpty(this.order) ) return; // ??? this.order.length
-//
-//
-//
-//        return;
-//
-
-
-
-
-
-        var a = {
-            "2012-05-26": {
-                "providers": {
-                    "Fusion": {
-                        "первые блюда": [{
-                            "count": 1,
-                            "name": "Суп-пюре томатный с сырными гренками",
-                            "price": "80.00"
-                        }],
-                        "пирожное": [{
-                            "count": 1,
-                            "name": "Штрудель с творогом и сливой",
-                            "price": "70.00"
-                        }],
-                        "прочее": [{
-                            "count": 1,
-                            "name": "Кока-кола 0,5",
-                            "price": "35.00"
-                        }, {
-                            "count": 1,
-                            "name": "Чай \"Липтон\" в ассортименте",
-                            "price": "40.00"
-                        }, {
-                            "count": 1,
-                            "name": "Чай Nestea 0,5",
-                            "price": "45.00"
-                        }]
-                    }
-                },
-                restaurant: false,
-                none: false
-            }
-        };
 
         console.log('ORDER view render', this.order);
 
@@ -990,172 +920,6 @@ var OrderView = Backbone.View.extend({
 
         this.app.els.page.addClass(config.classes.page.order);
 
-
-        return;
-
-
-
-
-
-
-
-
-        /***************/
-
-        var menu = {},
-            dates = {},
-            orderObj = {},
-            orderArr = [],
-            orderHTML = [];
-
-
-        _.each(this.menu, $.proxy(function(dayMenu, day){
-            menu[dayMenu.date] = {
-                providers: dayMenu.providers,
-                weekday: day
-            };
-        }, this));
-
-
-        _.each(this.order, $.proxy(function(dayOrder, dateStr){
-
-            var weekday = menu[dateStr].weekday,
-                dateArr = dateStr.split('-'),
-                date = new Date(+dateArr[0], +dateArr[1] - 1, +dateArr[2]),
-                createItem = function(){
-                    if ( !orderObj[weekday] ) {
-                        orderObj[weekday] = {
-                            order: +date,
-                            date: dateStr,
-                            weekday: weekday,
-                            dishes: [],
-                            restaurant: dayOrder.restaurant
-                        };
-                    }
-                };
-
-            if ( dayOrder.restaurant ) {
-                createItem();
-            }
-
-            _.each(menu[dateStr].providers, $.proxy(function(categories, provider){
-
-                _.each(categories, $.proxy(function(categoryData, category){
-
-                    _.each(categoryData.dishes, $.proxy(function(dish){
-
-                        if ( this.order[dateStr].dishes[dish.id] ) {
-
-                            var extendedDish = {
-                                id: dish.id,
-                                name: dish.name,
-                                price: dish.price,
-                                weight: dish.weight,
-                                provider: provider,
-                                category: config.text.categoriesEn2Ru[category]
-                            };
-
-                            createItem();
-                            orderObj[weekday].dishes.push(extendedDish);
-                        }
-                    }, this));
-                }, this));
-            }, this));
-        }, this));
-
-
-        this.els.header.day
-            .not('.'+config.classes.header.dayInactive)
-            .each(function(i, element){
-
-                var day = $(element),
-                    dateStr = day.data('date'),
-                    weekday = day.attr('rel'),
-                    dateArr = dateStr.split('-');
-
-                dates[weekday] = {
-                    order: +new Date(+dateArr[0], +dateArr[1] - 1, +dateArr[2]),
-                    date: dateStr,
-                    weekday: weekday,
-                    dishes: [],
-                    restaurant: null
-                };
-            });
-
-        _.each(dates, $.proxy(function(dateData, weekday){
-            if ( !orderObj[weekday] ) {
-                orderObj[weekday] = dates[weekday];
-            }
-        }, this));
-
-
-        _.each(orderObj, function(dayData, day){
-            orderArr.push(dayData);
-        });
-
-
-        orderArr.sort(function(a, b){
-            return a.order < b.order ? -1 : 1;
-        });
-
-        _.each(orderArr, $.proxy(function(dayOrder){
-
-            var dayHTML = [],
-                dayPrice = 0,
-                template,
-                content;
-
-            _.each(dayOrder.dishes, $.proxy(function(dish){
-                dayPrice += +dish.price;
-                dayHTML.push(this.templates.order.item(dish));
-            }, this));
-
-
-            template = this.templates.order.group.dishes,
-            content = {
-                date: dayOrder.date,
-                day: config.text.daysEn2Ru[dayOrder.weekday].capitalize(),
-                price: dayPrice,
-                dishes: dayHTML.join('')
-            };
-
-
-            if ( !dayHTML.length && !dayOrder.restaurant ) {
-
-                template = this.templates.order.group.message;
-                content = {
-                    date: dayOrder.date,
-                    day: config.text.daysRu2En[dayOrder.weekday].capitalize(),
-                    className: config.classes.order.slimming,
-                    message: 'Худею ' + config.text.daysEn2RuInflect1[dayOrder.weekday]
-                };
-            }
-
-            if ( dayOrder.restaurant ) {
-                template = this.templates.order.group.message;
-                content = {
-                    date: dayOrder.date,
-                    day: config.text.daysRu2En[dayOrder.weekday].capitalize(),
-                    className: config.classes.order.restaurant,
-                    message: 'Луч гламура ' + config.text.daysEn2RuInflect1[dayOrder.weekday]
-                };
-            }
-
-            orderHTML.push(template(content));
-
-        }, this));
-
-
-        this.resetPage();
-
-        this.els.content.wrapper
-            .empty()
-            .addClass(config.classes.content.order)
-            .html(orderHTML.join(''))
-            .hide()
-            .fadeIn();
-
-        this.els.page.addClass(config.classes.page.order);
     }
 });
 
