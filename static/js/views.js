@@ -135,14 +135,11 @@ var AppView = Backbone.View.extend({
         }
 
         try {
-            console.log('-- local data', localStorage.getItem(key));
-            var data = localStorage.getItem(key);
-            value = typeof data === 'object'
-                ? JSON.parse(data)
-                : {};
+            var data = JSON.parse(localStorage.getItem(key));
+            value = typeof data === 'object' ? data : {};
         }
         catch (e) {
-            console.log('ERROR: local storage');
+            console.log('ERROR: invalid data is in local storage');
             value = {};
         }
 
@@ -165,21 +162,6 @@ var AppView = Backbone.View.extend({
     },
     addToOrder: function(date, data){
 
-//        console.log('--- addToOrder', order[date], data);
-
-
-//        data = {
-//            dish: {
-//                id: 1,
-//                count: 1
-//            },
-//            restaurant: true,
-//            none: true
-//        };
-
-
-
-
         var order = this.getLocalData('order');
 
         if ( !order[date] ) {
@@ -192,14 +174,9 @@ var AppView = Backbone.View.extend({
 
         if ( data.dish && data.dish.id ) {
 
-            console.log('OK', data.dish.id);
-
             order[date].dishes[data.dish.id] = data.dish.count || 1;
             order[date].restaurant = false;
             order[date].none = false;
-
-            console.log('111', order[date].dishes[data.dish.id]);
-
         }
         else {
 
@@ -224,8 +201,6 @@ var AppView = Backbone.View.extend({
     removeDishFromOrder: function(date, id){
 
         var order = this.getLocalData('order');
-
-        console.log('--- removeDishFromOrder', order[date], id);
 
         if ( order[date] && order[date].dishes && order[date].dishes[id] ) {
             delete order[date].dishes[id];
@@ -622,90 +597,118 @@ var MenuView = Backbone.View.extend({
         }
 
         setTimeout($.proxy(function(){
-            this.setSelectedDishes.call(this, options.date);
+            this.setSelectedDishes.call(this, options.date, options.day);
             this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
 
     },
-    setSelectedDishes: function(date){
-
-        var order;
+    setSelectedDishes: function(date, day){
 
         if ( !this.app || !this.app.order || !this.app.order.model ) return;
 
-        {
+        var order = this.app.getLocalData('order');
 
-            this.app.order.model.get('objects')[0][date] =
-                    _.clone(this.app.order.model.get('objects')[0]['2012-05-26']); // TODO: remove
-            var ids = []; // TODO: remove
+        if ( _.isEmpty(order[date]) ) return;
 
-        }
+        if ( order[date].restaurant || order[date].none ) {
 
-        order = this.app.order.model.get('objects')[0];
+            // render overlay
+            console.log('--- set selected dishes 1: render overlay', order.restaurant, order.none);
 
-        if ( !order[date] || !order[date].providers ) return;
-
-        this.els.item = $(config.selectors.menu.item.container);
-
-        _.each(order[date].providers, function(categories, provider){
-            _.each(categories, function(dishes, category){
-                _.each(dishes, function(dish){
-
-                    ids.push(dish.id); // TODO: remove
-                    var id = dish.id + 100; // TODO: remove
-
-                    var element = this.els.item.filter('[data-id=' + id + ']'); // TODO: change id variable
-                    if ( element.length ) {
-                        
-                        element
-                            .addClass(config.classes.menu.selected)
-                            .find(config.selectors.menu.item.number)
-                            .html(dish.count);
-
-                        dish.count > 1
-                            && element
-                                .find(config.selectors.menu.count)
-                                .addClass(config.classes.menu.countOne);
-                    }
-
-                }, this);
-            }, this);
-        }, this);
-
-
-
-
-
-
-        {
-            var ids2 = [],
-                s = function(a,b){ return a < b ? -1 : 1 },
-                p = function(arr){
-                    var s = arr[0],
-                        res = [];
-                    for ( var i = 1, l = arr.length; i < l; i++ ) {
-                        if ( arr[i] !== arr[i-1] + 1 ) {
-                            s == arr[i-1]
-                                ? res.push( s )
-                                : res.push( s + ' - ' + arr[i-1] );
-
-                            s = arr[i];
-                        }
-                    }
-                    return res;
-                };
-
-            this.els.item.each(function(i, e){
-                ids2.push( $(e).data('id') );
+            this.renderOverlay({
+                date: date,
+                day: day,
+                overlayType: order.restaurant ? 'restaurant' : order.none ? 'none' : ''
             });
 
-            ids.sort(s);
-            ids2.sort(s);
-
-            console.log('--- ids', ids);
-            console.log('--- ids2', p(ids2));
-
         }
+        else {
+
+            // set selected dishes
+
+            this.els.item = this.els.item || $(config.selectors.menu.item.container);
+
+            if ( order[date] && order[date].dishes ) {
+
+                console.log('--- set selected dishes 2: local data', order[date].dishes);
+
+                _.each(order[date].dishes, function(count, id){
+
+                    var element = this.els.item.filter('[data-id=' + id + ']');
+
+                    if ( !element.length ) return;
+
+                    element
+                        .addClass(config.classes.menu.selected)
+                        .find(config.selectors.menu.item.number)
+                        .html(count);
+
+                    count > 1
+                        && element
+                            .find(config.selectors.menu.count)
+                            .addClass(config.classes.menu.countOne);
+
+                }, this);
+            }
+            else if ( order[date] && order[date].providers ) {
+
+                console.log('--- set selected dishes 3: DB data', order[date].providers);
+
+                _.each(order[date].providers, function(categories, provider){
+                    _.each(categories, function(dishes, category){
+                        _.each(dishes, function(dish){
+
+                            var element = this.els.item.filter('[data-id=' + dish.id + ']');
+
+                            if ( !element.length ) return;
+
+                            element
+                                .addClass(config.classes.menu.selected)
+                                .find(config.selectors.menu.item.number)
+                                .html(dish.count);
+
+                            dish.count > 1
+                                && element
+                                    .find(config.selectors.menu.count)
+                                    .addClass(config.classes.menu.countOne);
+
+                        }, this);
+                    }, this);
+                }, this);
+            }
+        }
+
+
+
+
+
+
+//            var ids2 = [],
+//                s = function(a,b){ return a < b ? -1 : 1 },
+//                p = function(arr){
+//                    var s = arr[0],
+//                        res = [];
+//                    for ( var i = 1, l = arr.length; i < l; i++ ) {
+//                        if ( arr[i] !== arr[i-1] + 1 ) {
+//                            s == arr[i-1]
+//                                ? res.push( s )
+//                                : res.push( s + ' - ' + arr[i-1] );
+//
+//                            s = arr[i];
+//                        }
+//                    }
+//                    return res;
+//                };
+//
+//            this.els.item.each(function(i, e){
+//                ids2.push( $(e).data('id') );
+//            });
+//
+//            ids.sort(s);
+//            ids2.sort(s);
+//
+//            console.log('--- ids', ids);
+//            console.log('--- ids2', p(ids2));
 
 
     },
