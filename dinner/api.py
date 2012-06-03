@@ -6,7 +6,7 @@ from tastypie import http
 from tastypie.authorization import DjangoAuthorization, Authorization
 from tastypie.resources import ModelResource, Resource
 from tastypie.utils.dict import dict_strip_unicode_keys
-from dinner.models import Day, WEEK_DAYS, Week, OrderDayItem, Order, DishDay, FavoriteDish, Dish
+from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem
 from dinner.utils import get_week_start_day
 
 from django.utils.datastructures import SortedDict
@@ -72,7 +72,7 @@ class OrderDayItemResource(ModelResource):
         order = bundle.obj
         data = SortedDict()
 
-        order_day_items = OrderDayItem.objects.filter(order=order).select_related(
+        order_day_items = DishOrderDayItem.objects.filter(order=order).select_related(
             'dish_day', 'dish_day__dish', 'dish_day__day')
 
         for order_day in order_day_items:
@@ -140,7 +140,7 @@ class OrderDayItemResource(ModelResource):
 
             if dishes:
                 for dish_day_id, count in dishes.items():
-                    order_day_item, created = OrderDayItem.objects.get_or_create(
+                    order_day_item, created = DishOrderDayItem.objects.get_or_create(
                         order=order,
                         dish_day=DishDay(dish_day_id),
                     )
@@ -153,6 +153,20 @@ class OrderDayItemResource(ModelResource):
 
             restaurant = bundle.data[date].get('restaurant')
             if restaurant:
+                week = Week.objects.get(get_week_start_day(dt))
+                dt = datetime.datetime.strptime(date, '%Y-%m-%d')
+                day = Day.objects.get(week=week, day=dt.weekday())
+
+                RestaurantOrderDayItem.objects.create(
+                    order=order,
+                    day=day,
+                    restaurant_name=restaurant
+                )
+
+                continue
+
+            none = bundle.data[date].get('none')
+            if none:
                 continue
 
             raise NotImplementedError('please supply restaurant or dishes')

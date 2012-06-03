@@ -35,11 +35,12 @@ class Menu(models.Model):
 
 class Day(models.Model):
     week = models.ForeignKey(Week)
-    day = models.PositiveIntegerField()
+    day = models.IntegerField()
 
     @property
     def date(self):
         return self.week.date + datetime.timedelta(days=self.day)
+
 
     def __unicode__(self):
         return WEEK_DAYS[self.day]
@@ -97,10 +98,24 @@ class Order(models.Model):
 
 
 class OrderDayItem(models.Model):
+    class Meta:
+        abstract = True
+
     order = models.ForeignKey(Order, verbose_name=u'День')
+
+
+class RestaurantOrderDayItem(OrderDayItem):
+    restaurant_name = models.CharField(max_length=255)
+    day = models.ForeignKey(Day)
+
+    class Meta:
+        unique_together = (('order', 'id'),)
+
+
+class DishOrderDayItem(OrderDayItem):
+
     dish_day = models.ForeignKey(DishDay, verbose_name=u'Блюдо')
     count = models.PositiveSmallIntegerField(default=1, verbose_name=u'Кол-во')
-    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = (('order', 'dish_day'),)

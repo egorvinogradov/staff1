@@ -74,14 +74,30 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
         self.assertValidJSONResponse(resp)
 
-    def build_order_dict(self, objects):
+    def test_reserve_data(self):
+        resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
+        objects = self.deserialize(resp)['objects']
+
+        self.assertTrue(len(objects) != 0)
+
         post_data = SortedDict()
 
+        date_count = 0
         for data in objects:
             date = data['date']
             post_data[date] = {
-                'dishes': {}
+                'dishes': {},
+                'restaurant': None,
+                'none': False
             }
+
+            if date_count % 3 == 0:
+                post_data[date]['none'] = True
+                continue
+
+            if date_count % 2 == 0:
+                post_data[data]['restaurnt'] = 'luch'
+                continue
 
             count = 0
             for provider, categories in data['providers'].items():
@@ -94,16 +110,6 @@ class RestApiTest(ResourceTestCase):
                         post_data[date]['dishes'][dish_id] = 1
 
                         count += 1
-
-        return post_data
-
-
-    def test_reserve_data(self):
-        resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
-        objects = self.deserialize(resp)['objects']
-
-        self.assertTrue(len(objects) != 0)
-        post_data = self.build_order_dict(objects)
 
         resp = self.api_client.post(self.order_url, format='json', data=post_data, authentication=self.get_credentials())
         self.assertHttpCreated(resp)
