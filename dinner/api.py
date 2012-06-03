@@ -2,34 +2,16 @@
 
 import datetime
 
-from tastypie import http
-from tastypie.authorization import DjangoAuthorization, Authorization
+from tastypie.authentication import Authentication
+from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource, Resource
-from tastypie.utils.dict import dict_strip_unicode_keys
+
 from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem
-from dinner.utils import get_week_start_day
+from dinner.utils import get_week_start_day, NotSoTastyPieModelResource, NotSoTastyDjangoAuthorization
 
 from django.utils.datastructures import SortedDict
 
 class DayResource(ModelResource):
-    class Meta:
-        queryset = Day.objects\
-        .filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=0)))\
-        .order_by('day')
-
-        resource_name = 'day'
-
-
-    def dehydrate(self, bundle):
-        bundle.data = {
-            'weekday': WEEK_DAYS[bundle.obj.day],
-            'date': bundle.obj.date,
-            'providers': self.__get_grouped_dishes(bundle.obj),
-            }
-
-        return bundle
-
-
     def __get_grouped_dishes(self, day):
         dish_days = DishDay.objects.filter(day=day).select_related(
             'dish', 'day', 'dish__provider', 'dish__group', 'day__week')
@@ -55,38 +37,45 @@ class DayResource(ModelResource):
 
         return providers
 
+    def dehydrate(self, bundle):
+        bundle.data = {
+            'weekday': WEEK_DAYS[bundle.obj.day],
+            'date': bundle.obj.date,
+            'providers': self.__get_grouped_dishes(bundle.obj),
+            }
 
-class OrderDayItemResource(ModelResource):
+        return bundle
 
     class Meta:
-        queryset = Order.objects.all()
-        resource_name = 'order'
-        authorization = Authorization()
+        queryset = Day.objects.filter(week__date__gte=get_week_start_day(datetime.date.today()))
+        resource_name = 'day'
+        authentication = Authentication()
+        authorization = NotSoTastyDjangoAuthorization()
 
 
-    def get_object_list(self, request):
-        return self._meta.queryset._clone().filter(user=request.user)
+class OrderDayItemResource(NotSoTastyPieModelResource):
+    def __fill_date_dict(self, data, date):
+        data_date = data[str(date)] = data.get(str(date), SortedDict())
+        data_date['weekday'] = WEEK_DAYS[date.weekday()]
+        data_date['restaurant'] = False
+        data_date['none'] = False
 
+        return data_date
 
-    def dehydrate(self, bundle):
-        order = bundle.obj
-        data = SortedDict()
-
-        order_day_items = DishOrderDayItem.objects.filter(order=order).select_related(
+    def __fill_dish_order_day_items(self, data, order):
+        dish_order_day_items = DishOrderDayItem.objects.filter(order=order).select_related(
             'dish_day', 'dish_day__dish', 'dish_day__day')
 
-        for order_day in order_day_items:
-            dish_day = order_day.dish_day
-            count = order_day.count
+        for dish_order_day_item in dish_order_day_items:
+            dish_day = dish_order_day_item.dish_day
+            count = dish_order_day_item.count
             price = dish_day.price
             dish = dish_day.dish
             day = dish_day.day
 
             date = day.date
-            data_date = data[str(date)] = data.get(str(date), SortedDict())
-            data_date['weekday'] = WEEK_DAYS[date.weekday()]
-            data_date['restaurant'] = False
-            data_date['none'] = False
+            data_date = self.__fill_date_dict(data, date)
+
             data_providers = data_date['providers'] = data_date.get('providers', {})
             data_provider = data_providers[dish.provider.name] = data_providers.get(dish.provider.name, {})
             data_cat = data_provider[dish.group.name] = data_provider.get(dish.group.name, [])
@@ -97,31 +86,24 @@ class OrderDayItemResource(ModelResource):
                 'id': dish.id,
                 })
 
-        bundle.data = data
+    def __fill_restaurant_order_day_items(self, data, order):
+        restaurant_order_day_items = RestaurantOrderDayItem.objects.filter(order=order).select_related('day')
+        for restaurant_order_day_item in restaurant_order_day_items:
+            date = restaurant_order_day_item.day.date
+            data_date = self.__fill_date_dict(data, date)
+            data_date['restaurant'] = restaurant_order_day_item.restaurant_name
 
+    def dehydrate(self, bundle):
+        order = bundle.obj
+        data = SortedDict()
+
+        self.__fill_dish_order_day_items(data, order)
+        self.__fill_restaurant_order_day_items(data, order)
+
+        bundle.data = data
         return bundle
 
-
-    def post_list(self, request, **kwargs):
-        deserialized = self.deserialize(request, request.raw_post_data,
-            format=request.META.get('CONTENT_TYPE', 'application/json'))
-        deserialized = self.alter_deserialized_detail_data(request, deserialized)
-        bundle = self.build_bundle(data=dict_strip_unicode_keys(deserialized), request=request)
-        self.is_valid(bundle, request)
-
-        bundle.obj = self._meta.object_class()
-
-        for key, value in kwargs.items():
-            setattr(bundle.obj, key, value)
-
-        updated_bundle = self.full_hydrate(bundle)
-
-        location = self.get_resource_uri(updated_bundle)
-
-        return self.create_response(request, updated_bundle, response_class=http.HttpCreated, location=location)
-
-
-    def full_hydrate(self, bundle):
+    def hydrate(self, bundle):
         first_order_day = datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d')
         week_start_date = get_week_start_day(first_order_day)
         current_week = Week.objects.get(date=week_start_date)
@@ -181,42 +163,20 @@ class OrderDayItemResource(ModelResource):
 
         return bundle
 
-
-class FavoriteDishResource(ModelResource):
     class Meta:
-        queryset = Dish.objects.all()
-        resource_name = 'favorite'
-        authorization = Authorization()
+        queryset = Order.objects.all()
+        resource_name = 'order'
+        authentication = Authentication()
+        authorization = NotSoTastyDjangoAuthorization()
 
 
+class FavoriteDishResource(NotSoTastyPieModelResource):
     def dehydrate(self, bundle):
-        bundle.data['favorite'] = FavoriteDish.objects.filter(dish=bundle.obj).exists()
+        bundle.data['favorite'] = FavoriteDish.objects.filter(dish=bundle.obj, user=bundle.request.user).exists()
         bundle.data['provider'] = bundle.obj.provider.name
         bundle.data['group'] = bundle.obj.group.name
 
         return bundle
-
-
-    def post_list(self, request, **kwargs):
-        deserialized = self.deserialize(request, request.raw_post_data,
-            format=request.META.get('CONTENT_TYPE', 'application/json'))
-
-        deserialized = self.alter_deserialized_detail_data(request, deserialized)
-        bundle = self.build_bundle(data=dict_strip_unicode_keys(deserialized), request=request)
-
-        self.is_valid(bundle, request)
-
-        bundle.obj = self._meta.object_class()
-
-        for key, value in kwargs.items():
-            setattr(bundle.obj, key, value)
-
-        updated_bundle = self.full_hydrate(bundle)
-
-        location = self.get_resource_uri(updated_bundle)
-
-        return self.create_response(request, updated_bundle, response_class=http.HttpCreated, location=location)
-
 
     def hydrate(self, bundle):
         favorite_ids = bundle.data['objects']
@@ -232,3 +192,8 @@ class FavoriteDishResource(ModelResource):
 
         return bundle
 
+    class Meta:
+        queryset = Dish.objects.all()
+        resource_name = 'favorite'
+        authentication = Authentication()
+        authorization = NotSoTastyDjangoAuthorization()
