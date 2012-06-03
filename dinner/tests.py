@@ -1,4 +1,5 @@
 #coding: utf-8
+from django.utils.datastructures import SortedDict
 from dinner.management.commands.dinner_populate_db import download_latest_hlebsol
 from django.contrib.auth.models import User
 
@@ -29,7 +30,7 @@ class ProviderXlsParseTestCase(TestCase):
 
             dish = row[2]
 
-            self.assertTrue(dish['title'] is not None)
+            self.assertTrue(dish['name'] is not None)
             self.assertTrue(isinstance(dish['price'], float))
 
     def test_import_menu(self):
@@ -44,7 +45,6 @@ class ProviderXlsParseTestCase(TestCase):
 
 
 class RestApiTest(ResourceTestCase):
-
 
     def setUp(self):
         super(RestApiTest, self).setUp()
@@ -74,14 +74,8 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
         self.assertValidJSONResponse(resp)
 
-
-    def test_reserve_data(self):
-        resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
-        objects = self.deserialize(resp)['objects']
-
-        self.assertTrue(len(objects) != 0)
-
-        post_data = {}
+    def build_order_dict(self, objects):
+        post_data = SortedDict()
 
         for data in objects:
             date = data['date']
@@ -101,14 +95,26 @@ class RestApiTest(ResourceTestCase):
 
                         count += 1
 
-        self.assertTrue(0, post_data)
-        resp = self.api_client.post(self.order_url, format='json', data=post_data,
-            authentication=self.get_credentials())
+        return post_data
+
+
+    def test_reserve_data(self):
+        resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
+        objects = self.deserialize(resp)['objects']
+
+        self.assertTrue(len(objects) != 0)
+        post_data = self.build_order_dict(objects)
+
+        resp = self.api_client.post(self.order_url, format='json', data=post_data, authentication=self.get_credentials())
         self.assertHttpCreated(resp)
 
         resp = self.api_client.get(self.order_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
+
         self.assertTrue(len(objects) != 0)
+        saved_post_data = self.build_order_dict(objects)
+
+        #self.assertTrue(post_data == saved_post_data)
 
 
     def test_favorites(self):

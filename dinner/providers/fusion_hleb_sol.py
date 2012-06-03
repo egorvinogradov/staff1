@@ -37,11 +37,9 @@ def process(file):
             else:
                 dish = {
                     'index': values[(row_idx, 0)],
-                    'title': values[(row_idx, 1)],
+                    'name': values[(row_idx, 1)],
                     'weight': values[(row_idx, 2)] if (row_idx, 2) in values else None,
                     'price': float(values[(row_idx, 3)])
                 }
 
                 yield day, group, dish
-
-

@@ -1,16 +1,22 @@
+# coding: utf-8
+
 import datetime
+
 from tastypie import http
 from tastypie.authorization import DjangoAuthorization, Authorization
-
 from tastypie.resources import ModelResource, Resource
 from tastypie.utils.dict import dict_strip_unicode_keys
 from dinner.models import Day, WEEK_DAYS, Week, OrderDayItem, Order, DishDay, FavoriteDish, Dish
 from dinner.utils import get_week_start_day
 
+from django.utils.datastructures import SortedDict
 
 class DayResource(ModelResource):
     class Meta:
-        queryset = Day.objects.filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=0)))
+        queryset = Day.objects\
+        .filter(week__date__gte=(datetime.datetime.now() - datetime.timedelta(days=0)))\
+        .order_by('day')
+
         resource_name = 'day'
 
 
@@ -34,17 +40,17 @@ class DayResource(ModelResource):
             provider_name = dish.provider.name
             providers[provider_name] = providers.get(provider_name, {})
 
-            group_name = dish.group.title
+            group_name = dish.group.name
             providers[provider_name][group_name] = providers[provider_name].get(group_name, [])
 
             providers[provider_name][group_name].append(
                     {
                     'id': dish.id,
-                    'name': dish.title,
+                    'name': dish.name,
                     'price': dish_day.price,
                     'weight': dish.weight,
                     'favorite': FavoriteDish.objects.filter(dish=dish).exists()
-                    }
+                }
             )
 
         return providers
@@ -61,29 +67,25 @@ class OrderDayItemResource(ModelResource):
 
     def dehydrate(self, bundle):
         order = bundle.obj
-        data = {}
-        for order_day in OrderDayItem.objects.filter(order=order):
-            # todo: test fails here, wtf @cwiz
-            try:
-                dish_day = order_day.dish_day
-            except DishDay.DoesNotExist:
-                continue
+        data = SortedDict()
 
+        for order_day in OrderDayItem.objects.filter(order=order):
+            dish_day = order_day.dish_day
             count = order_day.count
             price = dish_day.price
             dish = dish_day.dish
             day = dish_day.day
 
             date = day.date
-            data_date = data[str(date)] = data.get(str(date), {})
+            data_date = data[str(date)] = data.get(str(date), SortedDict())
             data_date['weekday'] = WEEK_DAYS[date.weekday()]
             data_date['restaurant'] = False
             data_date['none'] = False
             data_providers = data_date['providers'] = data_date.get('providers', {})
             data_provider = data_providers[dish.provider.name] = data_providers.get(dish.provider.name, {})
-            data_cat = data_provider[dish.group.title] = data_provider.get(dish.group.title, [])
+            data_cat = data_provider[dish.group.name] = data_provider.get(dish.group.name, [])
             data_cat.append({
-                'name': dish.title,
+                'name': dish.name,
                 'price': price,
                 'count': count,
                 'id': dish.id,
@@ -114,7 +116,8 @@ class OrderDayItemResource(ModelResource):
 
 
     def full_hydrate(self, bundle):
-        current_week = Week.objects.get(date=get_week_start_day(datetime.datetime.today()))
+        week_start_date = get_week_start_day(datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d'))
+        current_week = Week.objects.get(date=week_start_date)
 
         if current_week.closed:
             raise ValueError('Week is already closed')
@@ -168,7 +171,7 @@ class FavoriteDishResource(ModelResource):
     def dehydrate(self, bundle):
         bundle.data['favorite'] = FavoriteDish.objects.filter(dish=bundle.obj).exists()
         bundle.data['provider'] = bundle.obj.provider.name
-        bundle.data['group'] = bundle.obj.group.title
+        bundle.data['group'] = bundle.obj.group.name
 
         return bundle
 
@@ -176,8 +179,10 @@ class FavoriteDishResource(ModelResource):
     def post_list(self, request, **kwargs):
         deserialized = self.deserialize(request, request.raw_post_data,
             format=request.META.get('CONTENT_TYPE', 'application/json'))
+
         deserialized = self.alter_deserialized_detail_data(request, deserialized)
         bundle = self.build_bundle(data=dict_strip_unicode_keys(deserialized), request=request)
+
         self.is_valid(bundle, request)
 
         bundle.obj = self._meta.object_class()

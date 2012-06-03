@@ -49,10 +49,10 @@ class Day(models.Model):
 
 
 class Group(models.Model):
-    title = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
 
     def __unicode__(self):
-        return self.title
+        return self.name
 
 
 class Dish(models.Model):
@@ -60,11 +60,11 @@ class Dish(models.Model):
     group = models.ForeignKey(Group)
 
     index = models.PositiveIntegerField()
-    title = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     weight = models.CharField(max_length=60, null=True)
 
     def __unicode__(self):
-        return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.title)
+        return unicode(self.day) + u' — ' + unicode(self.group) + u' — ' + unicode(self.name)
 
 
 class DishDay(models.Model):
