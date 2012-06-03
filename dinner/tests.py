@@ -112,8 +112,9 @@ class RestApiTest(ResourceTestCase):
         objects = self.deserialize(resp)['objects']
 
         self.assertTrue(len(objects) != 0)
-        saved_post_data = self.build_order_dict(objects)
 
+        # todo: check if data identical
+        #saved_post_data = self.build_order_dict(objects)
         #self.assertTrue(post_data == saved_post_data)
 
 

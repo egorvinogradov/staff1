@@ -22,7 +22,7 @@ class DayResource(ModelResource):
 
     def dehydrate(self, bundle):
         bundle.data = {
-            'weekday': WEEK_DAYS[bundle.obj.day - 1],
+            'weekday': WEEK_DAYS[bundle.obj.day],
             'date': bundle.obj.date,
             'providers': self.__get_grouped_dishes(bundle.obj),
             }
@@ -57,19 +57,25 @@ class DayResource(ModelResource):
 
 
 class OrderDayItemResource(ModelResource):
+
     class Meta:
         queryset = Order.objects.all()
         resource_name = 'order'
         authorization = Authorization()
 
+
     def get_object_list(self, request):
         return self._meta.queryset._clone().filter(user=request.user)
+
 
     def dehydrate(self, bundle):
         order = bundle.obj
         data = SortedDict()
 
-        for order_day in OrderDayItem.objects.filter(order=order):
+        order_day_items = OrderDayItem.objects.filter(order=order).select_related(
+            'dish_day', 'dish_day__dish', 'dish_day__day')
+
+        for order_day in order_day_items:
             dish_day = order_day.dish_day
             count = order_day.count
             price = dish_day.price
@@ -116,7 +122,8 @@ class OrderDayItemResource(ModelResource):
 
 
     def full_hydrate(self, bundle):
-        week_start_date = get_week_start_day(datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d'))
+        first_order_day = datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d')
+        week_start_date = get_week_start_day(first_order_day)
         current_week = Week.objects.get(date=week_start_date)
 
         if current_week.closed:
@@ -132,15 +139,15 @@ class OrderDayItemResource(ModelResource):
             dishes = data.get('dishes', {})
 
             if dishes:
-                for dish_id, count in dishes.items():
-                    item, created = OrderDayItem.objects.get_or_create(
+                for dish_day_id, count in dishes.items():
+                    order_day_item, created = OrderDayItem.objects.get_or_create(
                         order=order,
-                        dish_day_id=dish_id,
+                        dish_day=DishDay(dish_day_id),
                     )
 
                     updated = not created or updated
-                    item.count = count
-                    item.save()
+                    order_day_item.count = count
+                    order_day_item.save()
 
                 continue
 

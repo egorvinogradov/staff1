@@ -6,7 +6,7 @@ def group_by_materialize(seq):
 
 
 def get_week_start_day(day):
-    day -= timedelta(days=day.weekday()+1)
+    day -= timedelta(days=day.weekday())
     return day
 
 
@@ -34,7 +34,7 @@ def import_menu(process_function, provider_name, path):
             date = week_start_day,
         )
 
-        week_day = (day - week_start_day).days + 1 # 1 to 7
+        week_day = (day - week_start_day).days
         db_day, db_day_created = Day.objects.get_or_create(day=week_day, week=db_week)
 
         db_dish_day, db_dish_day_created = DishDay.objects.get_or_create(
