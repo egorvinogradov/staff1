@@ -1,6 +1,7 @@
 #coding: utf-8
 import datetime
 from django.conf import settings
+from django.db.models import signals
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -91,7 +92,7 @@ class Order(models.Model):
     donor = models.ForeignKey(User, null=True, related_name='order_donor_set')
 
     def __unicode__(self):
-        return u'для ' + self.user.username + u' ' + unicode(self.week)
+        return "для %s %s" % (self.user.username, unicode(self.week))
 
     class Meta:
         unique_together = (('user', 'week'),)
@@ -102,14 +103,19 @@ class OrderDayItem(models.Model):
         abstract = True
 
     order = models.ForeignKey(Order, verbose_name=u'День')
+    day = models.ForeignKey(Day)
 
 
 class RestaurantOrderDayItem(OrderDayItem):
     restaurant_name = models.CharField(max_length=255)
-    day = models.ForeignKey(Day)
 
     class Meta:
-        unique_together = (('order', 'id'),)
+        unique_together = (('order', 'day'),)
+
+
+class EmptyOrderDayItem(OrderDayItem):
+    class Meta:
+        unique_together = (('order', 'day'),)
 
 
 class DishOrderDayItem(OrderDayItem):
@@ -119,3 +125,20 @@ class DishOrderDayItem(OrderDayItem):
 
     class Meta:
         unique_together = (('order', 'dish_day'),)
+
+
+def post_order_day_item_save(sender, instance, **kwargs):
+    order_day_item_models = (DishOrderDayItem, EmptyOrderDayItem, RestaurantOrderDayItem)
+
+    for order_day_item_model in order_day_item_models:
+        day = instance.day
+        order = instance.order
+
+        if not isinstance(sender, order_day_item_model):
+            order_day_item_model.objects.filter(day=day, order=order).delete()
+
+
+
+signals.post_save.connect(post_order_day_item_save, sender=RestaurantOrderDayItem)
+signals.post_save.connect(post_order_day_item_save, sender=DishOrderDayItem)
+signals.post_save.connect(post_order_day_item_save, sender=EmptyOrderDayItem)

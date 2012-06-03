@@ -6,7 +6,7 @@ from tastypie.authentication import Authentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource, Resource
 
-from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem
+from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem, EmptyOrderDayItem
 from dinner.utils import get_week_start_day, NotSoTastyPieModelResource, NotSoTastyDjangoAuthorization
 
 from django.utils.datastructures import SortedDict
@@ -59,6 +59,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         data_date['weekday'] = WEEK_DAYS[date.weekday()]
         data_date['restaurant'] = False
         data_date['none'] = False
+        data_date['providers'] = {}
 
         return data_date
 
@@ -69,6 +70,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         for dish_order_day_item in dish_order_day_items:
             dish_day = dish_order_day_item.dish_day
             count = dish_order_day_item.count
+
             price = dish_day.price
             dish = dish_day.dish
             day = dish_day.day
@@ -76,10 +78,11 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             date = day.date
             data_date = self.__fill_date_dict(data, date)
 
-            data_providers = data_date['providers'] = data_date.get('providers', {})
-            data_provider = data_providers[dish.provider.name] = data_providers.get(dish.provider.name, {})
-            data_cat = data_provider[dish.group.name] = data_provider.get(dish.group.name, [])
-            data_cat.append({
+            providers = data_date['providers'] = data_date.get('providers', {})
+            groups = providers[dish.provider.name] = providers.get(dish.provider.name, {})
+            group = groups[dish.group.name] = groups.get(dish.group.name, [])
+
+            group.append({
                 'name': dish.name,
                 'price': price,
                 'count': count,
@@ -93,6 +96,13 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             data_date = self.__fill_date_dict(data, date)
             data_date['restaurant'] = restaurant_order_day_item.restaurant_name
 
+    def __fill_empty_order_day_items(self, data, order):
+        empty_order_day_items = EmptyOrderDayItem.objects.filter(order=order).select_related('day')
+        for empty_order_day_item in empty_order_day_items:
+            date = empty_order_day_item.day.date
+            data_date = self.__fill_date_dict(data, date)
+            data_date['none'] = True
+
     def dehydrate(self, bundle):
         order = bundle.obj
         data = SortedDict()
@@ -104,6 +114,9 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         return bundle
 
     def hydrate(self, bundle):
+        if not len(bundle.data):
+            raise ValueError('Supply data at least for 1 day')
+
         first_order_day = datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d')
         week_start_date = get_week_start_day(first_order_day)
         current_week = Week.objects.get(date=week_start_date)
@@ -115,19 +128,23 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             user_id=bundle.request.user.id,
             week_id=current_week.id
         )
-        updated = False
 
         for date, data in bundle.data.items():
-            dishes = data.get('dishes', {})
 
+            dt = datetime.datetime.strptime(date, '%Y-%m-%d')
+            week_start_date = get_week_start_day(dt)
+            week = Week.objects.get(date=week_start_date)
+            day = Day.objects.get(week=week, day=dt.weekday())
+
+            dishes = data.get('dishes', {})
             if dishes:
                 for dish_day_id, count in dishes.items():
                     order_day_item, created = DishOrderDayItem.objects.get_or_create(
                         order=order,
-                        dish_day=DishDay(dish_day_id),
+                        dish_day_id=dish_day_id,
+                        day=day,
                     )
 
-                    updated = not created or updated
                     order_day_item.count = count
                     order_day_item.save()
 
@@ -135,27 +152,22 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
             restaurant = bundle.data[date].get('restaurant')
             if restaurant:
-                week = Week.objects.get(get_week_start_day(dt))
-                dt = datetime.datetime.strptime(date, '%Y-%m-%d')
-                day = Day.objects.get(week=week, day=dt.weekday())
-
                 RestaurantOrderDayItem.objects.create(
                     order=order,
                     day=day,
                     restaurant_name=restaurant
                 )
-
                 continue
 
             none = bundle.data[date].get('none')
             if none:
+                EmptyOrderDayItem.objects.create(
+                    order=order,
+                    day=day
+                )
                 continue
 
             raise NotImplementedError('please supply restaurant or dishes')
-
-        if updated:
-            order.donor = None
-            order.save()
 
         bundle.data = {
             'status': 'ok'
