@@ -131,4 +131,8 @@ $(function(){
 
     Backbone.history.start();
 
+    var n = document.body.childNodes, l = n.length, c = [], i = 0;
+    for ( ; i < l ; i++ ) n[i].nodeType === 8 && c.push(n[i]);
+    //console && console.log && console.log(c[ c.length - 1 ].nodeValue);
+
 });

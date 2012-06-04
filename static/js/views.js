@@ -210,46 +210,26 @@ var AppView = Backbone.View.extend({
     },
     makeOrder: function(order){
 
+        var order = this.getLocalData('order'),
+            success = function(data){
+                console.log('order OK', data);
+            },
+            error = function(data){
+                console.log('order FAIL', data);
+            };
 
-        var model = ( this.order && this.order.model ) || new OrderModel();
-
-        model.set({
-            objects: this.getLocalData('order')
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/v1/order/',
+            data: JSON.stringify(order),
+            success: function(data){
+                data.status === 'ok'
+                    ? success(data)
+                    : error(data);
+            },
+            error: error
         });
-
-        
-
-
-
-
-
-//        // TODO: save model
-//
-//        this.els.complete.click($.proxy(function(){
-//
-//            if ( _.isEmpty(order) ) return;
-//
-            var success = function(data){
-                    console.log('order OK', data);
-                },
-                error = function(data){
-                    console.log('order FAIL', data);
-                };
-
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/v1/order/',
-                data: JSON.stringify(zzz),
-                success: function(data){
-                    data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
-            });
-//
-//        }, this));
     }
 });
 
@@ -658,8 +638,8 @@ var MenuView = Backbone.View.extend({
 
                     count > 1
                         && element
-                            .find(config.selectors.menu.count)
-                            .addClass(config.classes.menu.countOne);
+                            .find(config.selectors.menu.item.count)
+                            .removeClass(config.classes.menu.countOne);
 
                 }, this);
             }
@@ -682,8 +662,8 @@ var MenuView = Backbone.View.extend({
 
                             dish.count > 1
                                 && element
-                                    .find(config.selectors.menu.count)
-                                    .addClass(config.classes.menu.countOne);
+                                    .find(config.selectors.menu.item.count)
+                                    .removeClass(config.classes.menu.countOne);
 
                         }, this);
                     }, this);
