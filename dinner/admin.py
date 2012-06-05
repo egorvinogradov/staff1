@@ -287,9 +287,9 @@ class WeekAdmin(admin.ModelAdmin):
         donor = m.Order.objects.get(user__pk=data['donor'], week=week)
         receiver = m.Order.objects.get_or_create(user__pk=data['for'], week=week)[0]
 
-        m.OrderDayItem.objects.filter(order=receiver).delete()
-        for donor_item in m.OrderDayItem.objects.filter(order=donor):
-            m.OrderDayItem(order=receiver, dish=donor_item.dish, count=donor_item.count).save(force_insert=True)
+        m.DishOrderDayItem.objects.filter(order=receiver).delete()
+        for donor_item in m.DishOrderDayItem.objects.filter(order=donor):
+            m.DishOrderDayItem(order=receiver, dish=donor_item.dish, count=donor_item.count).save(force_insert=True)
 
         receiver.donor = donor.user
         receiver.save()
@@ -303,9 +303,9 @@ class WeekAdmin(admin.ModelAdmin):
         orders = m.Order.objects.filter(week=week).select_related('user', 'user__profile__office')\
         .extra(select={
             'num_items': '(select sum("count") from {0} where {0}.order_id={1}.id)'
-            .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table),
+            .format(m.DishOrderDayItem._meta.db_table, m.Order._meta.db_table),
             'num_days': '(select count(distinct {2}.day_id) from {0}, {2} where {0}.order_id={1}.id and {2}.id={0}.dish_id)'
-            .format(m.OrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
+            .format(m.DishOrderDayItem._meta.db_table, m.Order._meta.db_table, m.Dish._meta.db_table),
             }).order_by('user__profile__office__id', 'user__last_name')
 
         orders = list(orders)
@@ -332,7 +332,7 @@ class WeekAdmin(admin.ModelAdmin):
             })
 
     def summary_view(self, request, week):
-        items = m.OrderDayItem.objects\
+        items = m.DishOrderDayItem.objects\
         .filter(order__week=week, count__gt=0)\
         .values('order__user__profile__office__id', 'dish__provider__pk', 'dish__index', 'dish__title', 'dish__weight',
             'dish__price', 'dish__group', 'dish__day')\
@@ -366,7 +366,7 @@ class WeekAdmin(admin.ModelAdmin):
             })
 
     def personal_view(self, request, week):
-        items = m.OrderDayItem.objects\
+        items = m.DishOrderDayItem.objects\
         .filter(order__week=week, count__gt=0)\
         .select_related(depth=4)\
         .order_by('order__user__profile__office__id', 'order__user__first_name', 'order__user__pk', 'dish__day__pk',
@@ -407,7 +407,7 @@ class WeekAdmin(admin.ModelAdmin):
         )
         period_caption = "%s - %s" % (first_day.strftime("%d.%m.%Y"), last_day.strftime("%d.%m.%Y"))
 
-        items = m.OrderDayItem.objects.values("dish__title", "dish__price", "order__user")\
+        items = m.DishOrderDayItem.objects.values("dish__title", "dish__price", "order__user")\
         .annotate(Sum("count"))\
         .order_by("order__user__last_name", "order__user__first_name")\
         .filter(dish__day__week__date__gte=first_day)\

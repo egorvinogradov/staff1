@@ -20,8 +20,8 @@ def reserve(request):
             message=u'Страница доступна только для пользователей mail.ostrovok.ru с заполненным именем')
         return direct_to_template(request, 'base.html')
 
-    if not request.user.get_profile().office:
-        return direct_to_template(request, 'staff/config.html', {'offices': Office.objects.all()})
+    #if not request.user.get_profile().office:
+    #    return direct_to_template(request, 'staff/config.html', {'offices': Office.objects.all()})
 
     return direct_to_template(request, 'bb_dinner/main.html')
 
