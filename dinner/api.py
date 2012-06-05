@@ -139,9 +139,14 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             dishes = data.get('dishes', {})
             if dishes:
                 for dish_day_id, count in dishes.items():
+                    try:
+                        dish_day = DishDay.objects.get(pk=dish_day_id)
+                    except DishDay.DoesNotExist:
+                        continue
+
                     order_day_item, created = DishOrderDayItem.objects.get_or_create(
                         order=order,
-                        dish_day_id=dish_day_id,
+                        dish_day=dish_day,
                         day=day,
                     )
 
