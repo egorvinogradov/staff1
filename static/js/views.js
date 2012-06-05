@@ -211,6 +211,7 @@ var AppView = Backbone.View.extend({
     makeOrder: function(){
 
         var order = this.getLocalData('order'),
+            week = {},
             success = function(data){
                 console.log('order OK', data);
             },
@@ -229,6 +230,20 @@ var AppView = Backbone.View.extend({
             }
 
         });
+
+
+        if ( this.app && this.app.menu ) {
+            _.each(this.app.menu.menu, function(data, day){
+                if ( !order[data.date] ) {
+                    order[data.date] = {
+                        dishes: {},
+                        restaurant: false,
+                        none: true
+                    }
+                }
+            });
+        }
+        
 
         console.log('--- ORDERED', _.clone(order));
 
@@ -417,6 +432,30 @@ var MenuView = Backbone.View.extend({
                         model: order
                     };
                 }
+
+                var local = this.app.getLocalData('order');
+
+                if ( _.isEmpty(local) ) {
+
+                    _.each(this.app.order.model.get('objects')[0], function(data, date){
+
+                        var orderDishes = {};
+
+                        _.each(data.dishes, function(categories, provider){
+                            _.each(categories, function(dishes, category){
+                                _.each(dishes, function(dish){
+                                    orderDishes[dish.id] = dish.count;
+                                });
+                            });
+                        });
+
+                        //if (  )
+
+
+                    });
+
+                }
+
                 callback.call(this);
                 
             };
@@ -632,7 +671,7 @@ var MenuView = Backbone.View.extend({
             .hide()
             .fadeIn();
 
-        this.app.header.els.complete.click($.proxy(function(){
+        this.app.header.els.complete.one('click', $.proxy(function(){
             this.app.makeOrder();
             this.app.setLocalData('order', null);
         }, this));
@@ -917,19 +956,17 @@ var MenuView = Backbone.View.extend({
         console.log('SET HEADER DAY TEXT', arguments);
 
         var text = {
-                office:     'в офисе',
+                office: 'в офисе',
                 restaurant: 'в Луч',
-                none:       'худею'
+                none: 'худею'
             },
             element,
             price;
-
 
         this.app.header.els.days.items.each(function(i, e){
             var day = $(e);
             if ( day.data('date') === date ) element = day;
         });
-
 
         if ( options.type === 'office' ) {
 
@@ -941,10 +978,12 @@ var MenuView = Backbone.View.extend({
                 .html(price);
         }
 
-        element
-            .addClass(config.classes.header.dayCompleted)
-            .find(this.app.header.els.days.comments)
-            .html(text[options.type]);
+        if ( options.type !== 'office' || ( options.type === 'office' && price ) ) {
+            element
+                .addClass(config.classes.header.dayCompleted)
+                .find(this.app.header.els.days.comments)
+                .html(text[options.type]);
+        }
     }
 });
 
