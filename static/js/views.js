@@ -260,8 +260,7 @@ var HeaderView = Backbone.View.extend({
             items: $(config.selectors.header.day),
             titles: $(config.selectors.header.dayTitle),
             actions: $(config.selectors.header.dayActionsItem),
-            comments: $(config.selectors.header.dayComment),
-            prices: $(config.selectors.header.dayPriceBig)
+            comments: $(config.selectors.header.dayComment)
         };
 
         this.els.complete = $(config.selectors.header.completeButton);
@@ -305,7 +304,29 @@ var HeaderView = Backbone.View.extend({
             .click($.proxy(function(event){
                 this.hideActions();
                 this.showActions(event);
+            }, this))
+            .end()
+            .find(this.els.days.actions)
+            .click();
+
+        this.els.days.items
+            .not('.'+ config.classes.header.dayInactive)
+            .find(this.els.days.actions)
+            .click($.proxy(function(event){
+
+                var element = $(event.currentTarget),
+                    date = element.parents(config.selectors.header.day).data('date'),
+                    type = element.attr('rel'),
+                    order = {
+                        dishes: {},
+                        restaurant: type === 'restaurant',
+                        none: type === 'none'
+                    };
+
+                console.log('--- ACTION CLICK', date, order, '|', this.app.getLocalData('order')[date]);
+                this.app.addToOrder(date, order);
             }, this));
+
     },
     renderProviders: function(menu, day, provider){
 
@@ -849,8 +870,29 @@ var MenuView = Backbone.View.extend({
     },
     getDayOrderPrice: function(date){
 
+        var order = this.app.getLocalData('order')[date],
+            price = 0,
+            dayMenu;
 
-        return 200;
+        if ( !order ) return 0;
+
+        _.each(this.menu, function(data, day){
+            if ( date === data.date ) {
+                dayMenu = data;
+            }
+        });
+
+        _.each(dayMenu.providers, function(categories, provider){
+            _.each(categories, function(categoryData, category){
+                _.each(categoryData.dishes, function(dish){
+                    if ( order.dishes[dish.id] ) {
+                        price += ( +dish.price * order.dishes[dish.id] );
+                    }
+                });
+            });
+        });
+
+        return price;
     },
     setHeaderDayText: function(date, options){
 
