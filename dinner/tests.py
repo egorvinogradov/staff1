@@ -103,9 +103,9 @@ class RestApiTest(ResourceTestCase):
                 continue
 
             count = 0
-            for provider, groups in data['dishes'].items():
+            for provider, groups in data['providers'].items():
                 for group in groups:
-                    for dish in data['dishes'][provider][group]:
+                    for dish in data['providers'][provider][group]:
                         if count >= 5:
                             break
 
@@ -122,7 +122,6 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.order_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
 
-
         received_dish_ids = []
         for obj in objects:
             for date, data in obj.items():
@@ -132,7 +131,6 @@ class RestApiTest(ResourceTestCase):
                             received_dish_ids.append(dish['id'])
 
         self.assertTrue(sorted(received_dish_ids) == sorted(sent_dishes_ids))
-
 
 
     def test_favorites(self):
