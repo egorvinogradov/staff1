@@ -159,7 +159,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
             restaurant = bundle.data[date].get('restaurant')
             if restaurant:
-                RestaurantOrderDayItem.objects.create(
+                RestaurantOrderDayItem.objects.get_or_create(
                     order=order,
                     day=day,
                     restaurant_name=restaurant
@@ -168,10 +168,13 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
             none = bundle.data[date].get('none')
             if none:
-                EmptyOrderDayItem.objects.create(
+                EmptyOrderDayItem.objects.get_or_create(
                     order=order,
                     day=day
                 )
+
+
+
                 continue
 
             raise NotImplementedError('please supply restaurant or dishes')

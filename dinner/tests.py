@@ -152,5 +152,3 @@ class RestApiTest(ResourceTestCase):
         created_ids = [o['id'] for o in objects if o['favorite']]
 
         self.assertEqual(sorted(created_ids), sorted(ids))
-
-
