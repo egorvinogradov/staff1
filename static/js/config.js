@@ -12,6 +12,7 @@ var config = {
             dayRestaurant:  '.header__day-restaurant',
             daySlimming:    '.header__day-none',
             dayComment:     '.header__day-comment',
+            dayPriceBig:    '.header__day-price-big',
             providers:      '.header__providers',
             providerList:   '.header__providers-list',
             provider:       '.header__provider',

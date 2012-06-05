@@ -279,6 +279,7 @@ html {
 .header__day-price-big {
     font-size: 20px;
     font-weight: bold;
+    color: #5F6167;
 }
 
 .header__day.m-has-price .header__day-select {

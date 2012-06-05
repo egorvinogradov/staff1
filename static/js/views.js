@@ -143,7 +143,7 @@ var AppView = Backbone.View.extend({
             value = {};
         }
 
-        console.log('GET LOCAL DATA', value);
+        //console.log('GET LOCAL DATA', value);
 
         return value;
 
@@ -155,7 +155,7 @@ var AppView = Backbone.View.extend({
             return;
         }
 
-        console.log('SET LOCAL DATA', value);
+        //console.log('SET LOCAL DATA', value);
 
         localStorage.setItem(key, JSON.stringify(value));
         return value;
@@ -259,7 +259,9 @@ var HeaderView = Backbone.View.extend({
         this.els.days = {
             items: $(config.selectors.header.day),
             titles: $(config.selectors.header.dayTitle),
-            actions: $(config.selectors.header.dayActionsItem)
+            actions: $(config.selectors.header.dayActionsItem),
+            comments: $(config.selectors.header.dayComment),
+            prices: $(config.selectors.header.dayPriceBig)
         };
 
         this.els.complete = $(config.selectors.header.completeButton);
@@ -537,6 +539,19 @@ var MenuView = Backbone.View.extend({
 
         this.app.header.bindDayEvents(this.menu);
 
+        _.each(this.app.getLocalData('order'), function(data, date){
+
+            var type = data.restaurant
+                    ? 'restaurant'
+                    : data.none
+                        ? 'none'
+                        : 'office';
+
+            this.setHeaderDayText(date, { type: type });
+
+        }, this);
+        
+
         var currentOptions = params && params.options // TODO: fix
                     ? params.options
                     : this.app && this.app.options
@@ -605,15 +620,22 @@ var MenuView = Backbone.View.extend({
 
         if ( order[date].restaurant || order[date].none ) {
 
+            var type = order[date].restaurant
+                    ? 'restaurant'
+                    : order[date].none
+                        ? 'none'
+                        : '';
+
             // render overlay
-            console.log('--- set selected dishes 1: render overlay', order.restaurant, order.none);
+            console.log('--- set selected dishes 1: render overlay', order[date].restaurant, order[date].none);
 
             this.renderOverlay({
                 date: date,
                 day: day,
-                overlayType: order.restaurant ? 'restaurant' : order.none ? 'none' : ''
+                overlayType: type
             });
 
+            this.setHeaderDayText(date, { type: type });
         }
         else {
 
@@ -669,56 +691,11 @@ var MenuView = Backbone.View.extend({
                     }, this);
                 }, this);
             }
+
+            this.setHeaderDayText(date, { type: 'office' });
         }
-
-
-
-
-
-
-//            var ids2 = [],
-//                s = function(a,b){ return a < b ? -1 : 1 },
-//                p = function(arr){
-//                    var s = arr[0],
-//                        res = [];
-//                    for ( var i = 1, l = arr.length; i < l; i++ ) {
-//                        if ( arr[i] !== arr[i-1] + 1 ) {
-//                            s == arr[i-1]
-//                                ? res.push( s )
-//                                : res.push( s + ' - ' + arr[i-1] );
-//
-//                            s = arr[i];
-//                        }
-//                    }
-//                    return res;
-//                };
-//
-//            this.els.item.each(function(i, e){
-//                ids2.push( $(e).data('id') );
-//            });
-//
-//            ids.sort(s);
-//            ids2.sort(s);
-//
-//            console.log('--- ids', ids);
-//            console.log('--- ids2', p(ids2));
-
-
     },
     bindEventsForOrder: function(date){
-
-        var mock = {
-            '2012-06-01': {
-                'dishes': {
-                    720: 1,
-                    721: 1,
-                    722: 1,
-                    723: 1,
-                    673: 1
-                }
-            }
-        };
-
 
         window.order = {};
 
@@ -753,6 +730,8 @@ var MenuView = Backbone.View.extend({
 
                 element.addClass(selected);
             }
+
+            this.setHeaderDayText(date, { type: 'office' });
 
         }, this));
 
@@ -789,57 +768,11 @@ var MenuView = Backbone.View.extend({
 
             els.number.html(count.changed);
 
+            this.setHeaderDayText(date, { type: 'office' });
+
             event.stopPropagation();
 
         }, this));
-
-
-
-//        this.els.header.dayRestaurant = $(config.selectors.header.dayRestaurant);
-//        this.els.header.daySlimming = $(config.selectors.header.daySlimming);
-//        this.els.header.dayControls = this.els.header.dayRestaurant.add(this.els.header.daySlimming);
-
-
-//        this.els.header.dayControls.click($.proxy(function(){
-//
-//            var button = $(event.currentTarget),
-//                container = button.parents(config.selectors.header.day),
-//                options = {
-//                    day: container.attr('rel'),
-//                    date: container.data('date'),
-//                    type: button.data('type')
-//                };
-//
-//            this.renderOverlay({
-//                day: options.day,
-//                date: options.date,
-//                type: options.type
-//            });
-//
-//            if ( !this.order[options.date] ) {
-//                this.order[options.date] = {
-//                    dishes: {},
-//                    restaurant: false,
-//                    none: true
-//                };
-//            }
-//
-//            if ( options.type === 'restaurant' ) {
-//                this.order[options.date].restaurant = true;
-//                this.order[options.date].none = false;
-//                this.order[options.date].dishes = {};
-//            }
-//
-//            if ( options.type === 'slimming' ) {
-//                this.order[options.date].restaurant = false;
-//                this.order[options.date].none = true;
-//                this.order[options.date].dishes = {};
-//            }
-//
-//        }, this));
-
-
-
 
     },
     renderOverlay: function(options){
@@ -874,7 +807,7 @@ var MenuView = Backbone.View.extend({
 
 
         if ( !options.overlayType || !options.day ) { // TODO: don't forget attention overlay
-            alert('overlay error');
+            alert('overlay error: ' + options.overlayType + ' -- ' + options.day);
             return;
         }
 
@@ -883,6 +816,7 @@ var MenuView = Backbone.View.extend({
             var dayOrderData = {};
             dayOrderData[options.overlayType] = true;
             this.app.addToOrder(options.date, dayOrderData);
+            this.setHeaderDayText(options.date, { type: options.overlayType });
         }
 
         content = {
@@ -912,6 +846,45 @@ var MenuView = Backbone.View.extend({
             .end()
             .append(template(content));
 
+    },
+    getDayOrderPrice: function(date){
+
+
+        return 200;
+    },
+    setHeaderDayText: function(date, options){
+
+        console.log('SET HEADER DAY TEXT', arguments);
+
+        var text = {
+                office:     'в офисе',
+                restaurant: 'в Луч',
+                none:       'худею'
+            },
+            element,
+            price;
+
+
+        this.app.header.els.days.items.each(function(i, e){
+            var day = $(e);
+            if ( day.data('date') === date ) element = day;
+        });
+
+
+        if ( options.type === 'office' ) {
+
+            price = this.getDayOrderPrice(date);
+            text.office += ' / ' + price + 'р.';
+            element.addClass(config.classes.header.dayHasPrice);
+            element
+                .find(config.selectors.header.dayPriceBig)
+                .html(price);
+        }
+
+        element
+            .addClass(config.classes.header.dayCompleted)
+            .find(this.app.header.els.days.comments)
+            .html(text[options.type]);
     }
 });
 
