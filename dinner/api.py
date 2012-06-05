@@ -41,7 +41,7 @@ class DayResource(ModelResource):
         bundle.data = {
             'weekday': WEEK_DAYS[bundle.obj.day],
             'date': bundle.obj.date,
-            'dishes': self.__get_grouped_dishes(bundle.obj),
+            'providers': self.__get_grouped_dishes(bundle.obj),
             }
 
         return bundle
