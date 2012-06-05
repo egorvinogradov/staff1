@@ -41,7 +41,7 @@ class DayResource(ModelResource):
         bundle.data = {
             'weekday': WEEK_DAYS[bundle.obj.day],
             'date': bundle.obj.date,
-            'providers': self.__get_grouped_dishes(bundle.obj),
+            'dishes': self.__get_grouped_dishes(bundle.obj),
             }
 
         return bundle
@@ -57,10 +57,10 @@ class DayResource(ModelResource):
 class OrderDayItemResource(NotSoTastyPieModelResource):
     def __fill_date_dict(self, data, date):
         data_date = data[str(date)] = data.get(str(date), SortedDict())
-        data_date['weekday'] = WEEK_DAYS[date.weekday()]
-        data_date['restaurant'] = False
-        data_date['none'] = False
-        data_date['providers'] = {}
+        data_date['weekday']    = WEEK_DAYS[date.weekday()]
+        data_date['restaurant'] = data_date.get('restaurant', False)
+        data_date['none']       = data_date.get('none', False)
+        data_date['dishes']     = data_date.get('dishes', {})
 
         return data_date
 
@@ -110,6 +110,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
         self.__fill_dish_order_day_items(data, order)
         self.__fill_restaurant_order_day_items(data, order)
+        self.__fill_empty_order_day_items(data, order)
 
         bundle.data = data
         return bundle
@@ -139,9 +140,9 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
             dishes = data.get('dishes', {})
             if dishes:
-                for dish_day_id, count in dishes.items():
+                for dish, count in dishes.items():
                     try:
-                        dish_day = DishDay.objects.get(pk=dish_day_id)
+                        dish_day = DishDay.objects.get(dish=dish, day=day)
                     except DishDay.DoesNotExist:
                         continue
 

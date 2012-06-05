@@ -78,12 +78,15 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
 
-        self.assertTrue(len(objects) != 0)
+        self.assertTrue(len(objects) > 1)
 
         post_data = SortedDict()
+        sent_dishes_ids  = []
 
         date_count = 0
         for data in objects:
+            date_count += 1
+
             date = data['date']
             post_data[date] = {
                 'dishes': {},
@@ -96,18 +99,20 @@ class RestApiTest(ResourceTestCase):
                 continue
 
             if date_count % 2 == 0:
-                post_data[data]['restaurnt'] = 'luch'
+                post_data[date]['restaurant'] = 'luch'
                 continue
 
             count = 0
-            for provider, categories in data['providers'].items():
-                for category in categories:
-                    for dish in data['providers'][provider][category]:
+            for provider, groups in data['dishes'].items():
+                for group in groups:
+                    for dish in data['dishes'][provider][group]:
                         if count >= 5:
                             break
 
                         dish_id = dish['id']
                         post_data[date]['dishes'][dish_id] = 1
+
+                        sent_dishes_ids.append(dish_id)
 
                         count += 1
 
@@ -117,13 +122,17 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.order_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
 
-        self.assertTrue(len(objects) != 0)
 
+        received_dish_ids = []
+        for obj in objects:
+            for date, data in obj.items():
+                for provider, groups in data['dishes'].items():
+                    for group in groups:
+                        for dish in data['dishes'][provider][group]:
+                            received_dish_ids.append(dish['id'])
 
+        self.assertTrue(sorted(received_dish_ids) == sorted(sent_dishes_ids))
 
-        # todo: check if data identical
-        #saved_post_data = self.build_order_dict(objects)
-        #self.assertTrue(post_data == saved_post_data)
 
 
     def test_favorites(self):
@@ -139,7 +148,6 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.post(self.favorite_url, format='json', data={'objects': ids},
             authentication=self.get_credentials())
         self.assertHttpCreated(resp)
-
 
         resp = self.api_client.get(self.favorite_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
