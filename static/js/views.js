@@ -136,14 +136,14 @@ var AppView = Backbone.View.extend({
 
         try {
             var data = JSON.parse(localStorage.getItem(key));
-            value = typeof data === 'object' ? data : {};
+            value = data instanceof Object ? data : {};
         }
         catch (e) {
             console.log('ERROR: invalid data is in local storage');
             value = {};
         }
 
-        //console.log('GET LOCAL DATA', value);
+        console.log('GET LOCAL DATA', value);
 
         return value;
 
@@ -208,7 +208,7 @@ var AppView = Backbone.View.extend({
 
         this.setLocalData('order', order);
     },
-    makeOrder: function(order){
+    makeOrder: function(){
 
         var order = this.getLocalData('order'),
             success = function(data){
@@ -217,6 +217,20 @@ var AppView = Backbone.View.extend({
             error = function(data){
                 console.log('order FAIL', data);
             };
+
+        _.each(order, function(data, date){
+
+            if ( data.restaurant || data.none ) {
+                data.dishes = {}
+            }
+
+            if ( !data.restaurant && _.isEmpty(data.dishes) ) {
+                data.none = true;
+            }
+
+        });
+
+        console.log('--- ORDERED', _.clone(order));
 
         $.ajax({
             type: 'POST',
@@ -323,8 +337,10 @@ var HeaderView = Backbone.View.extend({
                         none: type === 'none'
                     };
 
-                console.log('--- ACTION CLICK', date, order, '|', this.app.getLocalData('order')[date]);
+                console.log('--- ACTION CLICK', date, order);
+
                 this.app.addToOrder(date, order);
+
             }, this));
 
     },
@@ -524,7 +540,7 @@ var MenuView = Backbone.View.extend({
         });
 
 
-        console.log('-- getMenuHTML', menuArr);
+        //console.log('-- getMenuHTML', menuArr);
 
         _.each(menuArr, function(items){
 
@@ -616,6 +632,11 @@ var MenuView = Backbone.View.extend({
             .hide()
             .fadeIn();
 
+        this.app.header.els.complete.click($.proxy(function(){
+            this.app.makeOrder();
+            this.app.setLocalData('order', null);
+        }, this));
+
 
         if ( currentOptions.overlayType ) {
             this.renderOverlay({
@@ -635,7 +656,7 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.app || !this.app.order || !this.app.order.model ) return;
 
-        var order = this.app.getLocalData('order');
+        var order = this.app.getLocalData('order') || this.app.order.model;
 
         if ( _.isEmpty(order[date]) ) return;
 
@@ -647,7 +668,6 @@ var MenuView = Backbone.View.extend({
                         ? 'none'
                         : '';
 
-            // render overlay
             console.log('--- set selected dishes 1: render overlay', order[date].restaurant, order[date].none);
 
             this.renderOverlay({
@@ -659,8 +679,6 @@ var MenuView = Backbone.View.extend({
             this.setHeaderDayText(date, { type: type });
         }
         else {
-
-            // set selected dishes
 
             this.els.item = this.els.item || $(config.selectors.menu.item.container);
 
