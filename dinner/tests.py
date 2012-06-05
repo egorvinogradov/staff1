@@ -119,6 +119,8 @@ class RestApiTest(ResourceTestCase):
 
         self.assertTrue(len(objects) != 0)
 
+
+
         # todo: check if data identical
         #saved_post_data = self.build_order_dict(objects)
         #self.assertTrue(post_data == saved_post_data)

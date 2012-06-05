@@ -134,7 +134,7 @@ def post_order_day_item_save(sender, instance, **kwargs):
         day = instance.day
         order = instance.order
 
-        if not isinstance(sender, order_day_item_model):
+        if sender != order_day_item_model:
             order_day_item_model.objects.filter(day=day, order=order).delete()
 
 

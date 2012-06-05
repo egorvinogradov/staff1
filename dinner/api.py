@@ -51,6 +51,7 @@ class DayResource(ModelResource):
         resource_name = 'day'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
+        limit = 500
 
 
 class OrderDayItemResource(NotSoTastyPieModelResource):
@@ -78,8 +79,8 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             date = day.date
             data_date = self.__fill_date_dict(data, date)
 
-            providers = data_date['providers'] = data_date.get('providers', {})
-            groups = providers[dish.provider.name] = providers.get(dish.provider.name, {})
+            dishes = data_date['dishes'] = data_date.get('dishes', {})
+            groups = dishes[dish.provider.name] = dishes.get(dish.provider.name, {})
             group = groups[dish.group.name] = groups.get(dish.group.name, [])
 
             group.append({
@@ -139,9 +140,14 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             dishes = data.get('dishes', {})
             if dishes:
                 for dish_day_id, count in dishes.items():
+                    try:
+                        dish_day = DishDay.objects.get(pk=dish_day_id)
+                    except DishDay.DoesNotExist:
+                        continue
+
                     order_day_item, created = DishOrderDayItem.objects.get_or_create(
                         order=order,
-                        dish_day_id=dish_day_id,
+                        dish_day=dish_day,
                         day=day,
                     )
 
@@ -180,6 +186,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         resource_name = 'order'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
+        limit = 500
 
 
 class FavoriteDishResource(NotSoTastyPieModelResource):
@@ -209,3 +216,4 @@ class FavoriteDishResource(NotSoTastyPieModelResource):
         resource_name = 'favorite'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
+        limit = 500
