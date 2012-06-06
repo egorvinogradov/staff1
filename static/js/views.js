@@ -1315,11 +1315,11 @@ var FavouritesView = Backbone.View.extend({
         if ( !favourites || !favourites.length ) {
             this.app.fetchModel(this.model, function(model){
 
-                model.get('objects')[0].favorite = true;
-                model.get('objects')[3].favorite = true;
-                model.get('objects')[7].favorite = true;
-                model.get('objects')[13].favorite = true;
-                model.get('objects')[18].favorite = true;
+//                model.get('objects')[0].favorite = true;
+//                model.get('objects')[3].favorite = true;
+//                model.get('objects')[7].favorite = true;
+//                model.get('objects')[13].favorite = true;
+//                model.get('objects')[18].favorite = true;
 
                 this.favourites = this.assertFavourites(model.get('objects'));
                 callback.call(this);
@@ -1353,15 +1353,14 @@ var FavouritesView = Backbone.View.extend({
 
         if ( !this.favourites ) return;
 
-        var _this = this,
-            favouritesHTML = [];
+        var favourites = [];
 
-        _.each(this.favourites, function(data, category){
+        _.each(this.favourites, function(data, categoryName){
 
-            var categoryHTML = [];
+            var category = [];
 
             _.each(data.dishes, function(dish){
-                categoryHTML.push(this.templates.item({
+                category.push(this.templates.item({
                     name: dish.name,
                     provider: dish.provider,
                     id: dish.id,
@@ -1369,10 +1368,10 @@ var FavouritesView = Backbone.View.extend({
                 }));
             }, this);
 
-            favouritesHTML.push(this.templates.category({
+            favourites.push(this.templates.category({
                 name: data.name,
-                category: category,
-                items: categoryHTML.join('')
+                category: categoryName,
+                items: category.join('')
             }));
 
         }, this);
@@ -1383,18 +1382,18 @@ var FavouritesView = Backbone.View.extend({
         this.el
             .empty()
             .addClass(config.classes.content.favourites)
-            .append(this.templates.container({ categories: favouritesHTML.join('') }))
+            .append(this.templates.container({ categories: favourites.join('') }))
             .hide()
             .fadeIn();
 
         this.app.els.page.addClass(config.classes.page.favourites);
-
-        setTimeout(function(){
-            _this.bindEvents();
-        }, 0);
+        setTimeout($.proxy(this.bindEvents, this), 0);
 
     },
     bindEvents: function(){
+
+        var changed = false,
+            timer;
 
         this.els.item = $(config.selectors.favourites.item);
         this.els.item.click($.proxy(function(event){
@@ -1403,25 +1402,28 @@ var FavouritesView = Backbone.View.extend({
                 id = element.data('id'),
                 selected = element.hasClass(config.classes.favourites.selected);
 
-            if ( selected ) {
-                element.removeClass(config.classes.favourites.selected);
+            selected
+                ? element.removeClass(config.classes.favourites.selected)
+                : element.addClass(config.classes.favourites.selected);
 
-                // model set
-            }
-            else {
-                element.addClass(config.classes.favourites.selected);
-
-                // model set
-            }
+            changed = true;
 
         }, this));
 
-        $(window).one('hashchange', $.proxy(this.saveFavourites, this));
+        timer = setInterval($.proxy(function(){
+            if ( changed ) {
+                changed = false;
+                this.saveFavourites();
+            }
+        }, this), 1000);
+
+        $(window).one('hashchange beforeunload', $.proxy(function(){
+            clearInterval(timer);
+            changed && this.saveFavourites();
+        }, this));
 
     },
     saveFavourites: function(){
-
-        // {'objects': [438, 440, 442, 444, 446, 448, 450, 452, 454, 456]}
 
         var favourites = [],
             success = function(data){
@@ -1442,7 +1444,7 @@ var FavouritesView = Backbone.View.extend({
         $.ajax({
             type: 'POST',
             contentType: 'application/json',
-            url: '/api/v1/order/',
+            url: '/api/v1/favorite/',
             data: JSON.stringify({ objects: favourites }),
             success: function(data){
                 data.status === 'ok'
