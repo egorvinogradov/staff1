@@ -422,22 +422,25 @@ var MenuView = Backbone.View.extend({
 
         var menu = this.model.get('objects'),
             localOrder = this.app.getLocalData('order'),
-            order = this.app && this.app.order
-                ? this.app.order.model
-                : null,
+//            order = this.app && this.app.order
+//                ? this.app.order.model
+//                : null,
+            order,
             setData = function(){
 
                 if ( !menu || !order ) return;
-                this.menu = this.assembleMenu(menu.get('objects'));
+                this.menu = this.assembleMenu(menu.get('objects'), localOrder && !_.isEmpty(localOrder) ? localOrder : order);
                 if ( this.app && !this.app.order ) {
                     this.app.order = {
                         model: order
                     };
                 }
 
+                console.warn('menu view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
+
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
-                    _.each(order.get('objects')[0], function(data, date){
+                    _.each(order, function(data, date){
 
                         var dayOrder = {},
                             dayDishes = {};
@@ -480,12 +483,20 @@ var MenuView = Backbone.View.extend({
             }, this);
         }
 
-        if ( !order ) {
-            this.app.fetchModel(new OrderModel(), function(model){
-                order = model;
-                setData.call(this);
-            }, this);
-        }
+//        if ( !order ) {
+//            this.app.fetchModel(new OrderModel(), function(model){
+//                order = model;
+//                setData.call(this);
+//            }, this);
+//        }
+
+
+        this.app.fetchModel(new OrderModel(), function(model){
+            order = model.get('objects')[0];
+            setData.call(this);
+        }, this);
+
+
 
         setData.call(this);
 
@@ -1027,6 +1038,9 @@ var OrderView = Backbone.View.extend({
                 console.log('--- SET DATA', order, menu);
 
                 if ( !menu || !order ) return;
+
+                console.warn('order view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
+
                 this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order, menu.get('objects'));
 
                 if ( this.app && !this.app.menu ) {
@@ -1227,16 +1241,6 @@ var OrderView = Backbone.View.extend({
                 hasDishes = !data.restaurant && !data.none,
                 template,
                 content;
-
-//            _.each(data.providers, function(categories, provider){
-//
-//                _.each(categories, function(dishes, category){
-//
-//
-//                }, this);
-//            }, this);
-
-
 
             _.each(data.dishes, function(dish){
                 dayHTML.push(this.templates.item(dish));
