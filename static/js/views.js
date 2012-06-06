@@ -130,7 +130,7 @@ var AppView = Backbone.View.extend({
 
         var value;
 
-        if ( typeof localStorage == 'undefined' ) {
+        if ( typeof localStorage === 'undefined' ) {
             console.log('ERROR: local storage is not supported');
             return;
         }
@@ -144,7 +144,7 @@ var AppView = Backbone.View.extend({
             value = {};
         }
 
-        console.log('GET LOCAL DATA', _.clone(value));
+        //console.log('GET LOCAL DATA', _.clone(value));
 
         return value;
 
@@ -318,6 +318,25 @@ var HeaderView = Backbone.View.extend({
     },
     bindDayEvents: function(menu){
 
+        var _this = this,
+            itemsClick = function(event){
+                _this.hideActions();
+                _this.showActions(event);
+            },
+            titlesClick = function(event){
+                var element = $(event.currentTarget),
+                    date = element.parents(config.selectors.header.day).data('date'),
+                    type = element.attr('rel'),
+                    order = {
+                        dishes: {},
+                        restaurant: type === 'restaurant',
+                        none: type === 'none'
+                    };
+
+                _this.app.addToOrder(date, order);
+                console.log('--- ACTION CLICK', date, order);
+            };
+
         this.els.days.items
             .addClass(config.classes.header.dayInactive);
 
@@ -331,33 +350,14 @@ var HeaderView = Backbone.View.extend({
         this.els.days.items
             .not('.'+ config.classes.header.dayInactive)
             .find(this.els.days.titles)
-            .click($.proxy(function(event){
-                this.hideActions();
-                this.showActions(event);
-            }, this))
-            .end()
-            .find(this.els.days.actions)
-            .click();
+            .unbind('click', itemsClick)
+            .bind('click', itemsClick);
 
         this.els.days.items
             .not('.'+ config.classes.header.dayInactive)
             .find(this.els.days.actions)
-            .click($.proxy(function(event){
-
-                var element = $(event.currentTarget),
-                    date = element.parents(config.selectors.header.day).data('date'),
-                    type = element.attr('rel'),
-                    order = {
-                        dishes: {},
-                        restaurant: type === 'restaurant',
-                        none: type === 'none'
-                    };
-
-                console.log('--- ACTION CLICK', date, order);
-
-                this.app.addToOrder(date, order);
-
-            }, this));
+            .unbind('click', titlesClick)
+            .bind('click', titlesClick);
 
     },
     renderProviders: function(menu, day, provider){
@@ -429,14 +429,12 @@ var MenuView = Backbone.View.extend({
             setData = function(){
 
                 if ( !menu || !order ) return;
-                this.menu = this.assembleMenu(menu.get('objects'), localOrder && !_.isEmpty(localOrder) ? localOrder : order);
+                this.menu = this.assembleMenu(menu.get('objects'));
                 if ( this.app && !this.app.order ) {
                     this.app.order = {
                         model: order
                     };
                 }
-
-                console.warn('menu view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
@@ -471,7 +469,8 @@ var MenuView = Backbone.View.extend({
                     this.app.setLocalData('order', localOrder);
 
                 }
-
+                
+                this.app.header.bindDayEvents(this.menu);
                 callback.call(this);
                 
             };
@@ -483,14 +482,6 @@ var MenuView = Backbone.View.extend({
             }, this);
         }
 
-//        if ( !order ) {
-//            this.app.fetchModel(new OrderModel(), function(model){
-//                order = model;
-//                setData.call(this);
-//            }, this);
-//        }
-
-
         this.app.fetchModel(new OrderModel(), function(model){
             order = model.get('objects')[0];
             setData.call(this);
@@ -501,7 +492,7 @@ var MenuView = Backbone.View.extend({
         setData.call(this);
 
     },
-    assembleMenu: function(objects){
+    assembleMenu: function(objects, order){
 
         var weekMenu = {},
             categoriesOrder = {
@@ -637,8 +628,6 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.menu || _.isEmpty(this.menu) ) return;
 
-        this.app.header.bindDayEvents(this.menu);
-
         _.each(this.app.getLocalData('order'), function(data, date){
 
             var type = data.restaurant
@@ -711,9 +700,9 @@ var MenuView = Backbone.View.extend({
     },
     setSelectedDishes: function(date, day){
 
-        if ( !this.app || !this.app.order || !this.app.order.model ) return;
+        //if ( !this.app || !this.app.order || !this.app.order.model ) return;
 
-        var order = this.app.getLocalData('order') || this.app.order.model;
+        var order = this.app.getLocalData('order');
 
         if ( _.isEmpty(order[date]) ) return;
 
@@ -737,7 +726,7 @@ var MenuView = Backbone.View.extend({
         }
         else {
 
-            this.els.item = this.els.item || $(config.selectors.menu.item.container);
+            this.els.item = $(config.selectors.menu.item.container);
 
             if ( order[date] && order[date].dishes ) {
 
@@ -969,7 +958,7 @@ var MenuView = Backbone.View.extend({
     },
     setHeaderDayText: function(date, options){
 
-        console.log('SET HEADER DAY TEXT', arguments);
+        //console.log('SET HEADER DAY TEXT', arguments);
 
         var text = {
                 office: 'в офисе',
