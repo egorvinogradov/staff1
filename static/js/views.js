@@ -1385,6 +1385,15 @@ var FavouritesView = Backbone.View.extend({
     },
     bindEvents: function(){
 
+        /**********/
+
+        $('.content__favourites-category').eq(0).addClass('m-small');
+        $('.content__favourites-category').eq(4).addClass('m-small');
+
+        // TODO: make slider
+
+        /***********/
+
         var changed = false,
             timer;
 

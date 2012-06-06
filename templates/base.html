@@ -22,7 +22,7 @@
     <script type="application/template" id="template_page" class="template">
         <div class="header"></div>
         <div class="content">
-            <div class="content__wrapper"></div>
+            <div class="content__wrapper m-column-slider"></div>
         </div>
     </script>
 
@@ -270,7 +270,8 @@
     </script>
 
     <script type="application/template" id="template_favourites-category" class="template">
-        <div class="content__favourites-category m-small" rel="<%= category %>">
+        <div class="content__favourites-category" rel="<%= category %>">
+            <div class="content__favourites-category-blank"></div>
             <h1 class="content__favourites-header"><%= name %></h1>
             <ul class="content__favourites-list">
                 <%= items %>

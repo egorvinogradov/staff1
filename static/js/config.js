@@ -36,6 +36,8 @@ var config = {
             }
         },
         favourites: {
+            category:       '.content__favourites-category',
+            blank:          '.content__favourites-category-blank',
             item:           '.content__favourites-item'
         },
         overlay:            '.content__overlay'

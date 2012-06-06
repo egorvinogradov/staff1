@@ -1028,6 +1028,7 @@ html {
 
 .content__favourites-category {
     display: inline-block;
+    position: relative;
     vertical-align: top;
     width: 18%;
     min-width: 225px;
@@ -1068,12 +1069,27 @@ html {
     background-position: 0 -150px;
 }
 
+.content__favourites-category-blank {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
 .content__favourites.m-column-slider .content__favourites-category.m-small {
     font-size: 5px;
     line-height: 6px;
     cursor: pointer;
     width: 7%;
     min-width: 90px;
+    overflow: hidden;
+}
+
+.content__favourites.m-column-slider .content__favourites-category.m-small .content__favourites-category-blank {
+    display: block;
 }
 
 .content__favourites.m-column-slider .content__favourites-category.m-small .content__favourites-header {
