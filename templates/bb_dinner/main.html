@@ -184,8 +184,8 @@
 
                 <div class="header__complete">
                     <span class="header__complete-fork"></span>
-                    <a class="header__complete-button" href="/#/order/">
-                        <span class="header__complete-button-wrapper">ням-ням</span>
+                    <a class="header__complete-button button" href="/#/order/">
+                        <span class="header__complete-button-wrapper button__wrapper">ням-ням</span>
                     </a>
                     <span class="header__complete-spoon"></span>
                 </div>
@@ -249,16 +249,20 @@
 
     <script type="application/template" id="template_favourites" class="template">
         <div class="content__favourites-message">
-            Перед вами все доступное меню. Выберете ваши любимые блюда и они буду отмечаться автоматически,<br>
-            если вы по какой-либо причине не сделаете заказ на новую неделю.
+            Перед вами все доступное меню. Выберете ваши любимые блюда и если вы по какой-либо причине
+            не сделаете заказ на новую неделю, блюда буду заказаны автоматически. Вы так же можете заказать
+            их вручную, нажав на кнопку ЗАКАЗАТЬ, после чего внести исправления в получившийся заказ.
         </div>
-        <div class="header__complete">
-            <span class="header__complete-fork"></span>
-            <span class="header__complete-button">
-                <span class="header__complete-button-wrapper">ням-ням</span>
+        
+        <div class="content__favourites-buttons">
+            <span class="content__favourites-save button">
+                <span class="button__wrapper">Сохранить</span>
             </span>
-            <span class="header__complete-spoon"></span>
+            <span class="content__favourites-order button">
+                <span class="button__wrapper">Заказать</span>
+            </span>
         </div>
+
         <div class="content__favourites-categories">
             <%= categories %>
             <div class="content__favourites-category-align-justify"></div>

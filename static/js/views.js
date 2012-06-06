@@ -1314,13 +1314,6 @@ var FavouritesView = Backbone.View.extend({
 
         if ( !favourites || !favourites.length ) {
             this.app.fetchModel(this.model, function(model){
-
-//                model.get('objects')[0].favorite = true;
-//                model.get('objects')[3].favorite = true;
-//                model.get('objects')[7].favorite = true;
-//                model.get('objects')[13].favorite = true;
-//                model.get('objects')[18].favorite = true;
-
                 this.favourites = this.assertFavourites(model.get('objects'));
                 callback.call(this);
             }, this);
