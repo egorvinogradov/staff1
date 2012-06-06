@@ -113,6 +113,7 @@ var AppView = Backbone.View.extend({
 
         _.each(config.classes.content, function(className){
             this.els.content.removeClass(className);
+            this.els.wrapper.removeClass(className);
         }, this);
 
     },
@@ -1016,15 +1017,17 @@ var OrderView = Backbone.View.extend({
     },
     getData: function(callback){
 
-        var order = this.model.get('objects'),
+        var order,
             localOrder = this.app.getLocalData('order'),
             menu = this.app && this.app.menu
                 ? this.app.menu.model
                 : null,
             setData = function(){
 
+                console.log('--- SET DATA', order, menu);
+
                 if ( !menu || !order ) return;
-                this.order = this.assembleOrder(order[0], menu.get('objects'));
+                this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order, menu.get('objects'));
 
                 if ( this.app && !this.app.menu ) {
                     this.app.menu = {
@@ -1032,9 +1035,13 @@ var OrderView = Backbone.View.extend({
                     };
                 }
 
+
+//                callback.call(this);    // TODO: remove
+//                return;                 // TODO: remove
+
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
-                    _.each(order[0], function(data, date){
+                    _.each(order, function(data, date){
 
                         var dayOrder = {},
                             dayDishes = {};
@@ -1070,12 +1077,21 @@ var OrderView = Backbone.View.extend({
 
             };
 
-        if ( !order || !order.length ) {
-            this.app.fetchModel(this.model, function(model){
-                order = model.get('objects');
-                setData.call(this);
-            }, this);
-        }
+//        if ( !order || !order.length ) {
+//            this.app.fetchModel(this.model, function(model){
+//                order = model.get('objects');
+//                setData.call(this);
+//            }, this);
+//        }
+
+
+
+        this.app.fetchModel(this.model, function(model){
+            order = model.get('objects')[0];
+            setData.call(this);
+        }, this);
+
+
 
         if ( !menu ) {
             this.app.fetchModel(new MenuModel(), function(model){
@@ -1089,30 +1105,95 @@ var OrderView = Backbone.View.extend({
     },
     assembleOrder: function(objects, menu){
 
-        var order = [],
-            days = {};
+        console.log('--- ASSEMBLE ORDER', objects, menu);
+
+        var days = {},
+            sorted = [];
+
 
         _.each(menu, function(data){
-            days[data.date] = {
-                date: data.date,
+
+            var date = data.date,
+                order = objects[date];
+
+            days[date] = {
+                date: date,
                 weekday: data.weekday,
                 weekdayEn: config.text.daysRu2En[ $.trimAll(data.weekday) ],
-                providers: null,
+                dishes: [],
                 restaurant: false,
                 none: true
             };
+
+            if ( order ) {
+
+                days[date].restaurant = order.restaurant;
+                days[date].none = order.none;
+
+                if ( order && !order.restaurant && !order.none ) {
+
+                    if ( order.weekday ) {
+
+                        // model from server
+
+                        _.each(order.dishes, function(categories, provider){
+                            _.each(categories, function(dishes, category){
+                                _.each(dishes, function(dish){
+
+                                    days[data.date].dishes.push({
+                                        name: dish.name,
+                                        count: dish.count,
+                                        price: dish.price,
+                                        id: dish.id,
+                                        provider: provider,
+                                        category: config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trimAll(category) ] ]
+                                    });
+
+                                });
+                            });
+                        });
+
+                        console.log('--- ORDER FROM SERVER');
+
+                    }
+                    else {
+
+                        // model from local storage
+
+                        _.each(data.providers, function(categories, provider){
+                            _.each(categories, function(dishes, category){
+                                _.each(dishes, function(dish){
+
+                                    if ( order.dishes[dish.id] ) {
+                                        days[data.date].dishes.push({
+                                            name: dish.name,
+                                            count: dish.count,
+                                            price: dish.price,
+                                            id: dish.id,
+                                            provider: provider,
+                                            category: config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trimAll(category) ] ]
+                                        });
+
+                                    }
+                                });
+                            });
+                        });
+
+                        console.log('--- ORDER FROM LOCAL STORAGE');
+
+                    }
+                }
+            }
         });
 
-        _.each(objects, function(data, date){
-            data.date = date;
-            days[date] = data;
-        });
+
+        console.log('--- DAYS', _.clone(days));
 
         _.each(days, function(data){
-            order.push(data);
+            sorted.push(data);
         });
 
-        order.sort(function(a ,b){
+        sorted.sort(function(a ,b){
 
             var str = {
                 a: a.date.split('-'),
@@ -1127,25 +1208,10 @@ var OrderView = Backbone.View.extend({
 
         });
 
-        return order;
+        return sorted;
 
     },
     render: function(){
-
-
-
-//        $.ajax({
-//            url: '/api/v1/order/',
-//            type: 'POST',
-//            contentType: 'application/json',
-//            data: { '2012-06-01': { 'dishes': { 720: 1, 721: 1, 722: 1, 723: 1, 673: 1 } } },
-//            success: function(data){
-//                console.log('SUCCESS:', data);
-//            },
-//            error: function(error){
-//                console.log('ERROR:', error);
-//            }
-//        });
 
 
         console.log('ORDER view render', this.order);
@@ -1162,20 +1228,21 @@ var OrderView = Backbone.View.extend({
                 template,
                 content;
 
-            _.each(data.providers, function(categories, provider){
+//            _.each(data.providers, function(categories, provider){
+//
+//                _.each(categories, function(dishes, category){
+//
+//
+//                }, this);
+//            }, this);
 
-                _.each(categories, function(dishes, category){
 
-                    _.each(dishes, function(dish){
 
-                        dish.provider = provider;
-                        dish.category = config.text.categoriesEn2Ru[ config.text.categoriesRu2En[ $.trimAll(category) ] ];
-                        dayHTML.push(this.templates.item(dish));
-                        dayPrice += +dish.price;
-                        
-                    }, this);
-                }, this);
+            _.each(data.dishes, function(dish){
+                dayHTML.push(this.templates.item(dish));
+                dayPrice += +dish.price;
             }, this);
+
 
             if ( hasDishes ) {
 
