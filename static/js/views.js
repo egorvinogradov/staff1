@@ -1349,6 +1349,8 @@ var FavouritesView = Backbone.View.extend({
     },
     render: function(){
 
+        console.log('FAVOURITES view render:', this.favourites);
+
         if ( !this.favourites ) return;
 
         var _this = this,
@@ -1360,7 +1362,7 @@ var FavouritesView = Backbone.View.extend({
 
             _.each(data.dishes, function(dish){
                 categoryHTML.push(this.templates.item({
-                    name: dish.title,
+                    name: dish.name,
                     provider: dish.provider,
                     id: dish.id,
                     isSelected: dish.favorite
@@ -1413,6 +1415,42 @@ var FavouritesView = Backbone.View.extend({
             }
 
         }, this));
+
+        $(window).one('hashchange', $.proxy(this.saveFavourites, this));
+
+    },
+    saveFavourites: function(){
+
+        // {'objects': [438, 440, 442, 444, 446, 448, 450, 452, 454, 456]}
+
+        var favourites = [],
+            success = function(data){
+                console.log('favourites OK', data);
+            },
+            error = function(data){
+                console.log('favourites FAIL', data);
+            };
+
+        this.els.item
+            .filter('.' + config.classes.favourites.selected)
+            .each(function(i, element){
+                favourites.push( $(element).data('id') );
+            });
+
+        console.log('FAVOURITES SAVE', favourites.slice());
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/v1/order/',
+            data: JSON.stringify({ objects: favourites }),
+            success: function(data){
+                data.status === 'ok'
+                    ? success(data)
+                    : error(data);
+            },
+            error: error
+        });
 
     }
 });
