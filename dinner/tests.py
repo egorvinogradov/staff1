@@ -34,14 +34,11 @@ class ProviderXlsParseTestCase(TestCase):
             self.assertTrue(isinstance(dish['price'], float))
 
     def test_import_menu(self):
-        cnt_imported_dishes, cnt_imported_day_dishes = import_menu(
+        import_menu(
             process_function=fusion_hleb_sol.process,
             provider_name=u'Хлеб-Соль',
             path='dinner/fixtures/hlebsol.xls'
         )
-
-        self.assertTrue(cnt_imported_dishes != 0)
-        self.assertTrue(cnt_imported_day_dishes != 0)
 
 
 class RestApiTest(ResourceTestCase):

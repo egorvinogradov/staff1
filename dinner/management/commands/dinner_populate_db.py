@@ -1,9 +1,11 @@
 #coding:utf-8
-from datetime import date
-from dinner.providers import fusion_hleb_sol
-from dinner.utils import import_menu
+import os
 
+from datetime import date, datetime
 from django.core.management.base import BaseCommand
+
+from dinner.utils import import_menu
+from dinner.providers import fusion_hleb_sol
 
 def download_latest_hlebsol():
     from pbs import wget, mv, rm, cp
@@ -14,11 +16,11 @@ def download_latest_hlebsol():
         pass
 
     if date.today().weekday() < 4:
-        wget('http://hleb-sol.biz/templates/1.xls')
+        wget('-N', '-S', 'http://hleb-sol.biz/templates/1.xls')
         mv('1.xls', 'dinner/fixtures/hlebsol.xls')
 
     else:
-        wget('http://hleb-sol.biz/templates/2.xls')
+        wget('-N', '-S', 'http://hleb-sol.biz/templates/2.xls')
         mv('2.xls', 'dinner/fixtures/hlebsol.xls')
 
     cp('dinner/fixtures/hlebsol.xls', 'dinner/fixtures/fusion.xls')
@@ -26,6 +28,9 @@ def download_latest_hlebsol():
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
+
+        download_latest_hlebsol()
+
         import_menu(
             process_function=fusion_hleb_sol.process,
             provider_name=u'Хлеб-Соль',
@@ -33,8 +38,7 @@ class Command(BaseCommand):
         )
 
         import_menu(
-            process_function=fusion_hleb_sol.process,
-            provider_name=u'Фьюжн',
-            path='dinner/fixtures/hlebsol.xls'
-        )
-
+           process_function=fusion_hleb_sol.process,
+           provider_name=u'Фьюжн',
+           path='dinner/fixtures/hlebsol.xls'
+       )

@@ -2,10 +2,9 @@
 from django.contrib import messages
 from django.utils import html
 from django.utils import safestring
-from django.shortcuts import HttpResponseRedirect
 from social_auth.backends import USERNAME, OpenIDBackend
-from social_auth.backends.google import GoogleBackend, GoogleAuth
-from team.auth_backends.exception import WrongDomain
+from social_auth.backends.google import  GoogleAuth
+from auth.auth_backends.exception import WrongDomain
 
 DOMAIN = '@ostrovok.ru'
 
@@ -44,8 +43,7 @@ class OstrovokAuth(GoogleAuth):
                     u' и используйте для авторизации аккаунт из домена {0}.'.format(e.domain, html.escape(e.email))
                 )
             )
-            raise ValueError('OpenID authentication failed: %s' % \
-                             u'гавно')
+            raise ValueError('OpenID authentication failed: %s' %  u'гавно')
 
 
 # Backend definition
