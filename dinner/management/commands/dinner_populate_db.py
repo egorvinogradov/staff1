@@ -31,7 +31,7 @@ def download_latest_hlebsol():
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
-        download_latest_hlebsol()
+        #download_latest_hlebsol()
 
         import_menu(
             process_function=fusion_hleb_sol.process,
