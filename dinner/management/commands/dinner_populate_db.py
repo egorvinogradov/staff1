@@ -17,9 +17,13 @@ def download_latest_hlebsol():
         wget('http://hleb-sol.biz/templates/1.xls')
         mv('1.xls', 'dinner/fixtures/hlebsol.xls')
 
+        print 'DOWNLOADED LATEST MENU'
+
     else:
         wget('http://hleb-sol.biz/templates/2.xls')
         mv('2.xls', 'dinner/fixtures/hlebsol.xls')
+
+        print 'DOWNLOADED LATEST MENU'
 
     cp('dinner/fixtures/hlebsol.xls', 'dinner/fixtures/fusion.xls')
 
