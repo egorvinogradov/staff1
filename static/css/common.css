@@ -927,6 +927,16 @@ html {
             border-radius: 5px;
 }
 
+.content__menu-item-blank {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 1px;
+    margin: -1px 0 0 -1px;
+    z-index: 1;
+}
+
 .content__menu-item:hover .content__menu-name {
     height: auto;
     min-height: 39px;
@@ -1016,6 +1026,10 @@ html {
     margin: 0;
     position: static;
     min-height: 0;
+}
+
+.content__menu-item.m-inactive .content__menu-item-blank {
+    display: block;
 }
 
 .content__menu-item.m-inactive .content__menu-name {
