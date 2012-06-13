@@ -657,6 +657,7 @@ var MenuView = Backbone.View.extend({
         if ( ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) && !currentOptions.overlayType ) {
             console.log('options INCORRECT:', options.day, options.provider, '\n\n');
             document.location.hash = '#/menu/' + options.day + '/' + options.provider + '/';
+            //router.navigate('menu/' + options.day + '/' + options.provider + '/', { trigger: true });
             return;
         }
         else {
@@ -672,9 +673,16 @@ var MenuView = Backbone.View.extend({
             var isDayExist = false,
                 type;
 
-            _.each(this.menu, function(data, day){
-                isDayExist = data.date === date;
-            });
+//            _.each(this.menu, function(data, day){
+//                isDayExist = data.date === date;
+//            });
+
+            for ( var day in this.menu ) {
+                if ( this.menu[day].date === date ) {
+                    isDayExist = true;
+                    break;
+                }
+            }
 
             console.log('--- lol', data, date, isDayExist);
 
@@ -850,6 +858,7 @@ var MenuView = Backbone.View.extend({
                 }, this);
             }
 
+            this.deactivateDishes(date);
             this.setHeaderDayText(date, { type: 'office' });
         }
     },
@@ -886,9 +895,9 @@ var MenuView = Backbone.View.extend({
 
                 element.addClass(selected);
             }
-            
-            this.deactivateDishes();
+
             this.setHeaderDayText(date, { type: 'office' });
+            this.deactivateDishes(date);
 
         }, this));
 
@@ -925,8 +934,8 @@ var MenuView = Backbone.View.extend({
 
             els.number.html(count.changed);
 
-            this.deactivateDishes();
             this.setHeaderDayText(date, { type: 'office' });
+            this.deactivateDishes(date);
             event.stopPropagation();
 
         }, this));
@@ -1004,19 +1013,19 @@ var MenuView = Backbone.View.extend({
             .append(template(content));
 
     },
-    deactivateDishes: function(){
+    deactivateDishes: function(date){
+        
+        this.els.item
+            .removeClass(config.classes.menu.inactive)
+            .not('.' + config.classes.menu.selected)
+            .each($.proxy(function(i, e){
 
-        this.els.item.each($.proxy(function(i, e){
+                var element = $(e),
+                    price = +element.find(config.selectors.menu.item.price).html();
 
-            var element = $(e),
-                price = +element.find(config.selectors.menu.item.price).html();
-
-            if ( price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice() ) {
-                element.addClass(config.classes.menu.inactive);
-                element.unbind('click');
-            }
-
-console.log('--- deactivate dishes', element, price, '|', this.getDayOrderPrice(), '|', config.DAY_ORDER_LIMIT - this.getDayOrderPrice() );
+                if ( price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(date) ) {
+                    element.addClass(config.classes.menu.inactive);
+                }
 
         }, this));
     },

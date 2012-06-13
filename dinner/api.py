@@ -104,6 +104,11 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             data_date = self.__fill_date_dict(data, date)
             data_date['none'] = True
 
+    def get_object_list(self, request):
+        return super(OrderDayItemResource, self) \
+            .get_object_list(request) \
+            .order_by('-id').filter(user=request.user)[:1]
+
     def dehydrate(self, bundle):
         order = bundle.obj
         data = SortedDict()
@@ -172,8 +177,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
                     order=order,
                     day=day
                 )
-
-
 
                 continue
 

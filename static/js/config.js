@@ -33,7 +33,7 @@ var config = {
                 number:     '.content__menu-number',
                 plus:       '.content__menu-plus',
                 minus:      '.content__menu-minus',
-                price:      'content__menu-price-big'
+                price:      '.content__menu-price-big'
             }
         },
         favourites: {
