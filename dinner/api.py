@@ -144,6 +144,10 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             day = Day.objects.get(week=week, day=dt.weekday())
 
             dishes = data.get('dishes', {})
+
+            if dishes == {}:
+                DishDay.objects.filter(day=day).delete()
+
             if dishes:
                 for dish, count in dishes.items():
                     try:
