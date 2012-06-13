@@ -78,7 +78,7 @@ class RestApiTest(ResourceTestCase):
         resp = self.api_client.get(self.day_url, format='json', authentication=self.get_credentials())
         objects = self.deserialize(resp)['objects']
 
-        self.assertTrue(len(objects) > 1)
+        self.assertTrue(len(objects) > 1, objects)
 
         post_data = SortedDict()
         sent_dishes_ids  = []
