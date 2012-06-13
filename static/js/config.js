@@ -32,7 +32,8 @@ var config = {
                 count:      '.content__menu-count',
                 number:     '.content__menu-number',
                 plus:       '.content__menu-plus',
-                minus:      '.content__menu-minus'
+                minus:      '.content__menu-minus',
+                price:      'content__menu-price-big'
             }
         },
         favourites: {
@@ -62,7 +63,8 @@ var config = {
         },
         menu: {
             selected:       'm-selected',
-            countOne:       'm-one'
+            countOne:       'm-one',
+            inactive:       'm-inactive'
         },
         overlay: {
             start:          'm-overlay-start',
@@ -147,5 +149,6 @@ var config = {
             'бутерброды, выпечка':      'dessert',
             'пирожное':                 'dessert'
         }
-    }
+    },
+    DAY_ORDER_LIMIT: 400
 };

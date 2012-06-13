@@ -438,7 +438,7 @@ var MenuView = Backbone.View.extend({
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
-                    _.each(order, function(data, date){
+                    _.each(order.get('objects')[0], function(data, date){
 
                         var dayOrder = {},
                             dayDishes = {};
@@ -483,7 +483,8 @@ var MenuView = Backbone.View.extend({
         }
 
         this.app.fetchModel(new OrderModel(), function(model){
-            order = model.get('objects')[0];
+            //order = model.get('objects')[0];
+            order = model;
             setData.call(this);
         }, this);
 
@@ -492,7 +493,7 @@ var MenuView = Backbone.View.extend({
         setData.call(this);
 
     },
-    assembleMenu: function(objects, order){
+    assembleMenu: function(objects){
 
         var weekMenu = {},
             categoriesOrder = {
@@ -582,6 +583,8 @@ var MenuView = Backbone.View.extend({
     },
     getMenuHTML: function(menu, order, options){
 
+        order = {};
+
         var menuArr = [],
             menuHTML = [];
 
@@ -628,17 +631,10 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.menu || _.isEmpty(this.menu) ) return;
 
-        _.each(this.app.getLocalData('order'), function(data, date){
 
-            var type = data.restaurant
-                    ? 'restaurant'
-                    : data.none
-                        ? 'none'
-                        : 'office';
 
-            this.setHeaderDayText(date, { type: type });
 
-        }, this);
+
         
 
         var currentOptions = params && params.options // TODO: fix
@@ -667,6 +663,83 @@ var MenuView = Backbone.View.extend({
             console.log('options CORRECT:', options.day, options.provider, '\n\n');
         }
 
+
+
+        var isLocalOrderExpired = false;
+
+        _.each(this.app.getLocalData('order'), function(data, date){
+
+            var isDayExist = false,
+                type;
+
+            _.each(this.menu, function(data, day){
+                isDayExist = data.date === date;
+            });
+
+            console.log('--- lol', data, date, isDayExist);
+
+            if ( isDayExist ) {
+
+                type = data.restaurant
+                    ? 'restaurant'
+                    : data.none
+                        ? 'none'
+                        : 'office';
+    
+                this.setHeaderDayText(date, { type: type });
+            }
+            else {
+                isLocalOrderExpired = true;
+            }
+
+        }, this);
+
+
+        if ( isLocalOrderExpired ) {
+
+            var fakeOrder = {};
+
+            _.each(this.menu, function(data, day){
+                fakeOrder[data.date] = {
+                    dishes: {},
+                    restaurant: false,
+                    none: true
+                };
+            });
+
+            console.log('--- fake order', fakeOrder);
+            console.log('REMOVE LOCAL ORDER');
+
+            this.app.setLocalData('order', null);
+
+
+            var success = function(data){
+                console.log('333 order OK', data);
+            },
+            error = function(data){
+                console.log('333 order FAIL', data);
+            };
+
+
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/api/v1/order/',
+                data: JSON.stringify(fakeOrder),
+                success: function(data){
+                    data.status === 'ok'
+                        ? success(data)
+                        : error(data);
+                },
+                error: error
+            });
+
+        }
+
+
+
+
+
         options.date = this.menu[options.day].date;
 
         this.app.header.renderProviders(this.menu, options.day, options.provider);
@@ -680,7 +753,7 @@ var MenuView = Backbone.View.extend({
 
         this.el
             .empty()
-            .append(this.getMenuHTML(this.menu, this.order, options))
+            .append(this.getMenuHTML(this.menu, this.app.getLocalData('order'), options))
             .hide()
             .fadeIn();
 
@@ -813,7 +886,8 @@ var MenuView = Backbone.View.extend({
 
                 element.addClass(selected);
             }
-
+            
+            this.deactivateDishes();
             this.setHeaderDayText(date, { type: 'office' });
 
         }, this));
@@ -851,8 +925,8 @@ var MenuView = Backbone.View.extend({
 
             els.number.html(count.changed);
 
+            this.deactivateDishes();
             this.setHeaderDayText(date, { type: 'office' });
-
             event.stopPropagation();
 
         }, this));
@@ -930,6 +1004,22 @@ var MenuView = Backbone.View.extend({
             .append(template(content));
 
     },
+    deactivateDishes: function(){
+
+        this.els.item.each($.proxy(function(i, e){
+
+            var element = $(e),
+                price = +element.find(config.selectors.menu.item.price).html();
+
+            if ( price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice() ) {
+                element.addClass(config.classes.menu.inactive);
+                element.unbind('click');
+            }
+
+console.log('--- deactivate dishes', element, price, '|', this.getDayOrderPrice(), '|', config.DAY_ORDER_LIMIT - this.getDayOrderPrice() );
+
+        }, this));
+    },
     getDayOrderPrice: function(date){
 
         var order = this.app.getLocalData('order')[date],
@@ -958,7 +1048,7 @@ var MenuView = Backbone.View.extend({
     },
     setHeaderDayText: function(date, options){
 
-        //console.log('SET HEADER DAY TEXT', arguments);
+        console.log('SET HEADER DAY TEXT', arguments, this.app.header.els.days.items);
 
         var text = {
                 office: 'в офисе',
