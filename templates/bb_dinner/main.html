@@ -253,6 +253,7 @@
 
     <script type="application/template" id="template_menu-item" class="template">
         <li class="content__menu-item <% if ( typeof isSelected !== 'undefined' && isSelected ) { %>m-selected<% } %>" data-id="<%= id %>" <% if ( typeof provider !== 'undefined' && typeof category !== 'undefined' ) { %>title="<%= provider %>: <%= category %>"<% } %>>
+            <div class="content__menu-item-blank"></div>
             <div class="content__menu-item-wrapper">
                 <div class="content__menu-name"><%= name %></div>
                 <span class="content__menu-count m-one">
@@ -261,7 +262,7 @@
                     <button class="content__menu-minus">&minus;</button>
                 </span>
                 <span class="content__menu-price">
-                    <span class="content__menu-price-big"><%= price %></span>р.
+                    <span class="content__menu-price-big"><%= $.format(price) %></span>р.
                 </span>
             </div>
         </li>

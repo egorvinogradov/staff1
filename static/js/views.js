@@ -862,6 +862,122 @@ var MenuView = Backbone.View.extend({
             this.setHeaderDayText(date, { type: 'office' });
         }
     },
+    setFavouriteDishes: function(){
+
+        var favourites = {
+                favourite: {},
+                others: {}
+            };
+
+        window.fCount = 0;
+
+        _.each(this.menu, function(menu, day){
+            _.each(menu.providers, function(categories, provider){
+                _.each(categories, function(category, categoryName){
+
+                    if ( categoryName === 'misc' ) return;
+
+                    _.each(category.dishes, function(dish){
+                        
+                        favourites.favourite[menu.date] = favourites.favourite[menu.date] || {};
+                        favourites.favourite[menu.date][categoryName] = favourites.favourite[menu.date][categoryName] || [];
+
+                        favourites.others[menu.date] = favourites.others[menu.date] || {};
+                        favourites.others[menu.date][categoryName] = favourites.others[menu.date][categoryName] || [];
+
+                        dish.favorite
+                            ? favourites.favourite[menu.date][categoryName].push(_.extend({ category: categoryName}, dish))
+                            : favourites.others[menu.date][categoryName].push(_.extend({ category: categoryName }, dish));
+
+
+//                        if ( dish.favorite ) {
+//
+////                            if ( !favourites.favourite[menu.date] ) {
+////                                favourites.favourite[menu.date] = {};
+////                            }
+////
+////                            if ( !favourites.favourite[menu.date][categoryName] ) {
+////                                favourites.favourite[menu.date][categoryName] = [];
+////                            }
+//
+//                            favourites.favourite[menu.date][categoryName].push(_.extend({ provider: provider }, dish));
+//                        }
+//                        else {
+//                            favourites.others[menu.date][categoryName].push(_.extend({ provider: provider }, dish));
+//                        }
+
+                    });
+                });
+            });
+        });
+
+        var f = {
+            '2012-06-12': {
+                'primary': []
+            }
+        };
+
+
+        window.blabla = _.clone(favourites);
+
+
+        var selected = {},
+            localData = [];
+
+
+        _.each(favourites.favourite, function(categories, date){
+            _.each(categories, function(dishes, category){
+
+                if ( !selected[date] ) {
+                    selected[date] = [];
+                }
+
+                if ( dishes.length ) {
+                    selected[date].push( dishes[ $.random( dishes.length - 1 ) ] );
+                }
+                else {
+                    var others = favourites.others[date][category];
+                    selected[date].push( others[ $.random( others.length - 1 ) ] );
+                }
+            });
+        });
+
+        window.zzz = _.clone(selected);
+
+        return _.clone(selected);
+
+
+
+
+
+//        _.each(favourites, function(providers, date){
+//
+//            _.each(providers, function(dishes, category){
+//
+//
+////                _.each(dishes, function(dish){
+////
+////                });
+//
+//
+//                if ( !selected[date] ) {
+//                    selected[date] = [];
+//                }
+//
+//                if ( dishes.length ) {
+//                    selected[date].push( dishes.eq( $.random( dishes.length - 1 ) ) );
+//                }
+//                else {
+//
+//                }
+//
+//            });
+//
+//
+//        });
+
+
+    },
     bindEventsForOrder: function(date){
 
         this.els.item = $(config.selectors.menu.item.container);
@@ -1057,7 +1173,7 @@ var MenuView = Backbone.View.extend({
     },
     setHeaderDayText: function(date, options){
 
-        console.log('SET HEADER DAY TEXT', arguments, this.app.header.els.days.items);
+        //console.log('SET HEADER DAY TEXT', arguments, this.app.header.els.days.items);
 
         var text = {
                 office: 'в офисе',
