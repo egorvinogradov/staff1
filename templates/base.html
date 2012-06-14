@@ -41,10 +41,35 @@
                 <div class="header__message">Что изволит кушать мисьё Дмитрий на неделе с 1 по 5 мая?</div>
                 <ul class="header__nav">
                     <li class="header__nav-item">
-                        <a class="header__nav-link header__favourites" href="/#/favourites/">
+                        <span class="header__favourites">
                             <i class="header__favourites-icon"></i>
-                            Любимые блюда
-                        </a>
+                            <span class="header__favourites-title header__nav-link">Любимые блюда</span>
+                            <span class="header__favourites-menu">
+                                <a class="header__favourites-edit header__nav-link" href="/#/favourites/">Редактировать</a>
+                                <span class="header__favourites-select button_small">Подайте их сейчас</span>
+                                <span class="header__favourites-help">
+                                    <i class="header__favourites-help-icon">?</i>
+                                    <div class="header__favourites-help-popup">
+                                        <i class="header__favourites-help-popup-corner"></i>
+                                        <p class="header__favourites-help-popup-p">
+                                            Вообще любимые блюда заказываются автоматически. То есть если вы
+                                            профакапили момент заказа на следующую неделю и сами ничего не
+                                            заказали, новый заказ будет сформирован из ваших любимых блюд.
+                                        </p>
+                                        <p class="header__favourites-help-popup-p">
+                                            Однако любимые блюда можно заказать и вручную, нажав на эту кнопку.
+                                            Блюда будут отмечены в новом заказе и рандомно распределены по
+                                            дням недели. После этого  можно будет внести изменения, что-то добавить,
+                                            что-то удалить и самому сформировать окончательный заказ.
+                                        </p>
+                                        <p class="header__favourites-help-popup-p">
+                                            АХТУНГ! Нажатие на эту кнопку сбрасывает все уже имеющиеся отметки
+                                            блюд в новом заказе. Поэтому нажимать на нее лучше сразу.
+                                        </p>
+                                    </div>
+                                </span>
+                            </span>
+                        </span>
                     </li>
                     <li class="header__nav-item header__exit">
                         <a class="header__nav-link" href="/accounts/base/logout/">Выход есть</a>
@@ -228,6 +253,7 @@
 
     <script type="application/template" id="template_menu-item" class="template">
         <li class="content__menu-item <% if ( typeof isSelected !== 'undefined' && isSelected ) { %>m-selected<% } %>" data-id="<%= id %>" <% if ( typeof provider !== 'undefined' && typeof category !== 'undefined' ) { %>title="<%= provider %>: <%= category %>"<% } %>>
+            <div class="content__menu-item-blank"></div>
             <div class="content__menu-item-wrapper">
                 <div class="content__menu-name"><%= name %></div>
                 <span class="content__menu-count m-one">
@@ -236,7 +262,7 @@
                     <button class="content__menu-minus">&minus;</button>
                 </span>
                 <span class="content__menu-price">
-                    <span class="content__menu-price-big"><%= price %></span>р.
+                    <span class="content__menu-price-big"><%= $.format(price) %></span>р.
                 </span>
             </div>
         </li>
@@ -328,8 +354,15 @@
     <script type="application/template" id="template_overlay-attention" class="template">
         <div class="content__overlay m-overlay-attention">
             <div class="content__overlay-header">
-                <div class="content__overlay-header-wrapper">
-                    Ахтунг!
+                <div class="content__overlay-attention-wrapper">
+                    <div class="content__overlay-attention-header">
+                        Ахтунг!
+                    </div>
+                    <div class="content__overlay-attention-comment">Нажатие на эту кнопку сбрасит все уже имеющиеся отметки блюд в новом заказе.</div>
+                    <div class="content__overlay-attention-buttons">
+                        <span class="content__overlay-attention-ok button_small">Хорошо</span>
+                        <span class="content__overlay-attention-cancel button_small">Не хорошо</span>
+                    </div>
                 </div>
             </div>
         </div>
