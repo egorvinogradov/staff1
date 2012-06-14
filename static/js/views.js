@@ -309,6 +309,7 @@ var HeaderView = Backbone.View.extend({
         };
 
         this.els.complete = $(config.selectors.header.completeButton);
+        this.els.favourites = $(config.selectors.header.favourites);
 
         this.app.els.page.bind('click keydown', $.proxy(function(event){
 
@@ -773,6 +774,9 @@ var MenuView = Backbone.View.extend({
         this.el.data({ 'menu-provider': options.provider });
 
         this.app.resetPage();
+        this.app.header.els.favourites
+                .unbind('click')
+                .click($.proxy(function(){ this.confirmResetOrder(this.setFavouriteDishes) }, this));
 
         this.el
             .empty()
@@ -877,12 +881,13 @@ var MenuView = Backbone.View.extend({
             this.setHeaderDayText(date, { type: 'office' });
         }
     },
-    setFavouriteDishes: function(){
+    setFavouriteDishes: function(callback){
 
         var favourites = {
                 favourite: {},
                 others: {}
-            };
+            },
+            order = {};
 
         _.each(this.menu, function(menu, day){
             _.each(menu.providers, function(categories, provider){
@@ -907,35 +912,35 @@ var MenuView = Backbone.View.extend({
             });
         });
 
-        window.blabla = _.clone(favourites);
-
-
-        var selected = {},
-            localData = [];
-
-
         _.each(favourites.favourite, function(categories, date){
             _.each(categories, function(dishes, category){
 
-                if ( !selected[date] ) {
-                    selected[date] = [];
+                var id, others;
+
+                if ( !order[date] ) {
+                    order[date] = {
+                        dishes: {},
+                        restaurant: false,
+                        none: false
+                    };
                 }
 
                 if ( dishes.length ) {
-                    selected[date].push( dishes[ $.random( dishes.length - 1 ) ] );
+                    id = dishes[ $.random( dishes.length - 1 ) ].id;
+                    order[date].dishes[id] = 1;
                 }
                 else {
-                    var others = favourites.others[date][category];
-                    selected[date].push( others[ $.random( others.length - 1 ) ] );
+                    others = favourites.others[date][category];
+                    id = others[ $.random( others.length - 1 ) ].id;
+                    order[date].dishes[id] = 1;
                 }
             });
         });
 
-        window.zzz = _.clone(selected);
+        console.log('--- set favourite dishes', _.clone(order));
 
-        return _.clone(selected);
-
-
+        this.app.setLocalData('order', order);
+        callback && callback.call(this);
 
     },
     bindEventsForOrder: function(date){
@@ -1198,7 +1203,6 @@ var MenuView = Backbone.View.extend({
                 this.els.attention.container.remove();
                 this.app.header.renderProviders(this.menu, day, provider);
                 callback.call(this);
-
             }, this));
 
             this.els.attention.cancel.click($.proxy(function(event){

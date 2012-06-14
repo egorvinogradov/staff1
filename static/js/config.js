@@ -17,7 +17,8 @@ var config = {
             providerList:   '.header__providers-list',
             provider:       '.header__provider',
             providerName:   '.header__provider-c',
-            completeButton: '.header__complete-button'
+            completeButton: '.header__complete-button',
+            favourites:     '.header__favourites-select'
         },
         content: {
             container:      '.content',
