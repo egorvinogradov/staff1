@@ -775,6 +775,7 @@ var MenuView = Backbone.View.extend({
 
         setTimeout($.proxy(function(){
             this.setSelectedDishes.call(this, options.date, options.day);
+            this.deactivateDishes.call(this, options.date);
             this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
 
@@ -858,7 +859,6 @@ var MenuView = Backbone.View.extend({
                 }, this);
             }
 
-            this.deactivateDishes(date);
             this.setHeaderDayText(date, { type: 'office' });
         }
     },
@@ -868,8 +868,6 @@ var MenuView = Backbone.View.extend({
                 favourite: {},
                 others: {}
             };
-
-        window.fCount = 0;
 
         _.each(this.menu, function(menu, day){
             _.each(menu.providers, function(categories, provider){
@@ -889,34 +887,10 @@ var MenuView = Backbone.View.extend({
                             ? favourites.favourite[menu.date][categoryName].push(_.extend({ category: categoryName}, dish))
                             : favourites.others[menu.date][categoryName].push(_.extend({ category: categoryName }, dish));
 
-
-//                        if ( dish.favorite ) {
-//
-////                            if ( !favourites.favourite[menu.date] ) {
-////                                favourites.favourite[menu.date] = {};
-////                            }
-////
-////                            if ( !favourites.favourite[menu.date][categoryName] ) {
-////                                favourites.favourite[menu.date][categoryName] = [];
-////                            }
-//
-//                            favourites.favourite[menu.date][categoryName].push(_.extend({ provider: provider }, dish));
-//                        }
-//                        else {
-//                            favourites.others[menu.date][categoryName].push(_.extend({ provider: provider }, dish));
-//                        }
-
                     });
                 });
             });
         });
-
-        var f = {
-            '2012-06-12': {
-                'primary': []
-            }
-        };
-
 
         window.blabla = _.clone(favourites);
 
@@ -948,35 +922,6 @@ var MenuView = Backbone.View.extend({
 
 
 
-
-
-//        _.each(favourites, function(providers, date){
-//
-//            _.each(providers, function(dishes, category){
-//
-//
-////                _.each(dishes, function(dish){
-////
-////                });
-//
-//
-//                if ( !selected[date] ) {
-//                    selected[date] = [];
-//                }
-//
-//                if ( dishes.length ) {
-//                    selected[date].push( dishes.eq( $.random( dishes.length - 1 ) ) );
-//                }
-//                else {
-//
-//                }
-//
-//            });
-//
-//
-//        });
-
-
     },
     bindEventsForOrder: function(date){
 
@@ -989,16 +934,28 @@ var MenuView = Backbone.View.extend({
         this.els.item.click($.proxy(function(event){
 
             var selected = config.classes.menu.selected,
-                element = $(event.currentTarget),
-                id = element.data('id'),
-                target = $(event.target),
-                number = element.find(config.selectors.menu.item.number);
+                els = {},
+                id,
+                price;
 
-            if ( target.is(number) ) return;
+            els.element = $(event.currentTarget);
+            els.target = $(event.target);
+            els.number = els.element.find(config.selectors.menu.item.number);
+            els.count = els.element.find(config.selectors.menu.item.count);
+            els.price = els.element.find(config.selectors.menu.item.price);
+            id = els.element.data('id');
+            price = +els.price.html();
 
-            if ( element.hasClass(selected) ) {
+            if ( els.target.is(els.number) ) return;
+            if ( !els.element.hasClass(selected) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(date) ) {
+                return;
+            }
+
+            if ( els.element.hasClass(selected) ) {
                 this.app.removeDishFromOrder(date, id);
-                element.removeClass(selected);
+                els.element.removeClass(selected);
+                els.count.addClass(config.classes.menu.countOne);
+                els.number.html(0);
             }
             else {
 
@@ -1009,7 +966,7 @@ var MenuView = Backbone.View.extend({
                     }
                 });
 
-                element.addClass(selected);
+                els.element.addClass(selected);
             }
 
             this.setHeaderDayText(date, { type: 'office' });
@@ -1022,13 +979,16 @@ var MenuView = Backbone.View.extend({
 
             var els = {},
                 count = {},
-                id;
+                id,
+                price;
 
             els.button = $(event.currentTarget);
             els.container = els.button.parents(config.selectors.menu.item.container);
             els.count = els.container.find(config.selectors.menu.item.count);
             els.number = els.count.find(config.selectors.menu.item.number);
+            els.price = els.container.find(config.selectors.menu.item.price);
             id = els.container.data('id');
+            price = +els.price.html();
 
             count.original = +els.number.html() || 1;
             count.increment = count.original < 9 ? count.original + 1 : 9;
@@ -1036,6 +996,10 @@ var MenuView = Backbone.View.extend({
             count.changed = els.button.is(config.selectors.menu.item.plus)
                 ? count.increment
                 : count.decrement;
+
+            if ( els.button.is(config.selectors.menu.item.plus) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(date) ) {
+                return false;
+            }
 
             this.app.addToOrder(date, {
                 dish: {
@@ -1130,7 +1094,7 @@ var MenuView = Backbone.View.extend({
 
     },
     deactivateDishes: function(date){
-        
+
         this.els.item
             .removeClass(config.classes.menu.inactive)
             .not('.' + config.classes.menu.selected)
