@@ -122,7 +122,12 @@ var AppView = Backbone.View.extend({
         model.fetch({
             success: $.proxy(callback, context || window),
             error: function(error){
-                console.log('FETCH MODEL ERROR', error);
+                this.catchError('can\'t fetch model from ' + model.url, {
+                    model: model,
+                    callback: callback,
+                    context: context,
+                    error: error
+                });
             }
         });
     },
@@ -131,7 +136,7 @@ var AppView = Backbone.View.extend({
         var value;
 
         if ( typeof localStorage === 'undefined' ) {
-            console.log('ERROR: local storage is not supported');
+            this.catchError('localStorage isn\'t supported', { method: 'getLocalData' });
             return;
         }
 
@@ -140,7 +145,10 @@ var AppView = Backbone.View.extend({
             value = data instanceof Object ? data : {};
         }
         catch (e) {
-            console.log('ERROR: invalid data is in local storage');
+            this.catchError('invalid local data', {
+                data: localStorage.getItem(key),
+                error: e
+            });
             value = {};
         }
 
@@ -152,7 +160,7 @@ var AppView = Backbone.View.extend({
     setLocalData: function(key, value){
 
         if ( typeof localStorage == 'undefined' ) {
-            console.log('ERROR: local storage is not supported');
+            this.catchError('localStorage isn\'t supported', { method: 'setLocalData' });
             return;
         }
 
@@ -213,12 +221,12 @@ var AppView = Backbone.View.extend({
 
         var order = this.getLocalData('order'),
             week = {},
-            success = function(data){
+            success = $.proxy(function(data){
                 console.log('order OK', data);
-            },
-            error = function(data){
-                console.log('order FAIL', data);
-            };
+            }, this),
+            error = $.proxy(function(data){
+                this.catchError('can\'t make order', data);
+            }, this);
 
         _.each(order, function(data, date){
 
@@ -231,7 +239,6 @@ var AppView = Backbone.View.extend({
             }
 
         });
-
 
         if ( this.app && this.app.menu ) {
             _.each(this.app.menu.menu, function(data, day){
@@ -260,6 +267,14 @@ var AppView = Backbone.View.extend({
             },
             error: error
         });
+    },
+    catchError: function(message, data){
+
+        console.error('Error: ' + message, data || null);
+        alert('Error: ' + message);
+
+        // TODO: send error
+
     }
 });
 
@@ -721,12 +736,12 @@ var MenuView = Backbone.View.extend({
             this.app.setLocalData('order', null);
 
 
-            var success = function(data){
-                console.log('333 order OK', data);
-            },
-            error = function(data){
-                console.log('333 order FAIL', data);
-            };
+            var success = $.proxy(function(data){
+                    console.log('333 order OK', data);
+                }, this),
+                error = $.proxy(function(data){
+                    this.app.catchError('can\'t remove an old order', data);
+                }, this);
 
 
             $.ajax({
@@ -1025,6 +1040,7 @@ var MenuView = Backbone.View.extend({
 
         var content,
             template = this.templates.overlay.common,
+            order = {},
             text = {
                 start: {
                     message: 'Начните ',
@@ -1045,26 +1061,15 @@ var MenuView = Backbone.View.extend({
                         text: 'Где это клёвое место?'
                     },
                     days: config.text.daysEn2RuInflect1
-                },
-                attention: {
-                    message: 'Ахтунг!'
                 }
             };
 
-
-        if ( !options.overlayType || !options.day ) { // TODO: don't forget attention overlay
-            alert('overlay error: ' + options.overlayType + ' -- ' + options.day);
+        if ( !options.overlayType || !options.day ) {
+            this.app.catchError('no required overlay params', options);
             return;
         }
 
-
-        if ( options.overlayType === 'restaurant' || options.overlayType === 'none' ) {
-            var dayOrderData = {};
-            dayOrderData[options.overlayType] = true;
-            this.app.addToOrder(options.date, dayOrderData);
-            this.setHeaderDayText(options.date, { type: options.overlayType });
-        }
-
+        template = this.templates.overlay.common;
         content = {
             className: config.classes.overlay[options.overlayType][ options.day === 'week' ? 'week' : 'day' ],
             message: text[options.overlayType].message + text[options.overlayType].days[options.day],
@@ -1074,14 +1079,10 @@ var MenuView = Backbone.View.extend({
             }
         };
 
-
-        if ( options.overlayType === 'attention' ) {
-
-            template = this.templates.overlay.attention;
-            content = {
-                className: config.classes.overlay.attention,
-                message: text.attention.message
-            };
+        if ( options.overlayType === 'restaurant' || options.overlayType === 'none' ) {
+            order[options.overlayType] = true;
+            this.app.addToOrder(options.date, order);
+            this.setHeaderDayText(options.date, { type: options.overlayType });
         }
 
         this.app.header.disableProviders();
@@ -1137,8 +1138,6 @@ var MenuView = Backbone.View.extend({
     },
     setHeaderDayText: function(date, options){
 
-        //console.log('SET HEADER DAY TEXT', arguments, this.app.header.els.days.items);
-
         var text = {
                 office: 'в офисе',
                 restaurant: 'в Луч',
@@ -1173,6 +1172,24 @@ var MenuView = Backbone.View.extend({
                 .find(this.app.header.els.days.comments)
                 .html(text[options.type]);
         }
+    },
+    confirmResetOrder: function(callback){
+
+        this.app.header.disableProviders();
+
+        this.el
+            .find(config.selectors.overlay)
+            .remove()
+            .end()
+            .append(this.templates.overlay.attention());
+
+        setTimeout($.proxy(function(){
+
+            // TODO: bind button events
+            // TODO: remove overlay
+
+        }, this), 0);
+
     }
 });
 
@@ -1607,12 +1624,12 @@ var FavouritesView = Backbone.View.extend({
     saveFavourites: function(){
 
         var favourites = [],
-            success = function(data){
+            success = $.proxy(function(data){
                 console.log('favourites OK', data);
-            },
-            error = function(data){
-                console.log('favourites FAIL', data);
-            };
+            }, this),
+            error = $.proxy(function(data){
+                this.app.catchError('can\'t save favourites', data);
+            }, this);
 
         this.els.item
             .filter('.' + config.classes.favourites.selected)

@@ -1,5 +1,7 @@
 var Router = Backbone.Router.extend({
 
+    // TODO: use regexp
+
     routes: {
         '':                     'start',
         'menu/:day':            'menu',
