@@ -1175,6 +1175,9 @@ var MenuView = Backbone.View.extend({
     },
     confirmResetOrder: function(callback){
 
+        var provider = this.app.els.wrapper.data('menu-provider'),
+            day = this.app.els.wrapper.data('menu-day');
+
         this.app.header.disableProviders();
 
         this.el
@@ -1193,11 +1196,14 @@ var MenuView = Backbone.View.extend({
 
             this.els.attention.confirm.click($.proxy(function(event){
                 this.els.attention.container.remove();
+                this.app.header.renderProviders(this.menu, day, provider);
                 callback.call(this);
+
             }, this));
 
             this.els.attention.cancel.click($.proxy(function(event){
                 this.els.attention.container.remove();
+                this.app.header.renderProviders(this.menu, day, provider);
             }, this));
 
         }, this), 0);
