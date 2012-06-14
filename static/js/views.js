@@ -1185,8 +1185,20 @@ var MenuView = Backbone.View.extend({
 
         setTimeout($.proxy(function(){
 
-            // TODO: bind button events
-            // TODO: remove overlay
+            this.els.attention = {
+                container: $(config.selectors.overlay),
+                confirm: $(config.selectors.attention.confirm),
+                cancel: $(config.selectors.attention.cancel)
+            };
+
+            this.els.attention.confirm.click($.proxy(function(event){
+                this.els.attention.container.remove();
+                callback.call(this);
+            }, this));
+
+            this.els.attention.cancel.click($.proxy(function(event){
+                this.els.attention.container.remove();
+            }, this));
 
         }, this), 0);
 
@@ -1395,13 +1407,13 @@ var OrderView = Backbone.View.extend({
         sorted.sort(function(a ,b){
 
             var str = {
-                a: a.date.split('-'),
-                b: b.date.split('-')
-            },
-            date = {
-                a: new Date(+str.a[0], +str.a[1] - 1, +str.a[2]),
-                b: new Date(+str.b[0], +str.b[1] - 1, +str.b[2])
-            };
+                    a: a.date.split('-'),
+                    b: b.date.split('-')
+                },
+                date = {
+                    a: new Date(+str.a[0], +str.a[1] - 1, +str.a[2]),
+                    b: new Date(+str.b[0], +str.b[1] - 1, +str.b[2])
+                };
 
             return +date.a < +date.b ? -1 : 1;
 
@@ -1468,7 +1480,6 @@ var OrderView = Backbone.View.extend({
             orderHTML.push(template(content));
 
         }, this);
-
 
         this.app.resetPage();
         this.app.makeOrder();
@@ -1607,6 +1618,9 @@ var FavouritesView = Backbone.View.extend({
             changed = true;
 
         }, this));
+
+
+        // TODO: save by button click
 
         timer = setInterval($.proxy(function(){
             if ( changed ) {

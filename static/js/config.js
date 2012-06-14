@@ -41,7 +41,11 @@ var config = {
             blank:          '.content__favourites-category-blank',
             item:           '.content__favourites-item'
         },
-        overlay:            '.content__overlay'
+        overlay:            '.content__overlay',
+        attention: {
+            confirm:        '.content__overlay-attention-ok',
+            cancel:         '.content__overlay-attention-cancel'
+        }
     },
     classes: {
         page: {
