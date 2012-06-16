@@ -123,6 +123,16 @@ var Router = Backbone.Router.extend({
 
 $(function(){
 
+    var n = document.body.childNodes, l = n.length, c = [], i = 0;
+    for ( ; i < l ; i++ ) n[i].nodeType === 8 && c.push(n[i]);
+    console && console.log && console.log(c[ c.length - 1 ].nodeValue);
+
+//    console = { // temporary
+//        log: function(){},
+//        warn: function(){},
+//        error: function(){}
+//    };
+
     console.log('backbone init');
 
     window.app = new AppView({
@@ -132,9 +142,5 @@ $(function(){
     window.router = new Router();
 
     Backbone.history.start();
-
-    var n = document.body.childNodes, l = n.length, c = [], i = 0;
-    for ( ; i < l ; i++ ) n[i].nodeType === 8 && c.push(n[i]);
-    //console && console.log && console.log(c[ c.length - 1 ].nodeValue);
 
 });
