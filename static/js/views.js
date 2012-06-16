@@ -273,6 +273,9 @@ var AppView = Backbone.View.extend({
         console.error('Error: ' + message, data || null);
         alert('Error: ' + message);
 
+        
+
+
         // TODO: send error
 
     }
@@ -499,7 +502,6 @@ var MenuView = Backbone.View.extend({
         }
 
         this.app.fetchModel(new OrderModel(), function(model){
-            //order = model.get('objects')[0];
             order = model;
             setData.call(this);
         }, this);
@@ -521,6 +523,8 @@ var MenuView = Backbone.View.extend({
             };
 
         _.each(objects, function(day){
+
+            if ( _.isEmpty(day.providers) ) return;
 
             var weekday = config.text.daysRu2En[ $.trimAll(day.weekday) ],
                 dayMenu = weekMenu[ weekday ] = {
@@ -566,29 +570,35 @@ var MenuView = Backbone.View.extend({
             },
             check = function(){
 
-                if ( menu[defaults.day] && menu[defaults.day].providers[defaults.provider] ) {
-                    return;
-                }
-                else {
-
-                    if ( menu[defaults.day] ) {
-                        if ( !menu[defaults.day].providers[defaults.provider] ) {
-                            for ( var provider in menu[defaults.day].providers ) {
-                                defaults.provider = provider;
-                                break;
-                            }
-                        }
+                try {
+                    
+                    if ( menu[defaults.day] && menu[defaults.day].providers[defaults.provider] ) {
+                        return;
                     }
                     else {
-                        for ( var i = 0, l = order.length; i < l; i++ ) {
-                            if ( menu[order[i]] ) {
-                                defaults.day = order[i];
-                                break;
+
+                        if ( menu[defaults.day] ) {
+                            if ( !menu[defaults.day].providers[defaults.provider] ) {
+                                for ( var provider in menu[defaults.day].providers ) {
+                                    defaults.provider = provider;
+                                    break;
+                                }
                             }
                         }
-                    }
+                        else {
+                            for ( var i = 0, l = order.length; i < l; i++ ) {
+                                if ( menu[order[i]] ) {
+                                    defaults.day = order[i];
+                                    break;
+                                }
+                            }
+                        }
 
-                    check();
+                        check();
+                    }
+                }
+                catch (e) {
+                    this.app.catchError('can\'t correct options of MenuView', { error: e, menu: this.menu });
                 }
             };
 
@@ -611,9 +621,6 @@ var MenuView = Backbone.View.extend({
         menuArr.sort(function(a,b){
             return a.order < b.order ? -1 : 1;
         });
-
-
-        //console.log('-- getMenuHTML', menuArr);
 
         _.each(menuArr, function(items){
 
@@ -647,12 +654,6 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.menu || _.isEmpty(this.menu) ) return;
 
-
-
-
-
-        
-
         var currentOptions = params && params.options // TODO: fix
                     ? params.options
                     : this.app && this.app.options
@@ -664,8 +665,8 @@ var MenuView = Backbone.View.extend({
             },
             corrected = this.correctOptions(options),
             isDayCorrect = options.day && options.day === corrected.day,
-            isProviderCorrect = options.provider && options.provider === corrected.provider;
-
+            isProviderCorrect = options.provider && options.provider === corrected.provider,
+            isOrderExpired = false;
 
         if ( !isDayCorrect ) options.day = corrected.day;
         if ( !isProviderCorrect ) options.provider = corrected.provider;
@@ -680,89 +681,30 @@ var MenuView = Backbone.View.extend({
             console.log('options CORRECT:', options.day, options.provider, '\n\n');
         }
 
-
-
-        var isLocalOrderExpired = false;
-
-        _.each(this.app.getLocalData('order'), function(data, date){
-
-            var isDayExist = false,
-                type;
-
-//            _.each(this.menu, function(data, day){
-//                isDayExist = data.date === date;
-//            });
-
-            for ( var day in this.menu ) {
-                if ( this.menu[day].date === date ) {
-                    isDayExist = true;
-                    break;
-                }
-            }
-
-            console.log('--- lol', data, date, isDayExist);
-
-            if ( isDayExist ) {
-
-                type = data.restaurant
-                    ? 'restaurant'
-                    : data.none
-                        ? 'none'
-                        : 'office';
-    
-                this.setHeaderDayText(date, { type: type });
-            }
-            else {
-                isLocalOrderExpired = true;
-            }
-
-        }, this);
-
-
-        if ( isLocalOrderExpired ) {
-
-            var fakeOrder = {};
-
-            _.each(this.menu, function(data, day){
-                fakeOrder[data.date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: true
-                };
-            });
-
-            console.log('--- fake order', fakeOrder);
-            console.log('REMOVE LOCAL ORDER');
-
-            this.app.setLocalData('order', null);
-
-
-            var success = $.proxy(function(data){
-                    console.log('333 order OK', data);
-                }, this),
-                error = $.proxy(function(data){
-                    this.app.catchError('can\'t remove an old order', data);
-                }, this);
-
-
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/v1/order/',
-                data: JSON.stringify(fakeOrder),
-                success: function(data){
-                    data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
-            });
-
-        }
-
-
-
-
+//        _.each(this.app.getLocalData('order'), function(data, date){
+//
+//            var isDayExist = false,
+//                orderType = data.restaurant
+//                    ? 'restaurant'
+//                    : data.none
+//                        ? 'none'
+//                        : 'office';
+//
+//            for ( var day in this.menu ) {
+//                if ( this.menu[day].date === date ) {
+//                    isDayExist = true;
+//                    break;
+//                }
+//            }
+//
+//            if ( isDayExist ) this.setHeaderDayText(date, { type: orderType });
+//            else isOrderExpired = true;
+//
+//        }, this);
+//
+//        if ( isOrderExpired ) {
+//            this.resetOrder();
+//        }
 
         options.date = this.menu[options.day].date;
 
@@ -797,6 +739,41 @@ var MenuView = Backbone.View.extend({
             this.deactivateDishes.call(this, options.date);
             this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
+
+    },
+    resetOrder: function(){
+
+        var emptyOrder = {},
+            success = $.proxy(function(data){
+                console.log('333 order OK', data);
+            }, this),
+            error = $.proxy(function(data){
+                this.app.catchError('can\'t reset order', data);
+            }, this);
+
+        _.each(this.menu, function(data){
+            emptyOrder[data.date] = {
+                dishes: {},
+                restaurant: false,
+                none: false
+            };
+        });
+
+        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder);
+        this.app.setLocalData('order', null);
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/v1/order/',
+            data: JSON.stringify(emptyOrder),
+            success: function(data){
+                data.status === 'ok'
+                    ? success(data)
+                    : error(data);
+            },
+            error: error
+        });
 
     },
     setSelectedDishes: function(date, day){
