@@ -2,18 +2,26 @@
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Denis', 'denis@ostrovok.ru'),
-    # ('Your Name', 'your_email@example.com'),
-    ('Yasha', 'jjay@ostrovok.ru'),
-    ('dkr', 'dkr@ostrovok.ru'),
+    ('cwiz', 'cyberwizard.ru@gmail.com'),
     )
 
 MANAGERS = ADMINS
+
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+#        'NAME': 'food', # Or path to database file if using sqlite3.
+#        'USER': 'postgres', # Not used with sqlite3.
+#        'PASSWORD': 'suprpass616', # Not used with sqlite3.
+#        'HOST': '78.46.187.179', # Set to empty string for localhost. Not used with sqlite3.
+#        'PORT': '', # Set to empty string for default. Not used with sqlite3.
+#    }
+#}
 
 DATABASES = {
     'default': {
@@ -113,11 +121,8 @@ DEBUG_TOOLBAR_CONFIG = {
     }
 
 INTERNAL_IPS = (
-    '188.254.43.246',  '89.221.51.34', # office
-    '178.140.56.36', '80.250.237.100',
-    '95.84.198.12', '89.179.244.26', '95.31.16.175',
-    )
-
+#
+)
 
 TEMPLATE_DIRS = (
     ROOT + '/templates/',
@@ -129,16 +134,15 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    #'django.contrib.staticfiles',
     'django.contrib.admin',
     'social_auth',
     'debug_toolbar',
-    'team',
-    'dinner',
-    'staff',
     'south',
     'tastypie',
     'django_nose',
+
+    'dinner',
+    'auth',
     )
 
 # A sample logging configuration. The only tangible logging
@@ -176,15 +180,16 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/ostrovok/'
 
 AUTHENTICATION_BACKENDS = (
-    'team.auth_backends.OstrovokBackend',
+    'auth.auth_backends.OstrovokBackend',
     'django.contrib.auth.backends.ModelBackend',
     )
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 SOCIAL_AUTH_IMPORT_BACKENDS = (
-    'team.auth_backends',
+    'auth.auth_backends',
     )
+
 LOGIN_ERROR_URL = '/auth-error/'
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

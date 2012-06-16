@@ -1,3 +1,4 @@
+from django.db.utils import IntegrityError
 from dinner.models import Dish, Group, Provider, DishDay, Week, Day
 from datetime import timedelta
 
@@ -16,14 +17,20 @@ def get_week_start_day(day):
 
 
 def import_menu(process_function, provider_name, path):
+    group_cache = {}
+    day_cache = {}
+    week_cache = {}
 
-    cnt_day_dishes = 0
-    cnt_dishes = 0
+    db_provider, db_provider_created = Provider.objects.get_or_create(name=provider_name)
 
     for day, group, dish in process_function(path):
+        db_group = group_cache.get(group)
+        if not db_group:
+            db_group, db_group_created = Group.objects.get_or_create(
+                name=group
+            )
+            group_cache[group] = db_group
 
-        db_group, db_group_created = Group.objects.get_or_create(name=group)
-        db_provider, db_provider_created = Provider.objects.get_or_create(name=provider_name)
         db_dish, db_dish_created = Dish.objects.get_or_create(
             group=db_group,
             name=dish['name'],
@@ -31,29 +38,64 @@ def import_menu(process_function, provider_name, path):
             index=0,
         )
 
-        db_dish.weight = dish['weight']
-        db_dish.save()
+        dish_weight = dish['weight']
+        if db_dish.weight != dish_weight:
+            db_dish.weight = dish_weight
+            db_dish.save()
 
         week_start_day = get_week_start_day(day)
-        db_week, db_week_created = Week.objects.get_or_create(
-            date = week_start_day,
-        )
+        db_week = week_cache.get(week_start_day)
+        if not db_week:
+            db_week, db_week_created = Week.objects.get_or_create(
+                date=week_start_day,
+            )
+            week_cache[week_start_day] = db_week
 
-        week_day = (day - week_start_day).days
-        db_day, db_day_created = Day.objects.get_or_create(day=week_day, week=db_week)
+        db_day = day_cache.get(((day - week_start_day).days, db_week))
+        if not db_day:
+            db_day, db_day_created = Day.objects.get_or_create(
+                day=(day - week_start_day).days,
+                week=db_week
+            )
+            day_cache[((day - week_start_day).days, db_week)] = db_day
 
-        db_dish_day, db_dish_day_created = DishDay.objects.get_or_create(
+        DishDay.objects.get_or_create(
             dish=db_dish,
             day=db_day,
             price=dish['price']
         )
 
-        cnt_dishes += int(db_dish_created)
-        cnt_day_dishes += int(db_dish_day_created)
-
-    return cnt_dishes, cnt_day_dishes
 
 class NotSoTastyPieModelResource(ModelResource):
+    def add_shit_to_meta(self, request, data):
+        pass
+
+    def get_list(self, request, **kwargs):
+        """
+        Returns a serialized list of resources.
+
+        Calls ``obj_get_list`` to provide the data, then handles that result
+        set and serializes it.
+
+        Should return a HttpResponse (200 OK).
+        """
+        # TODO: Uncached for now. Invalidation that works for everyone may be
+        #       impossible.
+        objects = self.obj_get_list(request=request, **self.remove_api_resource_names(kwargs))
+        sorted_objects = self.apply_sorting(objects, options=request.GET)
+
+        paginator = self._meta.paginator_class(request.GET, sorted_objects, resource_uri=self.get_resource_uri(),
+            limit=self._meta.limit, max_limit=self._meta.max_limit, collection_name=self._meta.collection_name)
+        to_be_serialized = paginator.page()
+
+        # Dehydrate the bundles in preparation for serialization.
+        bundles = [self.build_bundle(obj=obj, request=request) for obj in to_be_serialized['objects']]
+        to_be_serialized['objects'] = [self.full_dehydrate(bundle) for bundle in bundles]
+        to_be_serialized = self.alter_list_data_to_serialize(request, to_be_serialized)
+
+        self.add_shit_to_meta(request, to_be_serialized)
+
+        return self.create_response(request, to_be_serialized)
 
     def post_list(self, request, **kwargs):
         deserialized = self.deserialize(request, request.raw_post_data,

@@ -3,7 +3,7 @@
 	
 	<h2>Где ты живешь, бро?</h2>
 
-    <form action="/staff/config/" method="post">
+    <form action="/auth/config/" method="post">
 		{% csrf_token %}
         <ul class="messages">
         {% for office in offices %}

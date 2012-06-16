@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from itertools import count, groupby
 from utils import group_by_materialize
 from social_auth.models import UserSocialAuth
-from staff.models import Office
+from auth.models import Office
 
 def _parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
