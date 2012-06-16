@@ -114,6 +114,8 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         current_week = current_week[0] if current_week else None
 
         if not current_week:
+            data['meta']['current_week_open'] = False
+            data['meta']['made_order'] = False
             return
 
         data['meta']['current_week_open'] = not current_week.closed
