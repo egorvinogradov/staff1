@@ -3,8 +3,7 @@
 import datetime
 
 from tastypie.authentication import Authentication
-from tastypie.authorization import DjangoAuthorization
-from tastypie.resources import ModelResource, Resource
+from tastypie.resources import ModelResource
 
 from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem, EmptyOrderDayItem
 from dinner.utils import get_week_start_day, NotSoTastyPieModelResource, NotSoTastyDjangoAuthorization
