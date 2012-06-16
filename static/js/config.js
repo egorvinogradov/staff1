@@ -40,7 +40,9 @@ var config = {
         favourites: {
             category:       '.content__favourites-category',
             blank:          '.content__favourites-category-blank',
-            item:           '.content__favourites-item'
+            item:           '.content__favourites-item',
+            save:           '.content__favourites-save',
+            order:          '.content__favourites-save'
         },
         overlay:            '.content__overlay',
         attention: {
@@ -85,11 +87,12 @@ var config = {
         },
         favourites: {
             slider:         'm-column-slider',
-            selected:       'm-selected'
+            selected:       'm-selected',
+            collapsed:      'm-small'
         },
         order: {
             restaurant:     'content__order-restaurant',
-            none:       'content__order-slimming'
+            none:           'content__order-slimming'
         }
     },
     text: {

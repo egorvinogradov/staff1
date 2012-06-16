@@ -1579,47 +1579,105 @@ var FavouritesView = Backbone.View.extend({
     },
     bindEvents: function(){
 
-        /**********/
-
-        $('.content__favourites-category').eq(0).addClass('m-small');
-        $('.content__favourites-category').eq(4).addClass('m-small');
-
-        // TODO: make slider
-
-        /***********/
-
-        var changed = false,
-            timer;
-
         this.els.item = $(config.selectors.favourites.item);
+        this.els.save = $(config.selectors.favourites.save);
+        this.els.order = $(config.selectors.favourites.order);
+
+        this.slideColumns();
+        this.els.save.click($.proxy(this.saveFavourites, this));
         this.els.item.click($.proxy(function(event){
 
             var element = $(event.currentTarget),
-                id = element.data('id'),
                 selected = element.hasClass(config.classes.favourites.selected);
 
             selected
                 ? element.removeClass(config.classes.favourites.selected)
                 : element.addClass(config.classes.favourites.selected);
 
-            changed = true;
+        }, this));
+
+        this.els.order.click($.proxy(function(){
+
+            // TODO: go to menu view
 
         }, this));
 
+    },
+    slideColumns: function(){
 
-        // TODO: save by button click
+        var MINIMAL_WIDTH = 1700,
+            timer = false,
+            toggle = function(event){
 
-        timer = setInterval($.proxy(function(){
-            if ( changed ) {
-                changed = false;
-                this.saveFavourites();
-            }
-        }, this), 1000);
+                if ( timer ) return false;
+                timer = true;
 
-        $(window).one('hashchange beforeunload', $.proxy(function(){
-            clearInterval(timer);
-            changed && this.saveFavourites();
-        }, this));
+                setTimeout($.proxy(function(){
+
+                    var width = event ? $(event.currentTarget).width() : $(window).width(),
+                        collapsed = this.el.hasClass(config.classes.favourites.slider);
+
+                    timer = false;
+
+                    if ( width < MINIMAL_WIDTH && !collapsed ) {
+
+                        this.el.addClass(config.classes.favourites.slider);
+
+                        this.els.category
+                            .first()
+                            .add(this.els.category.last())
+                            .addClass(config.classes.favourites.collapsed);
+
+                        this.els.blank.click($.proxy(function(event){
+
+                            var index = $(event.currentTarget).parent().index(),
+                                last = this.els.category.length - 1,
+                                slides,
+                                els = {
+                                    collapsed: $(),
+                                    expanded: $()
+                                };
+
+                            switch (index) {
+                                case 0:
+                                    slides = [last, last - 1];
+                                    break;
+                                case last:
+                                    slides = [0, 1];
+                                    break;
+                                default:
+                                    slides = [0, last]
+                            }
+
+                            _.each(slides, function(i){
+                                els.collapsed = els.collapsed.add(this.els.category.eq(i));
+                            }, this);
+
+                            els.collapsed.addClass(config.classes.favourites.collapsed);
+                            els.expanded = this.els.category
+                                .not(els.collapsed)
+                                .removeClass(config.classes.favourites.collapsed);
+
+                        }, this));
+
+                    }
+
+                    if ( width >= MINIMAL_WIDTH && collapsed ) {
+
+                        this.el.removeClass(config.classes.favourites.slider);
+                        this.els.category.removeClass(config.classes.favourites.collapsed);
+                        this.els.blank.unbind('click');
+
+                    }
+                    
+                }, this), 100);
+            };
+
+        this.els.category = $(config.selectors.favourites.category);
+        this.els.blank = $(config.selectors.favourites.blank);
+
+        toggle.call(this);
+        $(window).resize($.proxy(toggle, this));
 
     },
     saveFavourites: function(){
