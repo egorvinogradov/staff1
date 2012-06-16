@@ -273,6 +273,9 @@ var AppView = Backbone.View.extend({
         console.error('Error: ' + message, data || null);
         alert('Error: ' + message);
 
+        
+
+
         // TODO: send error
 
     }
@@ -309,6 +312,7 @@ var HeaderView = Backbone.View.extend({
         };
 
         this.els.complete = $(config.selectors.header.completeButton);
+        this.els.favourites = $(config.selectors.header.favourites);
 
         this.app.els.page.bind('click keydown', $.proxy(function(event){
 
@@ -498,7 +502,6 @@ var MenuView = Backbone.View.extend({
         }
 
         this.app.fetchModel(new OrderModel(), function(model){
-            //order = model.get('objects')[0];
             order = model;
             setData.call(this);
         }, this);
@@ -520,6 +523,8 @@ var MenuView = Backbone.View.extend({
             };
 
         _.each(objects, function(day){
+
+            if ( _.isEmpty(day.providers) ) return;
 
             var weekday = config.text.daysRu2En[ $.trimAll(day.weekday) ],
                 dayMenu = weekMenu[ weekday ] = {
@@ -565,29 +570,35 @@ var MenuView = Backbone.View.extend({
             },
             check = function(){
 
-                if ( menu[defaults.day] && menu[defaults.day].providers[defaults.provider] ) {
-                    return;
-                }
-                else {
-
-                    if ( menu[defaults.day] ) {
-                        if ( !menu[defaults.day].providers[defaults.provider] ) {
-                            for ( var provider in menu[defaults.day].providers ) {
-                                defaults.provider = provider;
-                                break;
-                            }
-                        }
+                try {
+                    
+                    if ( menu[defaults.day] && menu[defaults.day].providers[defaults.provider] ) {
+                        return;
                     }
                     else {
-                        for ( var i = 0, l = order.length; i < l; i++ ) {
-                            if ( menu[order[i]] ) {
-                                defaults.day = order[i];
-                                break;
+
+                        if ( menu[defaults.day] ) {
+                            if ( !menu[defaults.day].providers[defaults.provider] ) {
+                                for ( var provider in menu[defaults.day].providers ) {
+                                    defaults.provider = provider;
+                                    break;
+                                }
                             }
                         }
-                    }
+                        else {
+                            for ( var i = 0, l = order.length; i < l; i++ ) {
+                                if ( menu[order[i]] ) {
+                                    defaults.day = order[i];
+                                    break;
+                                }
+                            }
+                        }
 
-                    check();
+                        check();
+                    }
+                }
+                catch (e) {
+                    this.app.catchError('can\'t correct options of MenuView', { error: e, menu: this.menu });
                 }
             };
 
@@ -610,9 +621,6 @@ var MenuView = Backbone.View.extend({
         menuArr.sort(function(a,b){
             return a.order < b.order ? -1 : 1;
         });
-
-
-        //console.log('-- getMenuHTML', menuArr);
 
         _.each(menuArr, function(items){
 
@@ -646,12 +654,6 @@ var MenuView = Backbone.View.extend({
 
         if ( !this.menu || _.isEmpty(this.menu) ) return;
 
-
-
-
-
-        
-
         var currentOptions = params && params.options // TODO: fix
                     ? params.options
                     : this.app && this.app.options
@@ -663,8 +665,8 @@ var MenuView = Backbone.View.extend({
             },
             corrected = this.correctOptions(options),
             isDayCorrect = options.day && options.day === corrected.day,
-            isProviderCorrect = options.provider && options.provider === corrected.provider;
-
+            isProviderCorrect = options.provider && options.provider === corrected.provider,
+            isOrderExpired = false;
 
         if ( !isDayCorrect ) options.day = corrected.day;
         if ( !isProviderCorrect ) options.provider = corrected.provider;
@@ -679,89 +681,30 @@ var MenuView = Backbone.View.extend({
             console.log('options CORRECT:', options.day, options.provider, '\n\n');
         }
 
-
-
-        var isLocalOrderExpired = false;
-
-        _.each(this.app.getLocalData('order'), function(data, date){
-
-            var isDayExist = false,
-                type;
-
-//            _.each(this.menu, function(data, day){
-//                isDayExist = data.date === date;
-//            });
-
-            for ( var day in this.menu ) {
-                if ( this.menu[day].date === date ) {
-                    isDayExist = true;
-                    break;
-                }
-            }
-
-            console.log('--- lol', data, date, isDayExist);
-
-            if ( isDayExist ) {
-
-                type = data.restaurant
-                    ? 'restaurant'
-                    : data.none
-                        ? 'none'
-                        : 'office';
-    
-                this.setHeaderDayText(date, { type: type });
-            }
-            else {
-                isLocalOrderExpired = true;
-            }
-
-        }, this);
-
-
-        if ( isLocalOrderExpired ) {
-
-            var fakeOrder = {};
-
-            _.each(this.menu, function(data, day){
-                fakeOrder[data.date] = {
-                    dishes: {},
-                    restaurant: false,
-                    none: true
-                };
-            });
-
-            console.log('--- fake order', fakeOrder);
-            console.log('REMOVE LOCAL ORDER');
-
-            this.app.setLocalData('order', null);
-
-
-            var success = $.proxy(function(data){
-                    console.log('333 order OK', data);
-                }, this),
-                error = $.proxy(function(data){
-                    this.app.catchError('can\'t remove an old order', data);
-                }, this);
-
-
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/v1/order/',
-                data: JSON.stringify(fakeOrder),
-                success: function(data){
-                    data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
-            });
-
-        }
-
-
-
-
+//        _.each(this.app.getLocalData('order'), function(data, date){
+//
+//            var isDayExist = false,
+//                orderType = data.restaurant
+//                    ? 'restaurant'
+//                    : data.none
+//                        ? 'none'
+//                        : 'office';
+//
+//            for ( var day in this.menu ) {
+//                if ( this.menu[day].date === date ) {
+//                    isDayExist = true;
+//                    break;
+//                }
+//            }
+//
+//            if ( isDayExist ) this.setHeaderDayText(date, { type: orderType });
+//            else isOrderExpired = true;
+//
+//        }, this);
+//
+//        if ( isOrderExpired ) {
+//            this.resetOrder();
+//        }
 
         options.date = this.menu[options.day].date;
 
@@ -773,6 +716,9 @@ var MenuView = Backbone.View.extend({
         this.el.data({ 'menu-provider': options.provider });
 
         this.app.resetPage();
+        this.app.header.els.favourites
+                .unbind('click')
+                .click($.proxy(function(){ this.confirmResetOrder(this.setFavouriteDishes) }, this));
 
         this.el
             .empty()
@@ -793,6 +739,41 @@ var MenuView = Backbone.View.extend({
             this.deactivateDishes.call(this, options.date);
             this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
+
+    },
+    resetOrder: function(){
+
+        var emptyOrder = {},
+            success = $.proxy(function(data){
+                console.log('333 order OK', data);
+            }, this),
+            error = $.proxy(function(data){
+                this.app.catchError('can\'t reset order', data);
+            }, this);
+
+        _.each(this.menu, function(data){
+            emptyOrder[data.date] = {
+                dishes: {},
+                restaurant: false,
+                none: false
+            };
+        });
+
+        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder);
+        this.app.setLocalData('order', null);
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/v1/order/',
+            data: JSON.stringify(emptyOrder),
+            success: function(data){
+                data.status === 'ok'
+                    ? success(data)
+                    : error(data);
+            },
+            error: error
+        });
 
     },
     setSelectedDishes: function(date, day){
@@ -877,12 +858,13 @@ var MenuView = Backbone.View.extend({
             this.setHeaderDayText(date, { type: 'office' });
         }
     },
-    setFavouriteDishes: function(){
+    setFavouriteDishes: function(callback){
 
         var favourites = {
                 favourite: {},
                 others: {}
-            };
+            },
+            order = {};
 
         _.each(this.menu, function(menu, day){
             _.each(menu.providers, function(categories, provider){
@@ -907,35 +889,35 @@ var MenuView = Backbone.View.extend({
             });
         });
 
-        window.blabla = _.clone(favourites);
-
-
-        var selected = {},
-            localData = [];
-
-
         _.each(favourites.favourite, function(categories, date){
             _.each(categories, function(dishes, category){
 
-                if ( !selected[date] ) {
-                    selected[date] = [];
+                var id, others;
+
+                if ( !order[date] ) {
+                    order[date] = {
+                        dishes: {},
+                        restaurant: false,
+                        none: false
+                    };
                 }
 
                 if ( dishes.length ) {
-                    selected[date].push( dishes[ $.random( dishes.length - 1 ) ] );
+                    id = dishes[ $.random( dishes.length - 1 ) ].id;
+                    order[date].dishes[id] = 1;
                 }
                 else {
-                    var others = favourites.others[date][category];
-                    selected[date].push( others[ $.random( others.length - 1 ) ] );
+                    others = favourites.others[date][category];
+                    id = others[ $.random( others.length - 1 ) ].id;
+                    order[date].dishes[id] = 1;
                 }
             });
         });
 
-        window.zzz = _.clone(selected);
+        console.log('--- set favourite dishes', _.clone(order));
 
-        return _.clone(selected);
-
-
+        this.app.setLocalData('order', order);
+        callback && callback.call(this);
 
     },
     bindEventsForOrder: function(date){
@@ -1198,7 +1180,6 @@ var MenuView = Backbone.View.extend({
                 this.els.attention.container.remove();
                 this.app.header.renderProviders(this.menu, day, provider);
                 callback.call(this);
-
             }, this));
 
             this.els.attention.cancel.click($.proxy(function(event){
@@ -1598,47 +1579,105 @@ var FavouritesView = Backbone.View.extend({
     },
     bindEvents: function(){
 
-        /**********/
-
-        $('.content__favourites-category').eq(0).addClass('m-small');
-        $('.content__favourites-category').eq(4).addClass('m-small');
-
-        // TODO: make slider
-
-        /***********/
-
-        var changed = false,
-            timer;
-
         this.els.item = $(config.selectors.favourites.item);
+        this.els.save = $(config.selectors.favourites.save);
+        this.els.order = $(config.selectors.favourites.order);
+
+        this.slideColumns();
+        this.els.save.click($.proxy(this.saveFavourites, this));
         this.els.item.click($.proxy(function(event){
 
             var element = $(event.currentTarget),
-                id = element.data('id'),
                 selected = element.hasClass(config.classes.favourites.selected);
 
             selected
                 ? element.removeClass(config.classes.favourites.selected)
                 : element.addClass(config.classes.favourites.selected);
 
-            changed = true;
+        }, this));
+
+        this.els.order.click($.proxy(function(){
+
+            // TODO: go to menu view
 
         }, this));
 
+    },
+    slideColumns: function(){
 
-        // TODO: save by button click
+        var MINIMAL_WIDTH = 1700,
+            timer = false,
+            toggle = function(event){
 
-        timer = setInterval($.proxy(function(){
-            if ( changed ) {
-                changed = false;
-                this.saveFavourites();
-            }
-        }, this), 1000);
+                if ( timer ) return false;
+                timer = true;
 
-        $(window).one('hashchange beforeunload', $.proxy(function(){
-            clearInterval(timer);
-            changed && this.saveFavourites();
-        }, this));
+                setTimeout($.proxy(function(){
+
+                    var width = event ? $(event.currentTarget).width() : $(window).width(),
+                        collapsed = this.el.hasClass(config.classes.favourites.slider);
+
+                    timer = false;
+
+                    if ( width < MINIMAL_WIDTH && !collapsed ) {
+
+                        this.el.addClass(config.classes.favourites.slider);
+
+                        this.els.category
+                            .first()
+                            .add(this.els.category.last())
+                            .addClass(config.classes.favourites.collapsed);
+
+                        this.els.blank.click($.proxy(function(event){
+
+                            var index = $(event.currentTarget).parent().index(),
+                                last = this.els.category.length - 1,
+                                slides,
+                                els = {
+                                    collapsed: $(),
+                                    expanded: $()
+                                };
+
+                            switch (index) {
+                                case 0:
+                                    slides = [last, last - 1];
+                                    break;
+                                case last:
+                                    slides = [0, 1];
+                                    break;
+                                default:
+                                    slides = [0, last]
+                            }
+
+                            _.each(slides, function(i){
+                                els.collapsed = els.collapsed.add(this.els.category.eq(i));
+                            }, this);
+
+                            els.collapsed.addClass(config.classes.favourites.collapsed);
+                            els.expanded = this.els.category
+                                .not(els.collapsed)
+                                .removeClass(config.classes.favourites.collapsed);
+
+                        }, this));
+
+                    }
+
+                    if ( width >= MINIMAL_WIDTH && collapsed ) {
+
+                        this.el.removeClass(config.classes.favourites.slider);
+                        this.els.category.removeClass(config.classes.favourites.collapsed);
+                        this.els.blank.unbind('click');
+
+                    }
+                    
+                }, this), 100);
+            };
+
+        this.els.category = $(config.selectors.favourites.category);
+        this.els.blank = $(config.selectors.favourites.blank);
+
+        toggle.call(this);
+        $(window).resize($.proxy(toggle, this));
 
     },
     saveFavourites: function(){
