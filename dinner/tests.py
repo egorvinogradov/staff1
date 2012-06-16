@@ -46,6 +46,7 @@ class RestApiTest(ResourceTestCase):
     def setUp(self):
         super(RestApiTest, self).setUp()
 
+        download_latest_hlebsol()
         import_menu(
             process_function=fusion_hleb_sol.process,
             provider_name=u'Хлеб-Соль',

@@ -17,7 +17,6 @@ def get_week_start_day(day):
 
 
 def import_menu(process_function, provider_name, path):
-
     group_cache = {}
     day_cache = {}
     week_cache = {}
@@ -25,7 +24,6 @@ def import_menu(process_function, provider_name, path):
     db_provider, db_provider_created = Provider.objects.get_or_create(name=provider_name)
 
     for day, group, dish in process_function(path):
-
         db_group = group_cache.get(group)
         if not db_group:
             db_group, db_group_created = Group.objects.get_or_create(
@@ -69,6 +67,36 @@ def import_menu(process_function, provider_name, path):
 
 
 class NotSoTastyPieModelResource(ModelResource):
+    def add_shit_to_meta(self, request, data):
+        pass
+
+    def get_list(self, request, **kwargs):
+        """
+        Returns a serialized list of resources.
+
+        Calls ``obj_get_list`` to provide the data, then handles that result
+        set and serializes it.
+
+        Should return a HttpResponse (200 OK).
+        """
+        # TODO: Uncached for now. Invalidation that works for everyone may be
+        #       impossible.
+        objects = self.obj_get_list(request=request, **self.remove_api_resource_names(kwargs))
+        sorted_objects = self.apply_sorting(objects, options=request.GET)
+
+        paginator = self._meta.paginator_class(request.GET, sorted_objects, resource_uri=self.get_resource_uri(),
+            limit=self._meta.limit, max_limit=self._meta.max_limit, collection_name=self._meta.collection_name)
+        to_be_serialized = paginator.page()
+
+        # Dehydrate the bundles in preparation for serialization.
+        bundles = [self.build_bundle(obj=obj, request=request) for obj in to_be_serialized['objects']]
+        to_be_serialized['objects'] = [self.full_dehydrate(bundle) for bundle in bundles]
+        to_be_serialized = self.alter_list_data_to_serialize(request, to_be_serialized)
+
+        self.add_shit_to_meta(request, to_be_serialized)
+
+        return self.create_response(request, to_be_serialized)
+
     def post_list(self, request, **kwargs):
         deserialized = self.deserialize(request, request.raw_post_data,
             format=request.META.get('CONTENT_TYPE', 'application/json'))

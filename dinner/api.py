@@ -13,8 +13,8 @@ from django.utils.datastructures import SortedDict
 
 class DayResource(ModelResource):
     def __get_grouped_dishes(self, day):
-        dish_days = DishDay.objects.filter(day=day).select_related(
-            'dish', 'day', 'dish__provider', 'dish__group', 'day__week')
+        dish_days = DishDay.objects.filter(day=day)\
+            .select_related('dish', 'day', 'dish__provider', 'dish__group', 'day__week')
         providers = {}
 
         for dish_day in dish_days:
@@ -109,6 +109,17 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             .get_object_list(request) \
             .order_by('-id').filter(user=request.user)[:1]
 
+    def add_shit_to_meta(self, request, data):
+        current_week = Week.objects.order_by('-date')[:1]
+        current_week = current_week[0] if current_week else None
+
+        if not current_week:
+            return
+
+        data['meta']['current_week_open'] = not current_week.closed
+        data['meta']['made_order'] = Order.objects.filter(user=request.user, week=current_week).exists()
+
+
     def dehydrate(self, bundle):
         order = bundle.obj
         data = SortedDict()
@@ -118,6 +129,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         self.__fill_empty_order_day_items(data, order)
 
         bundle.data = data
+
         return bundle
 
     def hydrate(self, bundle):
