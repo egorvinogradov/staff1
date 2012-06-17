@@ -137,8 +137,6 @@ def post_order_day_item_save(sender, instance, **kwargs):
         if sender != order_day_item_model:
             order_day_item_model.objects.filter(day=day, order=order).delete()
 
-
-
 signals.post_save.connect(post_order_day_item_save, sender=RestaurantOrderDayItem)
 signals.post_save.connect(post_order_day_item_save, sender=DishOrderDayItem)
 signals.post_save.connect(post_order_day_item_save, sender=EmptyOrderDayItem)

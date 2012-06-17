@@ -197,6 +197,9 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
                 continue
 
+            if dishes == {} and not none and not restaurant:
+                continue
+
             raise NotImplementedError('please supply restaurant or dishes')
 
         bundle.data = {
