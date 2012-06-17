@@ -703,7 +703,7 @@ var MenuView = Backbone.View.extend({
 //        }, this);
 //
 //        if ( isOrderExpired ) {
-//            this.resetOrder();
+//            this.clearOrder();
 //        }
 
         options.date = this.menu[options.day].date;
@@ -735,45 +735,116 @@ var MenuView = Backbone.View.extend({
         }
 
         setTimeout($.proxy(function(){
-            this.setSelectedDishes.call(this, options.date, options.day);
-            this.deactivateDishes.call(this, options.date);
-            this.bindEventsForOrder.call(this, options.date);
+
+            this.bindEvents.call(this, options);
+
+
+//            this.setSelectedDishes.call(this, options.date, options.day);
+//            this.deactivateDishes.call(this, options.date);
+//            this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
 
     },
-    resetOrder: function(){
+    bindEvents: function(options){
 
-        var emptyOrder = {},
-            success = $.proxy(function(data){
-                console.log('333 order OK', data);
-            }, this),
-            error = $.proxy(function(data){
-                this.app.catchError('can\'t reset order', data);
-            }, this);
+        this.els.item = $(config.selectors.menu.item.container);
+        this.els.plus = $(config.selectors.menu.item.plus);
+        this.els.minus = $(config.selectors.menu.item.minus);
+        this.els.countControls = this.els.plus.add(this.els.minus);
 
-        _.each(this.menu, function(data){
-            emptyOrder[data.date] = {
-                dishes: {},
-                restaurant: false,
-                none: false
-            };
-        });
 
-        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder);
-        this.app.setLocalData('order', null);
+        this.setSelectedDishes(options.date, options.day);
+        this.deactivateDishes(options.date);
 
-        $.ajax({
-            type: 'POST',
-            contentType: 'application/json',
-            url: '/api/v1/order/',
-            data: JSON.stringify(emptyOrder),
-            success: function(data){
-                data.status === 'ok'
-                    ? success(data)
-                    : error(data);
-            },
-            error: error
-        });
+
+        this.els.item.click($.proxy(function(event){
+
+            var selected = config.classes.menu.selected,
+                els = {},
+                id,
+                price;
+
+            els.element = $(event.currentTarget);
+            els.target = $(event.target);
+            els.number = els.element.find(config.selectors.menu.item.number);
+            els.count = els.element.find(config.selectors.menu.item.count);
+            els.price = els.element.find(config.selectors.menu.item.price);
+            id = els.element.data('id');
+            price = +els.price.html();
+
+            if ( els.target.is(els.number) ) return;
+            if ( !els.element.hasClass(selected) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(options.date) ) {
+                return;
+            }
+
+            if ( els.element.hasClass(selected) ) {
+                this.app.removeDishFromOrder(options.date, id);
+                els.element.removeClass(selected);
+                els.count.addClass(config.classes.menu.countOne);
+                els.number.html(0);
+            }
+            else {
+
+                this.app.addToOrder(options.date, {
+                    dish: {
+                        id: id,
+                        count: 1
+                    }
+                });
+
+                els.element.addClass(selected);
+            }
+
+            this.setHeaderDayText(options.date, { type: 'office' });
+            this.deactivateDishes(options.date);
+
+        }, this));
+
+
+        this.els.countControls.click($.proxy(function(event){
+
+            var els = {},
+                count = {},
+                id,
+                price;
+
+            els.button = $(event.currentTarget);
+            els.container = els.button.parents(config.selectors.menu.item.container);
+            els.count = els.container.find(config.selectors.menu.item.count);
+            els.number = els.count.find(config.selectors.menu.item.number);
+            els.price = els.container.find(config.selectors.menu.item.price);
+            id = els.container.data('id');
+            price = +els.price.html();
+
+            count.original = +els.number.html() || 1;
+            count.increment = count.original < 9 ? count.original + 1 : 9;
+            count.decrement = count.original > 1 ? count.original - 1 : 1;
+            count.changed = els.button.is(config.selectors.menu.item.plus)
+                ? count.increment
+                : count.decrement;
+
+            if ( els.button.is(config.selectors.menu.item.plus) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(options.date) ) {
+                return false;
+            }
+
+            this.app.addToOrder(options.date, {
+                dish: {
+                    id: id,
+                    count: count.changed
+                }
+            });
+
+            count.changed > 1
+                ? els.count.removeClass(config.classes.menu.countOne)
+                : els.count.addClass(config.classes.menu.countOne);
+
+            els.number.html(count.changed);
+
+            this.setHeaderDayText(options.date, { type: 'office' });
+            this.deactivateDishes(options.date);
+            event.stopPropagation();
+
+        }, this));
 
     },
     setSelectedDishes: function(date, day){
@@ -1154,6 +1225,41 @@ var MenuView = Backbone.View.extend({
                 .find(this.app.header.els.days.comments)
                 .html(text[options.type]);
         }
+    },
+    clearOrder: function(){
+
+        var emptyOrder = {},
+            success = $.proxy(function(data){
+                console.log('reset order OK', data);
+            }, this),
+            error = $.proxy(function(data){
+                this.app.catchError('can\'t reset order', data);
+            }, this);
+
+        _.each(this.menu, function(data){
+            emptyOrder[data.date] = {
+                dishes: {},
+                restaurant: false,
+                none: false
+            };
+        });
+
+        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder);
+        this.app.setLocalData('order', null);
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: '/api/v1/order/',
+            data: JSON.stringify(emptyOrder),
+            success: function(data){
+                data.status === 'ok'
+                    ? success(data)
+                    : error(data);
+            },
+            error: error
+        });
+
     },
     confirmResetOrder: function(callback){
 
