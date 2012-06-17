@@ -1,4 +1,4 @@
-'git+https://github.com/toastdriven/django-tastypie.git#egg=master'
+-e git+https://github.com/toastdriven/django-tastypie.git#egg=master
 
 South==0.7.3
 django==1.4
