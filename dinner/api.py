@@ -156,11 +156,13 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             week = Week.objects.get(date=week_start_date)
             day = Day.objects.get(week=week, day=dt.weekday())
 
+
+            empty = data.get('empty', False)
+            if empty:
+                DishOrderDayItem.objects.filter(day=day).delete()
+
+
             dishes = data.get('dishes', {})
-
-            if dishes == {}:
-                DishDay.objects.filter(day=day).delete()
-
             if dishes:
                 for dish, count in dishes.items():
                     try:
@@ -195,9 +197,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
                     day=day
                 )
 
-                continue
-
-            if dishes == {} and not none and not restaurant:
                 continue
 
             raise NotImplementedError('please supply restaurant or dishes')
