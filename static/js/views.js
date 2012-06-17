@@ -506,8 +506,6 @@ var MenuView = Backbone.View.extend({
             setData.call(this);
         }, this);
 
-
-
         setData.call(this);
 
     },
@@ -650,11 +648,20 @@ var MenuView = Backbone.View.extend({
     },
     render: function(params){
 
-        console.log('MENU view render:',  this.menu, this.app.order.model.attributes, this.el, _.clone(this.app.options), _.clone(params));
 
-        if ( !this.menu || _.isEmpty(this.menu) ) return;
 
-        var currentOptions = params && params.options // TODO: fix
+        console.log('MENU view render:',
+        this.menu,
+        this.app.order.model.attributes,
+        this.el, _.clone(this.app.options),
+        _.clone(params));
+
+
+
+
+        if ( _.isEmpty(this.menu) || _.isEmpty(this.app.order.model.get('meta')) ) return;
+
+        var currentOptions = params && params.options
                     ? params.options
                     : this.app && this.app.options
                         ? this.app.options
@@ -666,45 +673,52 @@ var MenuView = Backbone.View.extend({
             corrected = this.correctOptions(options),
             isDayCorrect = options.day && options.day === corrected.day,
             isProviderCorrect = options.provider && options.provider === corrected.provider,
-            isOrderExpired = false;
+            isOrderExpired = false,
+            madeOrder = this.app.order.model.get('meta').made_order,
+            currentWeekOpen = this.app.order.model.get('meta').current_week_open;
+
+//        if ( madeOrder || !currentWeekOpen ) {
+//            router.navigate('/order/', { trigger: true });
+//            return;
+//        }
 
         if ( !isDayCorrect ) options.day = corrected.day;
         if ( !isProviderCorrect ) options.provider = corrected.provider;
 
         if ( ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) && !currentOptions.overlayType ) {
             console.log('options INCORRECT:', options.day, options.provider, '\n\n');
-            document.location.hash = '#/menu/' + options.day + '/' + options.provider + '/';
-            //router.navigate('menu/' + options.day + '/' + options.provider + '/', { trigger: true });
+            //document.location.hash = '#/menu/' + options.day + '/' + options.provider + '/';
+            router.navigate('/menu/' + options.day + '/' + options.provider + '/', { trigger: true });
             return;
         }
         else {
             console.log('options CORRECT:', options.day, options.provider, '\n\n');
         }
 
-//        _.each(this.app.getLocalData('order'), function(data, date){
-//
-//            var isDayExist = false,
-//                orderType = data.restaurant
-//                    ? 'restaurant'
-//                    : data.none
-//                        ? 'none'
-//                        : 'office';
-//
-//            for ( var day in this.menu ) {
-//                if ( this.menu[day].date === date ) {
-//                    isDayExist = true;
-//                    break;
-//                }
-//            }
-//
-//            if ( isDayExist ) this.setHeaderDayText(date, { type: orderType });
-//            else isOrderExpired = true;
-//
-//        }, this);
-//
-//        if ( isOrderExpired ) {
-//            this.clearOrder();
-//        }
+        _.each(this.app.getLocalData('order'), function(data, date){
+
+            var isDayExist = false,
+                orderType = data.restaurant
+                    ? 'restaurant'
+                    : data.none
+                        ? 'none'
+                        : 'office';
+
+            for ( var day in this.menu ) {
+                if ( this.menu[day].date === date ) {
+                    isDayExist = true;
+                    break;
+                }
+            }
+
+            if ( isDayExist ) this.setHeaderDayText(date, { type: orderType });
+            else isOrderExpired = true;
+
+        }, this);
+
+        if ( isOrderExpired ) {
+            this.clearOrder();
+        }
 
         options.date = this.menu[options.day].date;
 
@@ -735,13 +749,7 @@ var MenuView = Backbone.View.extend({
         }
 
         setTimeout($.proxy(function(){
-
             this.bindEvents.call(this, options);
-
-
-//            this.setSelectedDishes.call(this, options.date, options.day);
-//            this.deactivateDishes.call(this, options.date);
-//            this.bindEventsForOrder.call(this, options.date);
         }, this), 0);
 
     },
@@ -991,104 +999,6 @@ var MenuView = Backbone.View.extend({
         callback && callback.call(this);
 
     },
-    bindEventsForOrder: function(date){
-
-        this.els.item = $(config.selectors.menu.item.container);
-        this.els.plus = $(config.selectors.menu.item.plus);
-        this.els.minus = $(config.selectors.menu.item.minus);
-        this.els.countControls = this.els.plus.add(this.els.minus);
-
-
-        this.els.item.click($.proxy(function(event){
-
-            var selected = config.classes.menu.selected,
-                els = {},
-                id,
-                price;
-
-            els.element = $(event.currentTarget);
-            els.target = $(event.target);
-            els.number = els.element.find(config.selectors.menu.item.number);
-            els.count = els.element.find(config.selectors.menu.item.count);
-            els.price = els.element.find(config.selectors.menu.item.price);
-            id = els.element.data('id');
-            price = +els.price.html();
-
-            if ( els.target.is(els.number) ) return;
-            if ( !els.element.hasClass(selected) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(date) ) {
-                return;
-            }
-
-            if ( els.element.hasClass(selected) ) {
-                this.app.removeDishFromOrder(date, id);
-                els.element.removeClass(selected);
-                els.count.addClass(config.classes.menu.countOne);
-                els.number.html(0);
-            }
-            else {
-
-                this.app.addToOrder(date, {
-                    dish: {
-                        id: id,
-                        count: 1
-                    }
-                });
-
-                els.element.addClass(selected);
-            }
-
-            this.setHeaderDayText(date, { type: 'office' });
-            this.deactivateDishes(date);
-
-        }, this));
-
-
-        this.els.countControls.click($.proxy(function(event){
-
-            var els = {},
-                count = {},
-                id,
-                price;
-
-            els.button = $(event.currentTarget);
-            els.container = els.button.parents(config.selectors.menu.item.container);
-            els.count = els.container.find(config.selectors.menu.item.count);
-            els.number = els.count.find(config.selectors.menu.item.number);
-            els.price = els.container.find(config.selectors.menu.item.price);
-            id = els.container.data('id');
-            price = +els.price.html();
-
-            count.original = +els.number.html() || 1;
-            count.increment = count.original < 9 ? count.original + 1 : 9;
-            count.decrement = count.original > 1 ? count.original - 1 : 1;
-            count.changed = els.button.is(config.selectors.menu.item.plus)
-                ? count.increment
-                : count.decrement;
-
-            if ( els.button.is(config.selectors.menu.item.plus) && price > config.DAY_ORDER_LIMIT - this.getDayOrderPrice(date) ) {
-                return false;
-            }
-
-            this.app.addToOrder(date, {
-                dish: {
-                    id: id,
-                    count: count.changed
-                }
-            });
-
-            count.changed > 1
-                ? els.count.removeClass(config.classes.menu.countOne)
-                : els.count.addClass(config.classes.menu.countOne);
-
-            els.number.html(count.changed);
-
-            this.setHeaderDayText(date, { type: 'office' });
-            this.deactivateDishes(date);
-            event.stopPropagation();
-
-        }, this));
-
-    },
     renderOverlay: function(options){
 
         var content,
@@ -1239,12 +1149,12 @@ var MenuView = Backbone.View.extend({
         _.each(this.menu, function(data){
             emptyOrder[data.date] = {
                 dishes: {},
-                restaurant: false,
+                restaurant: null,
                 none: false
             };
         });
 
-        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder);
+        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder, JSON.stringify(emptyOrder));
         this.app.setLocalData('order', null);
 
         $.ajax({
