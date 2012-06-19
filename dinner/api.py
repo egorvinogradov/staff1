@@ -160,6 +160,9 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             empty = data.get('empty', False)
             if empty:
                 DishOrderDayItem.objects.filter(day=day).delete()
+                RestaurantOrderDayItem.objects.filter(day=day).delete()
+                EmptyOrderDayItem.objects.filter(day=day).delete()
+                continue
 
 
             dishes = data.get('dishes', {})
