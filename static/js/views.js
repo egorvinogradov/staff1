@@ -354,6 +354,23 @@ var HeaderView = Backbone.View.extend({
 
                 _this.app.addToOrder(date, order);
                 console.log('--- ACTION CLICK', date, order);
+            },
+            weekOrder = function(event){
+                var element = $(event.currentTarget),
+                    type = element.attr('rel'),
+                    order = {
+                        dishes: {},
+                        restaurant: type === 'restaurant',
+                        none: type === 'none'
+                    };
+
+                _.each(menu, $.proxy(function(data, day){
+                    if ( !_.isEmpty(data.providers) ) {
+                        _this.app.addToOrder(data.date, order);
+                    }
+                }, this));
+
+                console.log('--- WEEK ORDER', _this.app.getLocalData('order'));
             };
 
         this.els.days.items
@@ -374,6 +391,19 @@ var HeaderView = Backbone.View.extend({
 
         this.els.days.items
             .not('.'+ config.classes.header.dayInactive)
+            .find(this.els.days.actions)
+            .unbind('click', titlesClick)
+            .bind('click', titlesClick);
+
+        this.els.days.items
+            .filter('[rel="week"]')
+            .removeClass('.'+ config.classes.header.dayInactive)
+            .find(this.els.days.titles)
+            .unbind('click', itemsClick)
+            .bind('click', itemsClick);
+
+        this.els.days.items
+            .filter('[rel="week"]')
             .find(this.els.days.actions)
             .unbind('click', titlesClick)
             .bind('click', titlesClick);
@@ -1148,9 +1178,7 @@ var MenuView = Backbone.View.extend({
 
         _.each(this.menu, function(data){
             emptyOrder[data.date] = {
-                dishes: {},
-                restaurant: null,
-                none: false
+                clear: true
             };
         });
 
