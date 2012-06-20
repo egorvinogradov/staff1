@@ -143,4 +143,8 @@ $(function(){
 
     Backbone.history.start();
 
+    if ( $.browser.msie && $.browser.version < 9 ) {
+        $(window).mediaQueries();
+    }
+
 });

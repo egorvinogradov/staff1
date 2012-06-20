@@ -93,6 +93,10 @@ var config = {
         order: {
             restaurant:     'content__order-restaurant',
             none:           'content__order-slimming'
+        },
+        additional: {
+            media1000:      'media-width_1000',
+            media1500:      'media-width_1500'
         }
     },
     text: {

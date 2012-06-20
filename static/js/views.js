@@ -338,11 +338,13 @@ var HeaderView = Backbone.View.extend({
     bindDayEvents: function(menu){
 
         var _this = this,
-            itemsClick = function(event){
+            weekdays,
+            allWeek,
+            showMenu = function(event){
                 _this.hideActions();
                 _this.showActions(event);
             },
-            titlesClick = function(event){
+            dayOrder = function(event){
                 var element = $(event.currentTarget),
                     date = element.parents(config.selectors.header.day).data('date'),
                     type = element.attr('rel'),
@@ -352,7 +354,10 @@ var HeaderView = Backbone.View.extend({
                         none: type === 'none'
                     };
 
-                _this.app.addToOrder(date, order);
+                if ( date ) {
+                    _this.app.addToOrder(date, order);
+                }
+
                 console.log('--- ACTION CLICK', date, order);
             },
             weekOrder = function(event){
@@ -364,11 +369,13 @@ var HeaderView = Backbone.View.extend({
                         none: type === 'none'
                     };
 
-                _.each(menu, $.proxy(function(data, day){
+                _this.app.setLocalData('order', null);
+
+                _.each(menu, function(data, day){
                     if ( !_.isEmpty(data.providers) ) {
                         _this.app.addToOrder(data.date, order);
                     }
-                }, this));
+                });
 
                 console.log('--- WEEK ORDER', _this.app.getLocalData('order'));
             };
@@ -383,30 +390,33 @@ var HeaderView = Backbone.View.extend({
                 .removeClass(config.classes.header.dayInactive);
         }, this);
 
-        this.els.days.items
+        weekdays = this.els.days.items
             .not('.'+ config.classes.header.dayInactive)
+            .not('[rel="week"]');
+
+        allWeek = this.els.days.items
+            .filter('[rel="week"]');
+
+        weekdays
             .find(this.els.days.titles)
-            .unbind('click', itemsClick)
-            .bind('click', itemsClick);
+            .unbind('click', showMenu)
+            .bind('click', showMenu);
 
-        this.els.days.items
-            .not('.'+ config.classes.header.dayInactive)
+        weekdays
             .find(this.els.days.actions)
-            .unbind('click', titlesClick)
-            .bind('click', titlesClick);
+            .unbind('click', dayOrder)
+            .bind('click', dayOrder);
 
-        this.els.days.items
-            .filter('[rel="week"]')
-            .removeClass('.'+ config.classes.header.dayInactive)
+        allWeek
+            .removeClass(config.classes.header.dayInactive)
             .find(this.els.days.titles)
-            .unbind('click', itemsClick)
-            .bind('click', itemsClick);
+            .unbind('click', showMenu)
+            .bind('click', showMenu);
 
-        this.els.days.items
-            .filter('[rel="week"]')
+        allWeek
             .find(this.els.days.actions)
-            .unbind('click', titlesClick)
-            .bind('click', titlesClick);
+            .unbind('click', weekOrder)
+            .bind('click', weekOrder);
 
     },
     renderProviders: function(menu, day, provider){
@@ -484,6 +494,8 @@ var MenuView = Backbone.View.extend({
                         model: order
                     };
                 }
+
+                this.meta = order.get('meta');
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
@@ -682,7 +694,7 @@ var MenuView = Backbone.View.extend({
 
         console.log('MENU view render:',
         this.menu,
-        this.app.order.model.attributes,
+        this.meta,
         this.el, _.clone(this.app.options),
         _.clone(params));
 

@@ -812,6 +812,16 @@ html {
     }
 }
 
+.media-width_1000 .header {
+    position: absolute;
+    min-width: 1000px;
+}
+
+.media-width_1500 .header__week {
+    width: 747px;
+    text-align: right;
+}
+
 /* / header */
 
 
