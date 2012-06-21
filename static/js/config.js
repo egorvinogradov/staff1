@@ -5,6 +5,7 @@ var config = {
         wrapper:    '.page__wrapper',
         header: {
             container:      '.header',
+            week:           '.header__week',
             day:            '.header__day',
             dayTitle:       '.header__day-title',
             dayActions:     '.header__day-variants',
@@ -95,8 +96,8 @@ var config = {
             none:           'content__order-slimming'
         },
         additional: {
-            media1000:      'media-width_1000',
-            media1500:      'media-width_1500'
+            media1000:      'media-max-width_1000',
+            media1500:      'media-max-width_1500'
         }
     },
     text: {

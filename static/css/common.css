@@ -812,12 +812,12 @@ html {
     }
 }
 
-.media-width_1000 .header {
+.media-max-width_1000 .header {
     position: absolute;
     min-width: 1000px;
 }
 
-.media-width_1500 .header__week {
+.media_max-width_1500 .header__week {
     width: 747px;
     text-align: right;
 }
@@ -1041,6 +1041,7 @@ html {
 
 .content__overlay {
     position: fixed;
+    background: #fff;
     background: rgba(255,255,255,.8);
     top: 148px;
     left: 0;
@@ -1167,6 +1168,7 @@ html {
         content: ' ';
         display: block;
         position: fixed;
+        background: #fff;
         background: rgba(255,255,255,.8);
         top: 0;
         left: 0;
@@ -1180,6 +1182,24 @@ html {
         background: #fff;
     }
 
+}
+
+.media-max-width_1000 .content__overlay:before {
+    content: ' ';
+    display: block;
+    position: fixed;
+    background: #fff;
+    background: rgba(255,255,255,.8);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 148px;
+}
+
+.media-max-width_1000 .content__overlay.m-overlay-start:before,
+.media-max-width_1000 .content__overlay.m-overlay-week-slimming:before,
+.media-max-width_1000 .content__overlay.m-overlay-week-restaurant:before {
+    background: #fff;
 }
 
 /* / overlays */
@@ -1231,6 +1251,18 @@ html {
     display: block;
     color: #7C7A6E;
 }
+
+.content__order .content__menu-price {
+    bottom: 2px;
+}
+
+.content__order .content__menu-item:hover .content__menu-item-wrapper {
+    border: 1px solid #C2C7CC;
+    margin: -1px 0 0 -1px;
+    cursor: default;
+}
+
+
 
 /* / order */
 

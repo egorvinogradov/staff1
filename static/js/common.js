@@ -4,19 +4,26 @@ var Router = Backbone.Router.extend({
 
     routes: {
         '':                     'start',
+        'menu':                 'menu',
+        'menu/':                'menu',
         'menu/:day':            'menu',
         'menu/:day/':           'menu',
         'menu/:day/:provider':  'menu',
         'menu/:day/:provider/': 'menu',
-        'luch/:day':            'overlayLuch',
-        'luch/:day/':           'overlayLuch',
-        'none/:day':            'overlayNone',
-        'none/:day/':           'overlayNone',
+//        'luch/:day':            'overlayLuch',
+//        'luch/:day/':           'overlayLuch',
+//        'none/:day':            'overlayNone',
+//        'none/:day/':           'overlayNone',
         'order':                'order',
         'order/':               'order',
         'favourites':           'favourites',
-        'favourites/':          'favourites'
-
+        'favourites/':          'favourites',
+        'changeorder':                  'changeOrder',
+        'changeorder/':                 'changeOrder',
+        'changeorder/:day':             'changeOrder',
+        'changeorder/:day/':            'changeOrder',
+        'changeorder/:day/:provider':   'changeOrder',
+        'changeorder/:day/:provider/':  'changeOrder'
     },
     start: function(){
 
@@ -28,50 +35,100 @@ var Router = Backbone.Router.extend({
             }
         });
     },
-    menu: function(day, provider){
+    menu: function(){
 
-        console.log('router menu', day, provider);
+        var options = {
+            day: arguments[0],
+            provider: arguments[1]
+        };
 
-        this.refreshModel({
-            page: {
-                menu: true
-            },
-            options: {
-                provider: provider,
-                day: day
-            }
-        });
-    },
-    overlayLuch: function(day){
+        if ( arguments[0] === 'luch' ) {
+            options = {
+                day: arguments[0],
+                overlayType: 'restaurant'
+            };
+        }
 
-        console.log('router overlay luch:', day);
+        if ( arguments[0] === 'none' ) {
+            options = {
+                day: arguments[0],
+                overlayType: 'none'
+            };
+        }
 
-        this.refreshModel({
-            page: {
-                menu: true
-            },
-            options: {
-                overlayType: 'restaurant',
-                day: day
-            }
-        });
-
-    },
-    overlayNone: function(day){
-
-        console.log('router overlay none:', day);
+        console.log('router menu', options);
 
         this.refreshModel({
             page: {
                 menu: true
             },
-            options: {
-                overlayType: 'none',
-                day: day
-            }
+            options: options
+        });
+    },
+    changeOrder: function(){
+
+        var options = {
+            changeOrder: true,
+            day: arguments[0],
+            provider: arguments[1]
+        };
+
+        if ( arguments[0] === 'luch' ) {
+            options = {
+                changeOrder: true,
+                day: arguments[0],
+                overlayType: 'restaurant'
+            };
+        }
+
+        if ( arguments[0] === 'none' ) {
+            options = {
+                changeOrder: true,
+                day: arguments[0],
+                overlayType: 'none'
+            };
+        }
+
+        console.log('router change menu', options);
+
+        this.refreshModel({
+            page: {
+                menu: true
+            },
+            options: options
         });
 
     },
+//    overlayLuch: function(day){
+//
+//        console.log('router overlay luch:', day);
+//
+//        this.refreshModel({
+//            page: {
+//                menu: true
+//            },
+//            options: {
+//                overlayType: 'restaurant',
+//                day: day
+//            }
+//        });
+//
+//    },
+//    overlayNone: function(day){
+//
+//        console.log('router overlay none:', day);
+//
+//        this.refreshModel({
+//            page: {
+//                menu: true
+//            },
+//            options: {
+//                overlayType: 'none',
+//                day: day
+//            }
+//        });
+//
+//    },
     order: function(){
 
         console.log('router order');
