@@ -831,7 +831,8 @@ var MenuView = Backbone.View.extend({
 
 
         if ( _.isEmpty(this.menu) || _.isEmpty(this.app.order.model.get('meta')) ) {
-            this.app.catchError('no required data for menu render', {
+            this.app.catchError('no required data', {
+                method: 'Menu View render',
                 menu: this.menu,
                 order: this.app.order
             });
@@ -898,6 +899,16 @@ var MenuView = Backbone.View.extend({
 
         if_order_expired: {
 
+            this.app.header.els.days.items
+                .addClass(config.classes.header.dayInactive);
+
+            _.each(this.menu, function(data, day){
+                this.app.header.els.days.items
+                    .filter('[rel="' + day + '"]')
+                    .data({ date: data.date })
+                    .removeClass(config.classes.header.dayInactive);
+            }, this);
+
             _.each(this.app.getLocalData('order'), function(data, date){
 
                 var isDayExist = false,
@@ -914,14 +925,14 @@ var MenuView = Backbone.View.extend({
                     }
                 }
 
-                if ( isDayExist ) {
+                if ( !isDayExist ) {
+                    isOrderExpired = true;
+                }
+                else {
                     this.app.header.setDayText(date, {
                         type: orderType,
                         price: this.getDayOrderPrice(date)
                     });
-                }
-                else {
-                    isOrderExpired = true;
                 }
 
             }, this);
@@ -1209,6 +1220,8 @@ var MenuView = Backbone.View.extend({
     },
     setFavouriteDishes: function(callback){
 
+        // TODO: use callback?
+
         var favourites = {
                 favourite: {},
                 others: {}
@@ -1475,6 +1488,7 @@ var OrderView = Backbone.View.extend({
     getData: function(callback){
 
         var order,
+            meta,
             localOrder = this.app.getLocalData('order'),
             menu = this.app && this.app.menu
                 ? this.app.menu.model
@@ -1488,6 +1502,9 @@ var OrderView = Backbone.View.extend({
                 console.warn('order view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
 
                 this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order, menu.get('objects'));
+                this.meta = meta;
+
+                //this.meta.current_week_open = false;
 
                 if ( this.app && !this.app.menu ) {
                     this.app.menu = {
@@ -1544,6 +1561,7 @@ var OrderView = Backbone.View.extend({
 
         this.app.fetchModel(this.model, function(model){
             order = model.get('objects')[0];
+            meta = model.get('meta');
             setData.call(this);
         }, this);
 
@@ -1562,6 +1580,8 @@ var OrderView = Backbone.View.extend({
     assembleOrder: function(objects, menu){
 
         console.log('--- ASSEMBLE ORDER', objects, menu);
+
+        if ( _.isEmpty(objects) ) return;
 
         var days = {},
             sorted = [];
@@ -1667,7 +1687,10 @@ var OrderView = Backbone.View.extend({
 
         console.log('ORDER view render', this.order);
 
-        if ( !this.order || !this.order.length ) return;
+        if ( !this.order || !this.order.length ) {
+            document.location.hash = '#/menu/';
+            return;
+        }
 
         var orderHTML = [];
 
@@ -1720,6 +1743,14 @@ var OrderView = Backbone.View.extend({
             orderHTML.push(template(content));
 
         }, this);
+
+
+        this.els.changeButton = $(config.selectors.header.changeOrder);
+        this.els.changeButton.removeClass(config.classes.global.hidden);
+
+        if ( !this.meta.current_week_open ) {
+            this.els.changeButton.addClass(config.classes.global.hidden);
+        }
 
         this.app.resetPage();
         this.app.makeOrder();

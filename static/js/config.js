@@ -19,7 +19,8 @@ var config = {
             provider:       '.header__provider',
             providerName:   '.header__provider-c',
             completeButton: '.header__complete-button',
-            favourites:     '.header__favourites-select'
+            favourites:     '.header__favourites-select',
+            changeOrder:    '.header__change'
         },
         content: {
             container:      '.content',
@@ -43,7 +44,7 @@ var config = {
             blank:          '.content__favourites-category-blank',
             item:           '.content__favourites-item',
             save:           '.content__favourites-save',
-            order:          '.content__favourites-save'
+            order:          '.content__favourites-order'
         },
         overlay:            '.content__overlay',
         attention: {
@@ -52,6 +53,9 @@ var config = {
         }
     },
     classes: {
+        global: {
+            hidden:         'm-hidden'
+        },
         page: {
             order:          'm-order',
             favourites:     'm-favourites'
