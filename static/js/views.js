@@ -397,7 +397,6 @@ var HeaderView = Backbone.View.extend({
                     this.setDayText('week', { type: type });
 
                     if ( this.app && this.app.menu && this.app.menu.renderOverlay ) {
-                        //var menuData = this.app.els.wrapper.data();
                         this.app.menu.renderOverlay({
                             date: null,
                             day: 'week',
@@ -618,11 +617,10 @@ var MenuView = Backbone.View.extend({
 
                 this.meta = order.get('meta');
 
-                if ( localOrder ) {
-                    this.meta.made_order = false;
-                }
+//                if ( localOrder ) {
+//                    this.meta.made_order = false;
+//                }
 
-                //this.app.header.bindDayEvents(this.menu);
                 callback.call(this);
                 
             };
@@ -757,15 +755,8 @@ var MenuView = Backbone.View.extend({
 
             var groupHTML = [];
 
-            _.each(items.dishes, function(dish){ // TODO: get order
-
-//                if ( !_.isEmpty(order) && order[options.date] && order[options.date].dishes[dish.id] ) {
-//                    dish.isSelected = this.order[options.date].dishes[dish.id];
-//                    dish.count = this.order[options.date].dishes[dish.id];
-//                }
-
+            _.each(items.dishes, function(dish){
                 groupHTML.push(this.templates.item(dish));
-
             }, this);
 
             menuHTML.push(this.templates.group({
@@ -855,51 +846,120 @@ var MenuView = Backbone.View.extend({
             isProviderCorrect = options.provider && options.provider === corrected.provider,
             isOrderExpired = false,
             menuType = currentOptions.changeOrder ? 'changeorder' : 'menu',
-            madeOrder = this.app.order.model.get('meta').made_order,
+            //madeOrder = this.app.order.model.get('meta').made_order,
             currentWeekOpen = this.app.order.model.get('meta').current_week_open,
             weekCompleteType;
 
+
         console.log('--- PARAMS CHANGE ORDER:', currentOptions.changeOrder);
 
-        if ( madeOrder && !currentOptions.changeOrder ) {
-            document.location.hash = '#/order/';
-            return;
+
+        if_order_made: {
+
+            if ( !_.isEmpty(this.app.order.model.get('objects')[0]) && !currentOptions.changeOrder ) {
+                document.location.hash = '#/order/';
+                return;
+            }
         }
 
-        if ( !currentWeekOpen ) {
-            document.location.hash = '#/order/';
-            return;
+        if_current_week_closed: {
+
+            if ( !currentWeekOpen ) {
+                document.location.hash = '#/order/';
+                return;
+            }
         }
 
-        if ( !madeOrder && !currentOptions.day && _.isEmpty(this.app.getLocalData('order')) ) {
+        if_new_week_started: {
 
-            this.prepareHeader({
-                day: corrected.day,
-                provider: corrected.provider,
-                date: null
-            }, menuType);
+            if ( !currentOptions.day && _.isEmpty(this.app.order.model.get('objects')[0]) && _.isEmpty(this.app.getLocalData('order')) ) {
 
-            this.renderOverlay({
-                date: null,
-                day: corrected.day,
-                overlayType: 'start'
-            });
+                this.prepareHeader({
+                    day: corrected.day,
+                    provider: corrected.provider,
+                    date: null
+                }, menuType);
 
-            return;
+                this.renderOverlay({
+                    date: null,
+                    day: corrected.day,
+                    overlayType: 'start'
+                });
+
+                return;
+            }
         }
 
-        if ( !isDayCorrect ) options.day = corrected.day;
-        if ( !isProviderCorrect ) options.provider = corrected.provider;
+        if_order_expired: {
 
-        if ( ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) && !currentOptions.overlayType ) {
-            console.log('options INCORRECT:', options.day, options.provider, '\n\n');
-            document.location.hash = '#/' + menuType + '/' + options.day + '/' + options.provider + '/';
-            //router.navigate('/' + menuType + '/' + options.day + '/' + options.provider + '/', { trigger: true });
-            return;
+            _.each(this.app.getLocalData('order'), function(data, date){
+
+                var isDayExist = false,
+                    orderType = data.restaurant
+                        ? 'restaurant'
+                        : data.none
+                            ? 'none'
+                            : 'office';
+
+                for ( var day in this.menu ) {
+                    if ( this.menu[day].date === date ) {
+                        isDayExist = true;
+                        break;
+                    }
+                }
+
+                if ( isDayExist ) {
+                    this.app.header.setDayText(date, {
+                        type: orderType,
+                        price: this.getDayOrderPrice(date)
+                    });
+                }
+                else {
+                    isOrderExpired = true;
+                }
+
+            }, this);
+
+            weekCompleteType = this.checkIncompleteDays(this.app.getLocalData('order'));
+            this.app.header.setDayText('week', { type: weekCompleteType || 'clear' });
+
+            if ( isOrderExpired ) {
+
+                this.clearOrder();
+
+                this.prepareHeader({
+                    day: corrected.day,
+                    provider: corrected.provider,
+                    date: null
+                }, menuType);
+
+                this.renderOverlay({
+                    date: null,
+                    day: corrected.day,
+                    overlayType: 'start'
+                });
+
+                return;
+            }
         }
-        else {
-            console.log('options CORRECT:', options.day, options.provider, '\n\n');
+
+        if_day_or_provider_are_not_specified: {
+
+            if ( !isDayCorrect ) options.day = corrected.day;
+            if ( !isProviderCorrect ) options.provider = corrected.provider;
+
+            if ( ( !isDayCorrect || !isProviderCorrect || !currentOptions.day || !currentOptions.provider ) && !currentOptions.overlayType ) {
+                console.log('options INCORRECT:', options.day, options.provider, '\n\n');
+                document.location.hash = '#/' + menuType + '/' + options.day + '/' + options.provider + '/';
+                //router.navigate('/' + menuType + '/' + options.day + '/' + options.provider + '/', { trigger: true });
+                return;
+            }
+            else {
+                console.log('options CORRECT:', options.day, options.provider, '\n\n');
+            }
         }
+
+
 
         options.date = this.menu[options.day].date;
 
@@ -908,42 +968,6 @@ var MenuView = Backbone.View.extend({
             provider: options.provider,
             date: options.date
         }, menuType);
-
-        _.each(this.app.getLocalData('order'), function(data, date){
-
-            var isDayExist = false,
-                orderType = data.restaurant
-                    ? 'restaurant'
-                    : data.none
-                        ? 'none'
-                        : 'office';
-
-            for ( var day in this.menu ) {
-                if ( this.menu[day].date === date ) {
-                    isDayExist = true;
-                    break;
-                }
-            }
-
-            if ( isDayExist ) {
-                this.app.header.setDayText(date, {
-                    type: orderType,
-                    price: this.getDayOrderPrice(date)
-                });
-            }
-            else {
-                isOrderExpired = true;
-            }
-
-        }, this);
-
-        weekCompleteType = this.checkIncompleteDays(this.app.getLocalData('order'));
-        this.app.header.setDayText('week', { type: weekCompleteType || 'clear' });
-
-        if ( isOrderExpired ) {
-            this.clearOrder();
-        }
-        
 
         this.el
             .empty()
@@ -1371,18 +1395,20 @@ var MenuView = Backbone.View.extend({
         console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder, JSON.stringify(emptyOrder));
         this.app.setLocalData('order', null);
 
-        $.ajax({
-            type: 'POST',
-            contentType: 'application/json',
-            url: '/api/v1/order/',
-            data: JSON.stringify(emptyOrder),
-            success: function(data){
-                data.status === 'ok'
-                    ? success(data)
-                    : error(data);
-            },
-            error: error
-        });
+        if ( !_.isEmpty(emptyOrder) ) {
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/api/v1/order/',
+                data: JSON.stringify(emptyOrder),
+                success: function(data){
+                    data.status === 'ok'
+                        ? success(data)
+                        : error(data);
+                },
+                error: error
+            });
+        }
 
     },
     confirmResetOrder: function(callback, menuLink){
@@ -1462,10 +1488,6 @@ var OrderView = Backbone.View.extend({
                         model: menu
                     };
                 }
-
-
-//                callback.call(this);    // TODO: remove
-//                return;                 // TODO: remove
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
