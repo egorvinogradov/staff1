@@ -830,7 +830,13 @@ var MenuView = Backbone.View.extend({
 
 
 
-        if ( _.isEmpty(this.menu) || _.isEmpty(this.app.order.model.get('meta')) ) return;
+        if ( _.isEmpty(this.menu) || _.isEmpty(this.app.order.model.get('meta')) ) {
+            this.app.catchError('no required data for menu render', {
+                menu: this.menu,
+                order: this.app.order
+            });
+            return;
+        }
 
         var currentOptions = params && params.options
                     ? params.options
