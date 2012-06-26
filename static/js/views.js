@@ -561,8 +561,6 @@ var HeaderView = Backbone.View.extend({
                 dates.push(data.date);
             });
 
-            console.log('-- DATES', dates);
-
             dates.sort(function(a,b){
                 return $.parseDate(a) < $.parseDate(b) ? -1 : 1;
             });
@@ -592,8 +590,6 @@ var HeaderView = Backbone.View.extend({
                 name: user.firstName
             };
         }
-
-        console.log('--- DATA', data);
 
         if ( template && data ) {
             this.els.headerMessage
@@ -957,7 +953,7 @@ var MenuView = Backbone.View.extend({
             }
         }
 
-        if_order_expired: {
+        check_days_are_actual: {
 
             this.app.header.els.days.items
                 .addClass(config.classes.header.dayInactive);
@@ -999,6 +995,9 @@ var MenuView = Backbone.View.extend({
 
             weekCompleteType = this.checkIncompleteDays(this.app.getLocalData('order'));
             this.app.header.setDayText('week', { type: weekCompleteType || 'clear' });
+        }
+
+        if_order_expired: {
 
             if ( isOrderExpired ) {
 
@@ -1081,8 +1080,14 @@ var MenuView = Backbone.View.extend({
 
         this.app.resetPage();
         this.app.header.els.favourites
-                .unbind('click')
-                .click($.proxy(function(){ this.confirmResetOrder(this.setFavouriteDishes, menuType) }, this));
+            .unbind('click')
+            .click($.proxy(function(){
+                this.confirmResetOrder({
+                    callbackAgree: this.setFavouriteDishes,
+                    callbackCancel: this.render,
+                    menuLink: menuType
+                });
+            }, this));
 
     },
     bindEvents: function(options){
@@ -1283,8 +1288,6 @@ var MenuView = Backbone.View.extend({
     },
     setFavouriteDishes: function(callback){
 
-        // TODO: use callback?
-
         var favourites = {
                 favourite: {},
                 others: {}
@@ -1340,9 +1343,8 @@ var MenuView = Backbone.View.extend({
         });
 
         console.log('--- set favourite dishes', _.clone(order));
-
         this.app.setLocalData('order', order);
-        callback && callback.call(this);
+        this.render();
 
     },
     renderOverlay: function(options){
@@ -1493,7 +1495,7 @@ var MenuView = Backbone.View.extend({
         }
 
     },
-    confirmResetOrder: function(callback, menuLink){
+    confirmResetOrder: function(options){
 
         var provider = this.app.els.wrapper.data('menu-provider'),
             day = this.app.els.wrapper.data('menu-day');
@@ -1516,13 +1518,14 @@ var MenuView = Backbone.View.extend({
 
             this.els.attention.confirm.click($.proxy(function(event){
                 this.els.attention.container.remove();
-                this.app.header.renderProviders(this.menu, day, provider, menuLink);
-                callback.call(this);
+                this.app.header.renderProviders(this.menu, day, provider, options.menuLink);
+                options.callbackAgree.call(this);
             }, this));
 
             this.els.attention.cancel.click($.proxy(function(event){
                 this.els.attention.container.remove();
-                this.app.header.renderProviders(this.menu, day, provider, menuLink);
+                this.app.header.renderProviders(this.menu, day, provider, options.menuLink);
+                options.callbackCancel.call(this);
             }, this));
 
         }, this), 0);

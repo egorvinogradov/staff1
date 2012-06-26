@@ -1095,6 +1095,10 @@ html {
 
 .content__overlay.m-overlay-week-slimming {
     background: #fff url('../img/slimming.jpg') no-repeat 50% 50%;
+    -webkit-background-size: contain;
+       -moz-background-size: contain;
+         -o-background-size: contain;
+            background-size: contain;
 }
 
 .content__overlay.m-overlay-day-slimming .content__overlay-header,
