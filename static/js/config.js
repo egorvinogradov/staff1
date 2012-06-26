@@ -20,7 +20,8 @@ var config = {
             providerName:   '.header__provider-c',
             completeButton: '.header__complete-button',
             favourites:     '.header__favourites-select',
-            changeOrder:    '.header__change'
+            changeOrder:    '.header__change',
+            message:        '.header__message'
         },
         content: {
             container:      '.content',
@@ -105,6 +106,20 @@ var config = {
         }
     },
     text: {
+        monthsInflect: [
+            'января',
+            'февраля',
+            'марта',
+            'апреля',
+            'мая',
+            'июня',
+            'июля',
+            'августа',
+            'сентября',
+            'октября',
+            'ноября',
+            'декабря'
+        ],
         daysRu2En: {
             'понедельник':  'monday',
             'вторник':      'tuesday',
@@ -165,6 +180,10 @@ var config = {
             'холодные блюда и закуски': 'snack',
             'бутерброды, выпечка':      'dessert',
             'пирожное':                 'dessert'
+        },
+        headerMessages: {
+            menu:       'Что изволит кушать мисьё <%= name %> на неделе с <%= dateFrom %> по <%= dateTo %>?',
+            favourites: 'Ваши любимые кушанья, мисьё <%= name %>!'
         }
     },
     DAY_ORDER_LIMIT: 400

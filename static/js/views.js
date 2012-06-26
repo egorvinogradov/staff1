@@ -270,11 +270,11 @@ var AppView = Backbone.View.extend({
     },
     catchError: function(message, data){
 
-        console.error('Error: ' + message, data || null);
+        console.error('Error: ' + message, data || null, {
+            username: user.firstName + ' ' + user.lastName,
+            email: user.email
+        });
         alert('Error: ' + message);
-
-        
-
 
         // TODO: send error
 
@@ -539,6 +539,66 @@ var HeaderView = Backbone.View.extend({
                 href = el.attr('href');
             href && el.attr({ href: href.replace(/menu|changeorder/, menuLink) });
         });
+    },
+    setHeaderMessage: function(options){
+
+        var template,
+            data;
+
+        this.els.headerMessage = $(config.selectors.header.message);
+
+        if ( options.type === 'menu' && !_.isEmpty(options.menu) ) {
+
+            var dates = [],
+                dataDates = {
+                    from: {},
+                    to: {}
+                },
+                dateFrom,
+                dateTo;
+
+            _.each(options.menu, function(data){
+                dates.push(data.date);
+            });
+
+            console.log('-- DATES', dates);
+
+            dates.sort(function(a,b){
+                return $.parseDate(a) < $.parseDate(b) ? -1 : 1;
+            });
+
+            dateFrom = {
+                day: $.parseDate(dates[0]).getDate(),
+                month: $.parseDate(dates[0]).getMonth()
+            };
+
+            dateTo = {
+                day: $.parseDate(dates[ dates.length - 1 ]).getDate(),
+                month: $.parseDate(dates[ dates.length - 1 ]).getMonth()
+            };
+
+            data = {
+                dateFrom: dateFrom.day + ( dateFrom.month !== dateTo.month ? ' ' + config.text.monthsInflect[dateFrom.month] : '' ),
+                dateTo: dateTo.day + ' ' + config.text.monthsInflect[dateTo.month],
+                name: user.firstName
+            };
+
+            template = _.template(config.text.headerMessages.menu);
+        }
+
+        if ( options.type === 'favourites' ) {
+            template = _.template(config.text.headerMessages.favourites);
+            data = {
+                name: user.firstName
+            };
+        }
+
+        console.log('--- DATA', data);
+
+        if ( template && data ) {
+            this.els.headerMessage
+                .html(template(data));
+        }
     }
 });
 
@@ -832,7 +892,7 @@ var MenuView = Backbone.View.extend({
 
         if ( _.isEmpty(this.menu) || _.isEmpty(this.app.order.model.get('meta')) ) {
             this.app.catchError('no required data', {
-                method: 'Menu View render',
+                method: 'MenuView render',
                 menu: this.menu,
                 order: this.app.order
             });
@@ -976,8 +1036,6 @@ var MenuView = Backbone.View.extend({
             }
         }
 
-
-
         options.date = this.menu[options.day].date;
 
         this.prepareHeader({
@@ -1015,6 +1073,11 @@ var MenuView = Backbone.View.extend({
         this.app.header.setDayMenuLink(menuType);
         this.app.header.renderProviders(this.menu, options.day, options.provider, menuType);
         this.app.header.toggleDay(options.day);
+
+        this.app.header.setHeaderMessage({
+            type: 'menu',
+            menu: this.menu
+        });
 
         this.app.resetPage();
         this.app.header.els.favourites
@@ -1665,18 +1728,7 @@ var OrderView = Backbone.View.extend({
         });
 
         sorted.sort(function(a ,b){
-
-            var str = {
-                    a: a.date.split('-'),
-                    b: b.date.split('-')
-                },
-                date = {
-                    a: new Date(+str.a[0], +str.a[1] - 1, +str.a[2]),
-                    b: new Date(+str.b[0], +str.b[1] - 1, +str.b[2])
-                };
-
-            return +date.a < +date.b ? -1 : 1;
-
+            return +$.parseDate(a.date) < +$.parseDate(b.date) ? -1 : 1;
         });
 
         return sorted;
@@ -1689,6 +1741,15 @@ var OrderView = Backbone.View.extend({
 
         if ( !this.order || !this.order.length ) {
             document.location.hash = '#/menu/';
+            return;
+        }
+
+        if ( !( this.app.menu && this.app.menu.model && !_.isEmpty(this.app.menu.model.get('objects')) ) ) {
+            this.app.catchError('no required data', {
+                method: 'OrderView render',
+                menu: this.app.menu,
+                order: this.order
+            });
             return;
         }
 
@@ -1751,6 +1812,11 @@ var OrderView = Backbone.View.extend({
         if ( !this.meta.current_week_open ) {
             this.els.changeButton.addClass(config.classes.global.hidden);
         }
+
+        this.app.header.setHeaderMessage({
+            type: 'menu',
+            menu: this.app.menu.model.get('objects')
+        });
 
         this.app.resetPage();
         this.app.makeOrder();
@@ -1847,6 +1913,10 @@ var FavouritesView = Backbone.View.extend({
 
         }, this);
 
+        
+        this.app.header.setHeaderMessage({
+            type: 'favourites'
+        });
 
         this.app.resetPage();
 

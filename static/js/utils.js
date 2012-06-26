@@ -20,6 +20,10 @@ $.extend({
         return num[1]
             ? num[0] + divider + num[1]
             : num[0];
+    },
+    parseDate: function(str){
+        var arr = str.split('-');
+        return new Date(+arr[0], +arr[1] - 1, +arr[2]);
     }
 });
 

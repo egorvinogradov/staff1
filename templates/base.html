@@ -11,7 +11,14 @@
     <script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
     <script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
 <![endif]-->
-
+<script type="text/javascript">
+    var user = {
+            name: '{{ user }}',
+            firstName: '{{ user.first_name }}',
+            lastName: '{{ user.last_name }}',
+            email: '{{ user.email }}'
+    };
+</script>
 </head>
 <body class="page">
     <div class="page__wrapper"></div>
@@ -38,7 +45,7 @@
                 <div class="header__logo">
                     <a class="header__logo-link" href="/"></a>
                 </div>
-                <div class="header__message">Что изволит кушать мисьё Дмитрий на неделе с 1 по 5 мая?</div>
+                <div class="header__message"></div>
                 <ul class="header__nav">
                     <li class="header__nav-item">
                         <span class="header__favourites">
