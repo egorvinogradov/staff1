@@ -101,6 +101,8 @@ class NotSoTastyPieModelResource(ModelResource):
         deserialized = self.deserialize(request, request.raw_post_data,
             format=request.META.get('CONTENT_TYPE', 'application/json'))
 
+        print deserialized
+
         deserialized = self.alter_deserialized_detail_data(request, deserialized)
         bundle = self.build_bundle(data=dict_strip_unicode_keys(deserialized), request=request)
 
