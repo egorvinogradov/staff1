@@ -2,6 +2,7 @@
 import datetime
 
 from tastypie.authentication import Authentication
+from tastypie.cache import SimpleCache
 from tastypie.resources import ModelResource
 
 from dinner.models import (
@@ -259,4 +260,5 @@ class FavoriteDishResource(NotSoTastyPieModelResource):
         resource_name = 'favorite'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
+        cache = SimpleCache(timeout=1200)
         limit = 500
