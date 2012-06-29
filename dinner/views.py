@@ -6,15 +6,21 @@ from social_auth.models import UserSocialAuth
 
 @login_required
 def index(request):
-
-    user_authenticated = request.user.is_authenticated()
-    user_authenticated = user_authenticated or UserSocialAuth.objects.filter(user=request.user, provider='ostrovok').exists()
+    user_authenticated =    request.user.is_authenticated() or \
+                            UserSocialAuth.objects.filter(
+                                user    = request.user, 
+                                provider= 'ostrovok'
+                            ).exists()
 
     if not user_authenticated:
         messages.add_message(
-            request=request,
-            level=messages.INFO,
-            message=u'Страница доступна только для пользователей mail.ostrovok.ru с заполненным именем')
+            request  = request,        
+            level    = messages.INFO,
+            messages = u'Страница доступна только для пользователей mail.ostrovok.ru с заполненным именем'
+        )
+
+        assert 123
+
         return direct_to_template(request, 'base.html')
 
     #if not request.user.get_profile().office:

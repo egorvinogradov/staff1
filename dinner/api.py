@@ -1,12 +1,26 @@
 # coding: utf-8
-
 import datetime
 
 from tastypie.authentication import Authentication
 from tastypie.resources import ModelResource
 
-from dinner.models import Day, WEEK_DAYS, Week, DishOrderDayItem, Order, DishDay, FavoriteDish, Dish, RestaurantOrderDayItem, EmptyOrderDayItem
-from dinner.utils import get_week_start_day, NotSoTastyPieModelResource, NotSoTastyDjangoAuthorization
+from dinner.models import (
+    Day, 
+    Dish, 
+    DishDay, 
+    DishOrderDayItem, 
+    EmptyOrderDayItem,
+    FavoriteDish, 
+    Order, 
+    RestaurantOrderDayItem, 
+    Week, 
+    WEEK_DAYS, 
+)
+from dinner.utils import (
+    get_week_start_day, 
+    NotSoTastyDjangoAuthorization,
+    NotSoTastyPieModelResource, 
+)
 
 from django.utils.datastructures import SortedDict
 

@@ -1,11 +1,13 @@
 -e git+https://github.com/toastdriven/django-tastypie.git#egg=master
+-e hg+https://bitbucket.org/salvator/django-admintools-bootstrap#egg=admintools_bootstrap
 
-South==0.7.3
-django==1.4
+django-annoying
+django-admin-tools==0.4.0
 django-debug-toolbar==0.8.5
+django-nose==1.1
 django-openid-consumer==0.1.1
 django-social-auth==0.6.0
-pyexcelerator==0.6.4.1
-django-annoying
-django-nose==1.1
+django==1.4
 pbs
+pyexcelerator==0.6.4.1
+South==0.7.3
