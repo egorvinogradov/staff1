@@ -14,10 +14,10 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-        'NAME': 'staff_test_3',                      
+        'NAME': 'fast_food',                      
         'USER': 'postgres',                       
-        'PASSWORD': '2minutes2midnight',                  
-        'HOST': 'dev4-db.ostrovok.ru',                      
+        'PASSWORD': 'postgres',                  
+        'HOST': '78.46.187.179',                      
         'PORT': '',                      
     }
 }
