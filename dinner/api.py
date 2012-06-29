@@ -256,7 +256,7 @@ class FavoriteDishResource(NotSoTastyPieModelResource):
         return bundle
 
     class Meta:
-        queryset = Dish.objects.all()
+        queryset = Dish.objects.all().select_related('provider', 'group')
         resource_name = 'favorite'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
