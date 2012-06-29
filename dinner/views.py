@@ -19,8 +19,6 @@ def index(request):
             messages = u'Страница доступна только для пользователей mail.ostrovok.ru с заполненным именем'
         )
 
-        assert 123
-
         return direct_to_template(request, 'base.html')
 
     #if not request.user.get_profile().office:
