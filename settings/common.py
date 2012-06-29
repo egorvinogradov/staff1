@@ -16,7 +16,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
         'NAME': 'fast_food',                      
         'USER': 'postgres',                       
-        'PASSWORD': 'postgres',                  
+        'PASSWORD': 'suprpass616',                  
         'HOST': '78.46.187.179',                      
         'PORT': '',                      
     }
