@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#source /usr/local/bin/virtualenvwrapper.sh
-#workon food
+source /usr/local/bin/virtualenvwrapper.sh
+workon food
+pip install -r requirements.txt
 
 set -e
 LOGFILE=logs/gunicorn.log
