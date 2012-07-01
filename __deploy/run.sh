@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cp upstart.conf /etc/init/food.conf
+ln -s /lib/init/upstart-job /etc/init.d/food
+
 cd ..
 
 source /usr/local/bin/virtualenvwrapper.sh
@@ -15,8 +18,4 @@ NUM_WORKERS=3
 USER=cwiz
 
 test -d $LOGDIR || mkdir -p $LOGDIR
-
-cp upstart.conf /etc/init/food.conf
-ln -s /lib/init/upstart-job /etc/init.d/food
-
 exec python manage.py run_gunicorn -w $NUM_WORKERS --user=$USER --log-level=debug --log-file=$LOGFILE 2>>$LOGFILE
