@@ -13,8 +13,6 @@ urlpatterns = patterns('',
     url(r'^accounts/', 		include('social_auth.urls')),
     url(r'^accounts/base/', include('django.contrib.auth.urls')),
     url(r'^admin/', 		include(admin.site.urls)),
-    url(r'^admin_tools/', 	include('admin_tools.urls')),
-
     url(r'^auth/', 			include(app_auth.urls)),
 )
 

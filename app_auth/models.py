@@ -23,6 +23,4 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
-    print 'AAAAAA'
-
 signals.post_save.connect(create_user_profile, sender=User)

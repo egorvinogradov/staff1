@@ -260,5 +260,4 @@ class FavoriteDishResource(NotSoTastyPieModelResource):
         resource_name = 'favorite'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
-        cache = SimpleCache(timeout=1200)
         limit = 500

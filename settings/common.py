@@ -1,4 +1,3 @@
-# Django settings for staff project.
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -44,7 +43,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    )
+)
 
 AUTH_PROFILE_MODULE = 'app_auth.models.UserProfile'
 
@@ -72,7 +71,7 @@ DEBUG_TOOLBAR_CONFIG = {
     'EXTRA_SIGNALS': [],
     'HIDE_DJANGO_SQL': False,
     'TAG': 'div',
-    }
+}
 
 INTERNAL_IPS = (
 )
@@ -90,13 +89,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
-    'admin_tools',
-    'admin_tools.theming',
-    'admin_tools.menu',
-    'admin_tools.dashboard',
-
     'debug_toolbar',
     'django_nose',
+    'gunicorn',
     'social_auth',
     'south',
     'tastypie',
