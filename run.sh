@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 set -e
 LOGFILE=logs/gunicorn.log
 LOGDIR=$(dirname $LOGFILE)
