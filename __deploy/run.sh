@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ..
+cd /home/cwiz/git/food
 
 source /usr/local/bin/virtualenvwrapper.sh
 mkvirtualenv food
