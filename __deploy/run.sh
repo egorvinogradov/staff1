@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cp upstart.conf /etc/init/food.conf
-ln -s /lib/init/upstart-job /etc/init.d/food
+#cp upstart.conf /etc/init/food.conf
+#ln -s /lib/init/upstart-job /etc/init.d/food
 
 cd ..
 
