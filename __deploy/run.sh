@@ -1,11 +1,9 @@
 #!/bin/bash
 
-#cp upstart.conf /etc/init/food.conf
-#ln -s /lib/init/upstart-job /etc/init.d/food
-
 cd ..
 
 source /usr/local/bin/virtualenvwrapper.sh
+mkvirtualenv food
 workon food
 pip install -r requirements.txt
 
