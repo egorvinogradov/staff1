@@ -16,7 +16,7 @@ USER=cwiz
 
 test -d $LOGDIR || mkdir -p $LOGDIR
 
-try cp upstart.conf /etc/init/food.conf
-try ln -s /lib/init/upstart-job /etc/init.d/food
+cp upstart.conf /etc/init/food.conf
+ln -s /lib/init/upstart-job /etc/init.d/food
 
 exec python manage.py run_gunicorn -w $NUM_WORKERS --user=$USER --log-level=debug --log-file=$LOGFILE 2>>$LOGFILE
