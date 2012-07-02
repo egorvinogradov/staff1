@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block body %}
+	
+	<h2>Где ты живешь, бро?</h2>
+
+    <form action="/auth/config/" method="post">
+		{% csrf_token %}
+        <ul class="messages">
+        {% for office in offices %}
+            <li class="info">
+                <input type="radio" name="office" value="{{office.id}}"/>
+                <span style="font-size: large">{{office.title}}</span><br/>{{office.address}}
+            </li>
+        {% endfor %}
+        </ul>
+        <div class="submit"><button class="button" id="submit" type="submit" data-norm="Мой адрес сегодня такой!" data-alt="Я сказал нажал!">Мой адрес сегодня такой!</button></div>
+    </form>
+{% endblock body %}

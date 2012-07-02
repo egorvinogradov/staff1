@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block body %}
+	<h2>Мсьё {{ user.get_full_name }}, твое меню на неделю c {{ order.week.date|date:"d F" }}</h2>
+	{% if days %}
+	{% spaceless %}
+        {% for day, items in days %}
+		<h3 class="title">{{ day|lower|capfirst }}</h3>
+		<ul class="dishes review">
+		{% for item in items %}
+		   <li{% if item.count > 1 %} class="multiple"{% endif %}>{% if item.count > 1 %}<span class="icon">&nbsp;</span>{% endif %}{{ item.dish.title|lower|capfirst }}{% if item.count > 1 %} <strong>({{ item.count }} шт.)</strong>{% endif %}</li>
+		{% endfor %}
+		</ul>
+        {% endfor %}
+    {% endspaceless %}
+    {% if not order.week.closed %}
+    <div class="review_footer"><a href="/" class="button">Исправить меню</a></div>
+    {% endif %}
+	{% else %}
+	<ul class="messages">
+		<li><span class="icon">&nbsp;</span>Ничего не выбрано! Эту ситуацию нужно срочно исправлять!</li>
+	</ul>
+	<div class="review_footer"><a href="/" class="button">Исправить ситуацию</a></div>
+    {% endif %}
+    {% if order.week.closed %}
+	<ul class="messages">
+		<li class="error"><span class="icon">&nbsp;</span> Еду уже заказали <span class="rotate">:(</span> теперь можно только любоваться твоим меню.</li>
+    </ul>
+    {% endif %}
+	
+{% endblock %}
