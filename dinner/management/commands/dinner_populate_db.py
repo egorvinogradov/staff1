@@ -10,20 +10,14 @@ from dinner.utils import import_menu
 def download_latest_hlebsol():
     from pbs import wget, mv, rm, cp
 
-    try:
-        rm('dinner/fixtures/hlebsol.xls')
-    except:
-        pass
+    wget('-N', '-S', 'http://hleb-sol.biz/templates/1.xls')
+    mv('1.xls', 'dinner/fixtures/hlebsol-current.xls')
 
-    if date.today().weekday() < 4:
-        wget('-N', '-S', 'http://hleb-sol.biz/templates/1.xls')
-        mv('1.xls', 'dinner/fixtures/hlebsol.xls')
+    wget('-N', '-S', 'http://hleb-sol.biz/templates/2.xls')
+    mv('2.xls', 'dinner/fixtures/hlebsol-next.xls')
 
-    else:
-        wget('-N', '-S', 'http://hleb-sol.biz/templates/2.xls')
-        mv('2.xls', 'dinner/fixtures/hlebsol.xls')
-
-    cp('dinner/fixtures/hlebsol.xls', 'dinner/fixtures/fusion.xls')
+    cp('dinner/fixtures/hlebsol-current.xls',   'dinner/fixtures/fusion-current.xls')
+    cp('dinner/fixtures/hlebsol-next.xls',      'dinner/fixtures/fusion-next.xls')
 
 
 class Command(BaseCommand):
@@ -32,11 +26,23 @@ class Command(BaseCommand):
         import_menu(
             process_function=fusion_hleb_sol.process,
             provider_name=u'Хлеб-Соль',
-            path='dinner/fixtures/hlebsol.xls'
+            path='dinner/fixtures/hlebsol-current.xls'
         )
 
         import_menu(
            process_function=fusion_hleb_sol.process,
            provider_name=u'Фьюжн',
-           path='dinner/fixtures/hlebsol.xls'
-       )
+           path='dinner/fixtures/hlebsol-current.xls'
+        )
+
+        import_menu(
+            process_function=fusion_hleb_sol.process,
+            provider_name=u'Хлеб-Соль',
+            path='dinner/fixtures/hlebsol-next.xls'
+        )
+
+        import_menu(
+           process_function=fusion_hleb_sol.process,
+           provider_name=u'Фьюжн',
+           path='dinner/fixtures/hlebsol-next.xls'
+        )
