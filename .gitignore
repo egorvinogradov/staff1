@@ -1,5 +1,8 @@
-.idea/
 *.pyc
-local.py
-.noseids
+.DS_store
 .DS_Store
+.idea/
+.noseids
+local.py
+logs/
+src/

@@ -1,11 +1,15 @@
--e git+https://github.com/toastdriven/django-tastypie.git#egg=master
+-e git+https://github.com/toastdriven/django-tastypie.git#egg=71758153da32e7680
 
-South==0.7.3
 django==1.4
+
+django-annoying==0.7.6
 django-debug-toolbar==0.8.5
+django-nose==1.1
 django-openid-consumer==0.1.1
 django-social-auth==0.6.0
+
+gunicorn==0.14.5
+pbs==0.105
 pyexcelerator==0.6.4.1
-django-annoying
-django-nose==1.1
-pbs
+South==0.7.3
+psycopg2

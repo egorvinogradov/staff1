@@ -4,7 +4,8 @@ from django.utils import html
 from django.utils import safestring
 from social_auth.backends import USERNAME, OpenIDBackend
 from social_auth.backends.google import  GoogleAuth
-from auth.auth_backends.exception import WrongDomain
+
+from app_auth.auth_backends.exception import WrongDomain
 
 DOMAIN = '@ostrovok.ru'
 
@@ -50,4 +51,5 @@ class OstrovokAuth(GoogleAuth):
 BACKENDS = {
     'ostrovok': OstrovokAuth,
 }
+
 

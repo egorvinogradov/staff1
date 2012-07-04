@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
+import imp
 import os, sys
+
 sys.path += [ os.path.dirname(os.path.dirname(os.path.abspath(__file__))) ]
 
 from django.core.management import execute_manager
-import imp
+
 try:
     imp.find_module('settings') # Assumed to be in the same directory.
 except ImportError:

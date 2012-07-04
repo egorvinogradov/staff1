@@ -2,18 +2,15 @@
 
 import pyExcelerator as xls
 
-from itertools import count
 from datetime import datetime
-
+from itertools import count
 
 def get_group(title):
     title = title.replace(u'NEW ', '').lower().strip()
     return title
 
-
 def parse_day(s):
     return datetime.strptime(s.split(' ')[0], '%d.%m.%y').date()
-
 
 def process(file):
 

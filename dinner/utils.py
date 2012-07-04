@@ -65,6 +65,11 @@ def import_menu(process_function, provider_name, path):
             price=dish['price']
         )
 
+    # since this function is used in admin to populate Menu model which uses week we return weeks imported
+
+    return week_cache.values()
+
+
 
 class NotSoTastyPieModelResource(ModelResource):
     def add_shit_to_meta(self, request, data):

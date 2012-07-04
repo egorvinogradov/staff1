@@ -4,8 +4,8 @@ import os
 from datetime import date, datetime
 from django.core.management.base import BaseCommand
 
-from dinner.utils import import_menu
 from dinner.providers import fusion_hleb_sol
+from dinner.utils import import_menu
 
 def download_latest_hlebsol():
     from pbs import wget, mv, rm, cp
@@ -19,13 +19,9 @@ def download_latest_hlebsol():
         wget('-N', '-S', 'http://hleb-sol.biz/templates/1.xls')
         mv('1.xls', 'dinner/fixtures/hlebsol.xls')
 
-        print 'DOWNLOADED LATEST MENU'
-
     else:
         wget('-N', '-S', 'http://hleb-sol.biz/templates/2.xls')
         mv('2.xls', 'dinner/fixtures/hlebsol.xls')
-
-        print 'DOWNLOADED LATEST MENU'
 
     cp('dinner/fixtures/hlebsol.xls', 'dinner/fixtures/fusion.xls')
 
