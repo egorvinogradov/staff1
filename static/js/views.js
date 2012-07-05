@@ -1552,44 +1552,6 @@ var MenuView = Backbone.View.extend({
 
         return price;
     },
-    clearOrder222: function(callback){
-
-        var emptyOrder = {},
-            success = $.proxy(function(data){
-                console.log('reset order OK', data);
-                callback && callback.call(this);
-            }, this),
-            error = $.proxy(function(data){
-                this.app.catchError('can\'t reset order', data);
-            }, this);
-
-        if ( this.app.order && this.app.order.model && this.app.order.model.get('objects').length ) {
-            _.each(this.app.order.model.get('objects')[0], function(data, date){
-                emptyOrder[date] = {
-                    empty: true
-                };
-            });
-        }
-        
-        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder, JSON.stringify(emptyOrder));
-        this.app.setLocalData('order', null);
-
-        if ( !_.isEmpty(emptyOrder) ) {
-            $.ajax({
-                type: 'POST',
-                contentType: 'application/json',
-                url: '/api/v1/order/',
-                data: JSON.stringify(emptyOrder),
-                success: function(data){
-                    data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
-            });
-        }
-
-    },
     confirmResetOrder: function(options){
 
         var provider = this.app.els.wrapper.data('menu-provider'),
