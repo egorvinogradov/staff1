@@ -45,7 +45,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-AUTH_PROFILE_MODULE = 'app_auth.models.UserProfile'
+AUTH_PROFILE_MODULE = 'app_auth.UserProfile'
 
 SECRET_KEY = 'lhut*arex%a$%z*masg72c$mq4x#e9r6a+b61m3eyvmj(!i!r8'
 

@@ -61,7 +61,7 @@ class DayResource(ModelResource):
         return bundle
 
     class Meta:
-        queryset = Day.objects.filter(week__date__gte=get_week_start_day(datetime.date.today()))
+        queryset = Day.objects.filter(week__date__gte=get_week_start_day(datetime.date.today())).order_by('week__date')
         resource_name = 'day'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
@@ -132,7 +132,10 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             data['meta']['made_order'] = False
             return
 
-        data['meta']['current_week_open'] = not current_week.closed
+        if not current_week.closed and current_week.date < datetime.date.today():
+            current_week_open.closed = True
+
+        data['meta']['current_week_open'] = not current_week.closed 
         data['meta']['made_order'] = Order.objects.filter(user=request.user, week=current_week).exists()
 
 
@@ -167,7 +170,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         for date, data in bundle.data.items():
 
             dt = datetime.datetime.strptime(date, '%Y-%m-%d')
-            week_start_date = get_week_start_day(dt)
+            #week_start_date = get_week_start_day(dt)
             week = Week.objects.get(date=week_start_date)
             day = Day.objects.get(week=week, day=dt.weekday())
 

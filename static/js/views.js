@@ -585,7 +585,7 @@ var HeaderView = Backbone.View.extend({
     },
     setDayMenuLink: function(menuLink){
 
-        // TODO: refactor; render days or don't use 'changeorder' in hash
+        // TODO: refactor; render days
 
         this.els.days.actions.each(function(i, element){
             var el = $(element),
@@ -1046,8 +1046,10 @@ var MenuView = Backbone.View.extend({
             }
 
             if ( !isDayExist ) {
-                isOrderExpired = true;
+                // this line breaks
+                //isOrderExpired = true;
             }
+
             else {
                 this.app.header.setDayText(date, {
                     type: orderType,
@@ -1063,9 +1065,11 @@ var MenuView = Backbone.View.extend({
 
         if_order_expired: {
 
+            // quick fix to make new week work
+
             if ( isOrderExpired ) {
 
-                this.app.clearOrder(this.app.order.model);
+                this.app.clearOrder(function(){}, this.app.order.model);
 
                 this.prepareHeader({
                     day: corrected.day,
@@ -1135,7 +1139,8 @@ var MenuView = Backbone.View.extend({
 
                 this.confirmResetOrder({
                     callbackAgree: this.setFavouriteDishes,
-                    callbackCancel: this.render
+                    callbackCancel: this.render,
+                    menuLink: menuType
                 });
 
                 this.app.options = {
@@ -1173,7 +1178,8 @@ var MenuView = Backbone.View.extend({
             .click($.proxy(function(){
                 this.confirmResetOrder({
                     callbackAgree: this.setFavouriteDishes,
-                    callbackCancel: this.render
+                    callbackCancel: this.render,
+                    menuLink: menuType
                 });
             }, this));
 
@@ -1546,6 +1552,44 @@ var MenuView = Backbone.View.extend({
 
         return price;
     },
+    clearOrder222: function(callback){
+
+        var emptyOrder = {},
+            success = $.proxy(function(data){
+                console.log('reset order OK', data);
+                callback && callback.call(this);
+            }, this),
+            error = $.proxy(function(data){
+                this.app.catchError('can\'t reset order', data);
+            }, this);
+
+        if ( this.app.order && this.app.order.model && this.app.order.model.get('objects').length ) {
+            _.each(this.app.order.model.get('objects')[0], function(data, date){
+                emptyOrder[date] = {
+                    empty: true
+                };
+            });
+        }
+        
+        console.log('--- REMOVE LOCAL ORDER: empty order', emptyOrder, JSON.stringify(emptyOrder));
+        this.app.setLocalData('order', null);
+
+        if ( !_.isEmpty(emptyOrder) ) {
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json',
+                url: '/api/v1/order/',
+                data: JSON.stringify(emptyOrder),
+                success: function(data){
+                    data.status === 'ok'
+                        ? success(data)
+                        : error(data);
+                },
+                error: error
+            });
+        }
+
+    },
     confirmResetOrder: function(options){
 
         var provider = this.app.els.wrapper.data('menu-provider'),
@@ -1569,11 +1613,13 @@ var MenuView = Backbone.View.extend({
 
             this.els.attention.confirm.click($.proxy(function(event){
                 this.els.attention.container.remove();
+                //this.app.header.renderProviders(this.menu, day, provider, options.menuLink);
                 options.callbackAgree.call(this);
             }, this));
 
             this.els.attention.cancel.click($.proxy(function(event){
                 this.els.attention.container.remove();
+                //this.app.header.renderProviders(this.menu, day, provider, options.menuLink);
                 options.callbackCancel.call(this);
             }, this));
 
@@ -1618,7 +1664,7 @@ var OrderView = Backbone.View.extend({
 
                 console.warn('order view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
 
-                this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order, menu.get('objects'));
+                this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order.get('objects')[0], menu.get('objects'));
                 this.meta = meta;
 
                 //this.meta.current_week_open = false;
@@ -1629,11 +1675,11 @@ var OrderView = Backbone.View.extend({
                     };
                 }
 
-                console.log('--- SET DATA OrderView 111:', _.clone(localOrder), _.clone(order));
+                console.log('--- SET DATA OrderView 111:', _.clone(localOrder), _.clone(order.get('objects')[0]));
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
-                    _.each(order, function(data, date){
+                    _.each(order.get('objects')[0], function(data, date){
 
                         var dayOrder = {},
                             dayDishes = {};
@@ -1664,7 +1710,7 @@ var OrderView = Backbone.View.extend({
 
                 }
 
-                console.log('--- SET DATA OrderView 222:', _.clone(localOrder), _.clone(order));
+                console.log('--- SET DATA OrderView 222:', _.clone(localOrder), _.clone(order.get('objects')[0]));
 
                 callback.call(this);
 
@@ -1680,7 +1726,10 @@ var OrderView = Backbone.View.extend({
 
 
         this.app.fetchModel(this.model, function(model){
-            order = model.get('objects')[0];
+
+
+            //order = model.get('objects')[0];
+            order = model;
             meta = model.get('meta');
             setData.call(this);
         }, this);
@@ -1879,43 +1928,15 @@ var OrderView = Backbone.View.extend({
             menu: this.app.menu.model.get('objects')
         });
 
+        this.app.resetPage();
+
+
         this.app.clearOrder($.proxy(function(){
             this.app.makeOrder(this.app.menu.model.get('objects'));
         }, this), this.model);
 
-
-        this.app.resetPage();
-
-
-
-        // TODO: fix
-
-        this.app.header.els.favourites
-            .unbind('click')
-            .click($.proxy(function(){
-
-                console.log('____ SET FAVOURITES: ORDERS', _.clone(this));
-
-//                this.confirmResetOrder({
-//                    callbackAgree: this.setFavouriteDishes,
-//                    callbackCancel: this.render
-//                });
-
-                this.app.options = {
-                    setFavourites: true,
-                    changeOrder: true
-                };
-
-                this.app.menu = new MenuView({
-                    model: new MenuModel(),
-                    el: this.app.els.wrapper,
-                    app: this.app
-                });
-
-
-
-            }, this));
-
+        //this.app.makeOrder(this.app.menu.model.get('objects'));
+        //this.app.setLocalData('order', null);
 
         this.el
             .empty()
@@ -1925,46 +1946,6 @@ var OrderView = Backbone.View.extend({
             .fadeIn();
 
         this.app.els.page.addClass(config.classes.page.order);
-
-
-
-
-
-
-
-
-//        this.els.order.click($.proxy(function(){
-//
-//            this.app.options = {
-//                setFavourites: true
-//            };
-//
-//            this.app.menu = new MenuView({
-//                model: new MenuModel(),
-//                el: this.app.els.wrapper,
-//                app: this.app
-//            });
-//
-//        }, this));
-//
-//
-//        this.app.resetPage();
-//        this.app.header.els.favourites
-//            .unbind('click')
-//            .click($.proxy(function(){
-//                this.confirmResetOrder({
-//                    callbackAgree: this.setFavouriteDishes,
-//                    callbackCancel: this.render,
-//                    menuLink: menuType
-//                });
-//            }, this));
-
-
-
-
-
-
-
 
     }
 });

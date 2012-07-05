@@ -18,7 +18,7 @@
                     <h4 style="margin-bottom: 0; color: gray">{{ day }}</h4>
                     <div style="padding-left: 1em">
                     {% for item in items %}
-                       {{ item.dish.title }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}<br/>
+                       {{ item.dish_day.dish.name }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}<br/>
                     {% endfor %}
                     </div>
                 {% endfor %}

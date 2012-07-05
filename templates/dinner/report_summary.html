@@ -28,10 +28,9 @@
                 </tr>
                 {% for item in seq %}
                 <tr>
-                   {# <td>{{ item.dish__index }}</td> #}
-                    <td>{{ item.dish__title }}</td>
-                    <td>{{ item.dish__weight|default_if_none:'—' }}</td>
-                    <td>{{ item.dish__price }}</td>
+                    <td>{{ item.dish_day__dish__name }}</td>
+                    <td>{{ item.dish_day__dish__weight|default_if_none:'—' }}</td>
+                    <td>{{ item.dish_day__price }}</td>
                     <td>{{ item.count__sum }}</td>
                     <td>{{ item.cost }}</td>
                 </tr>

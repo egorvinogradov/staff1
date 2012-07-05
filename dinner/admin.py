@@ -14,7 +14,7 @@ from django.db.transaction import commit_on_success
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
 
-from app_auth.models import Office
+from app_auth.models import Office, UserProfile
 from datetime import datetime, timedelta
 from itertools import count, groupby
 from pprint import pformat
@@ -79,11 +79,23 @@ class WeekAdmin(admin.ModelAdmin):
 
         m.DishOrderDayItem.objects.filter(order=receiver).delete()
         for donor_item in m.DishOrderDayItem.objects.filter(order=donor):
-            m.DishOrderDayItem(order=receiver, dish=donor_item.dish, count=donor_item.count).save(force_insert=True)
+            m.DishOrderDayItem(
+                count=donor_item.count, 
+                day=donor_item.day,
+                dish_day=donor_item.dish_day, 
+                order=receiver, 
+            ).save(force_insert=True)
 
         receiver.donor = donor.user
         receiver.save()
 
+    def fix_profiles(self, orders):
+        for o in orders:
+            user = o.user
+            try:
+                profile = user.profile
+            except UserProfile.DoesNotExist:
+                user.profile = UserProfile()
 
     def progress_view(self, request, week):
         if request.method == 'POST':
@@ -108,6 +120,7 @@ class WeekAdmin(admin.ModelAdmin):
             ).order_by('user__profile__office__id', 'user__last_name')
 
         orders = list(orders)
+        self.fix_profiles(orders)
 
         donor_pks = [order.user.pk for order in orders if order.num_items > 0 and not order.donor]
         donor_widget = forms.Select(
@@ -177,14 +190,14 @@ class WeekAdmin(admin.ModelAdmin):
             
             groups.append((
                 m.Provider.objects.get(pk=provider),
-                Office.objects.get(id=office),
+                Office.objects.get(id=office) if office else None,
                 days
-                ))
+            ))
 
         return direct_to_template(request, 'dinner/report_summary.html', {
             'week': week,
             'groups': groups,
-            })
+        })
 
 
     def personal_view(self, request, week):
@@ -200,13 +213,17 @@ class WeekAdmin(admin.ModelAdmin):
             )
 
         offices = []
-        for office, usersseq in groupby(list(items), lambda i: i.order.user.get_profile().office):
+
+        items = list(items)
+        self.fix_profiles([i.order for i in items])
+
+        for office, usersseq in groupby(list(items), lambda i: i.order.user.profile.office):
             users = []
             for user, seq in groupby(usersseq, lambda i: i.order.user):
                 seq = list(seq)
                 users.append((
                     user,
-                    group_by_materialize(groupby(seq, lambda i: i.dish.day)),
+                    group_by_materialize(groupby(seq, lambda i: i.dish_day.day)),
                     ))
 
             offices.append(( office, users ))

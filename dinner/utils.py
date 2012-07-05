@@ -12,7 +12,11 @@ def group_by_materialize(seq):
 
 
 def get_week_start_day(day):
-    day -= timedelta(days=day.weekday())
+
+    weekday = day.weekday()
+    delta = -weekday if weekday < 3 else (7-weekday)
+
+    day += timedelta(days=delta)
     return day
 
 
