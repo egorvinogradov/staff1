@@ -70,7 +70,6 @@ def import_menu(process_function, provider_name, path):
         )
 
     # since this function is used in admin to populate Menu model which uses week we return weeks imported
-
     return week_cache.values()
 
 
