@@ -1,5 +1,5 @@
+*.log
 *.pyc
-.DS_store
 .DS_Store
 .idea/
 .noseids
