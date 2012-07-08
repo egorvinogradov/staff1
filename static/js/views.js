@@ -1046,7 +1046,8 @@ var MenuView = Backbone.View.extend({
             }
 
             if ( !isDayExist ) {
-                isOrderExpired = true;
+                // plz fix
+                //isOrderExpired = true;
             }
             else {
                 this.app.header.setDayText(date, {
