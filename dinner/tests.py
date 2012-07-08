@@ -8,15 +8,30 @@ from providers import fusion_hleb_sol
 from tastypie.test import ResourceTestCase
 from utils import import_menu
 
+imported = False
+def stateful_import_menu():
+    
+    # stateful func to speedup things
+    global imported
+    if imported:
+        return
+
+    import_menu(
+            process_function=fusion_hleb_sol.process,
+            provider_name=u'Хлеб-Соль',
+            path='dinner/fixtures/hlebsol-next.xls'
+    )
+
 class ProviderXlsParseTestCase(TestCase):
+    
     def setUp(self):
         download_latest_hlebsol()
 
     def test_parse_helobsl(self):
-        self.do_parse('dinner/fixtures/hlebsol.xls')
+        self.do_parse('dinner/fixtures/hlebsol-current.xls')
 
     def test_parse_fusion(self):
-        self.do_parse('dinner/fixtures/fusion.xls')
+        self.do_parse('dinner/fixtures/fusion-current.xls')
 
     def do_parse(self, filename):
         data = list(fusion_hleb_sol.process(filename))
@@ -34,11 +49,7 @@ class ProviderXlsParseTestCase(TestCase):
             self.assertTrue(isinstance(dish['price'], float))
 
     def test_import_menu(self):
-        import_menu(
-            process_function=fusion_hleb_sol.process,
-            provider_name=u'Хлеб-Соль',
-            path='dinner/fixtures/hlebsol.xls'
-        )
+        stateful_import_menu()
 
 
 class RestApiTest(ResourceTestCase):
@@ -47,11 +58,7 @@ class RestApiTest(ResourceTestCase):
         super(RestApiTest, self).setUp()
 
         download_latest_hlebsol()
-        import_menu(
-            process_function=fusion_hleb_sol.process,
-            provider_name=u'Хлеб-Соль',
-            path='dinner/fixtures/hlebsol.xls'
-        )
+        stateful_import_menu()
 
         self.day_url = '/api/v1/day/'
         self.order_url = '/api/v1/order/'

@@ -10,13 +10,19 @@ from tastypie.utils.dict import dict_strip_unicode_keys
 def group_by_materialize(seq):
     return [(k, list(v)) for k, v in seq]
 
-
-def get_week_start_day(day):
-
+def get_week_start_day_menu(day):
     weekday = day.weekday()
     delta = -weekday if weekday < 3 else (7-weekday)
 
     day += timedelta(days=delta)
+    return day
+
+def get_week_start_day(day):
+
+    #weekday = day.weekday()
+    #delta = -weekday if weekday < 3 else (7-weekday)
+
+    day += timedelta(days=-day.weekday())
     return day
 
 

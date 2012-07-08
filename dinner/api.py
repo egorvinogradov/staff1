@@ -19,13 +19,16 @@ from dinner.models import (
 )
 from dinner.utils import (
     get_week_start_day, 
+    get_week_start_day_menu,
     NotSoTastyDjangoAuthorization,
     NotSoTastyPieModelResource, 
 )
 
 from django.utils.datastructures import SortedDict
 
+
 class DayResource(ModelResource):
+    
     def __get_grouped_dishes(self, day):
         dish_days = DishDay.objects.filter(day=day)\
             .select_related('dish', 'day', 'dish__provider', 'dish__group', 'day__week')
@@ -61,7 +64,7 @@ class DayResource(ModelResource):
         return bundle
 
     class Meta:
-        queryset = Day.objects.filter(week__date__gte=get_week_start_day(datetime.date.today())).order_by('week__date')
+        queryset = Day.objects.filter(week__date__gte=get_week_start_day_menu(datetime.date.today())).order_by('week__date')
         resource_name = 'day'
         authentication = Authentication()
         authorization = NotSoTastyDjangoAuthorization()
