@@ -174,7 +174,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             week = Week.objects.get(date=week_start_date)
             day = Day.objects.get(week=week, day=dt.weekday())
 
-
             empty = data.get('empty', False)
             if empty:
                 DishOrderDayItem.objects.filter(day=day).delete()
