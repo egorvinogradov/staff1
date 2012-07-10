@@ -170,8 +170,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             week_id=current_week.id
         )
 
-        print order
-
         for date, data in bundle.data.items():
 
             dt = datetime.datetime.strptime(date, '%Y-%m-%d')
@@ -185,6 +183,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
                 RestaurantOrderDayItem.objects.filter(day=day).delete()
                 EmptyOrderDayItem.objects.filter(day=day).delete()
                 continue
+
 
             dishes = data.get('dishes', {})
             if dishes:
@@ -200,8 +199,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
                         day=day,
                     )
 
-                    print order_day_item
-
                     order_day_item.count = count
                     order_day_item.save()
 
@@ -214,7 +211,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
                     day=day,
                     restaurant_name=restaurant
                 )
-                
                 continue
 
             none = bundle.data[date].get('none')
