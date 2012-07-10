@@ -123,7 +123,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
 
     def get_object_list(self, request):
-        return super(OrderDayItemResource, self).get_object_list(request).filter(user=request.user).order_by('-order__date')[:1]
+        return super(OrderDayItemResource, self).get_object_list(request).filter(user=request.user).order_by('-week_date')[:1]
 
 
     def add_shit_to_meta(self, request, data):
