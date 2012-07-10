@@ -1844,7 +1844,7 @@ var OrderView = Backbone.View.extend({
 
         console.log('ORDER view render', this.order);
 
-        if ( !this.order || !this.order.length ) {
+        if ( ( !this.order || !this.order.length ) && this.meta.current_week_open ) {
             document.location.hash = '#/menu/';
             return;
         }
