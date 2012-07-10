@@ -164,7 +164,7 @@ var AppView = Backbone.View.extend({
             return;
         }
 
-        //console.log('SET LOCAL DATA', value);
+        console.log('SET LOCAL DATA', value);
 
         localStorage.setItem(key, JSON.stringify(value));
         return value;
@@ -275,52 +275,44 @@ var AppView = Backbone.View.extend({
     },
     clearOrder: function(callback, order){
 
-        var emptyOrder = {},
-            success = $.proxy(function(data){
-                console.log('reset order NEW OK', data);
+        var order = order.get('objects')[0],
+            emptyOrder = {},
+            success = function(data){
                 callback && callback.call(this);
-
-                console.log('--- REMOVE LOCAL ORDER: empty order',
-                        emptyOrder,
-                        JSON.stringify(emptyOrder),
-                        '| OrderModel', _.clone(order));
-                
                 this.setLocalData('order', null);
-
-            }, this),
-            error = $.proxy(function(data){
+            },
+            error = function(data){
                 this.catchError('can\'t reset order', data);
-            }, this);
+            };
+
 
         if ( order && !_.isEmpty(order) ) {
-            _.each(order.get('objects')[0], function(data, date){
+            _.each(order, function(data, date){
                 emptyOrder[date] = {
                     empty: true
                 };
             });
-        }
-        else {
-            this.catchError('no required data', {
-                method: 'AppView clearOrder',
-                order: order
-            });
-        }
 
-        if ( !_.isEmpty(emptyOrder) ) {
+            console.log('emptyOrder', emptyOrder);
+
             $.ajax({
                 type: 'POST',
                 contentType: 'application/json',
                 url: '/api/v1/order/',
                 data: JSON.stringify(emptyOrder),
-                success: function(data){
+                success: $.proxy(function(data){
+                    console.log('Clear order complete', data);
                     data.status === 'ok'
-                        ? success(data)
-                        : error(data);
-                },
-                error: error
+                        ? success.call(this, data)
+                        : error.call(this, data);
+                }, this),
+                error: $.proxy(error, this)
             });
-        }
 
+        }
+        else {
+            callback && callback.call(this);
+        }
     },
     catchError: function(message, data){
 
