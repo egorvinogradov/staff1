@@ -121,10 +121,10 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             data_date = self.__fill_date_dict(data, date)
             data_date['none'] = True
 
+
     def get_object_list(self, request):
-        return super(OrderDayItemResource, self) \
-            .get_object_list(request) \
-            .order_by('-id').filter(user=request.user)[:1]
+        return super(OrderDayItemResource, self).get_object_list(request).filter(user=request.user).order_by('-order__date')[:1]
+
 
     def add_shit_to_meta(self, request, data):
         current_week = Week.objects.order_by('-date')[:1]
@@ -173,7 +173,6 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         for date, data in bundle.data.items():
 
             dt = datetime.datetime.strptime(date, '%Y-%m-%d')
-            #week_start_date = get_week_start_day(dt)
             week = Week.objects.get(date=week_start_date)
             day = Day.objects.get(week=week, day=dt.weekday())
 
@@ -229,6 +228,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
         }
 
         return bundle
+
 
     class Meta:
         queryset = Order.objects.all()
