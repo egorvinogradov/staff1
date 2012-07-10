@@ -135,8 +135,8 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             data['meta']['made_order'] = False
             return
 
-        if not current_week.closed and current_week.date < datetime.date.today():
-            current_week.closed = True
+        #if not current_week.closed and current_week.date < datetime.date.today():
+        #    current_week.closed = True
 
         data['meta']['current_week_open'] = not current_week.closed 
         data['meta']['made_order'] = Order.objects.filter(user=request.user, week=current_week).exists()
