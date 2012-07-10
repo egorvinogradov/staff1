@@ -166,7 +166,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             raise ValueError('Week is already closed')
 
         order, _ = Order.objects.get_or_create(
-            user_id=bundle.request.user.id,
+            user=bundle.request.user,
             week_id=current_week.id
         )
 
@@ -178,11 +178,10 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
 
             empty = data.get('empty', False)
             if empty:
-                DishOrderDayItem.objects.filter(day=day).delete()
-                RestaurantOrderDayItem.objects.filter(day=day).delete()
-                EmptyOrderDayItem.objects.filter(day=day).delete()
+                DishOrderDayItem.objects.filter(day=day, order=order).delete()
+                RestaurantOrderDayItem.objects.filter(day=day, order=order).delete()
+                EmptyOrderDayItem.objects.filter(day=day, order=order).delete()
                 continue
-
 
             dishes = data.get('dishes', {})
             if dishes:

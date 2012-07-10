@@ -130,9 +130,10 @@ class DishOrderDayItem(OrderDayItem):
 def post_order_day_item_save(sender, instance, **kwargs):
     order_day_item_models = (DishOrderDayItem, EmptyOrderDayItem, RestaurantOrderDayItem)
 
+    day = instance.day
+    order = instance.order
+
     for order_day_item_model in order_day_item_models:
-        day = instance.day
-        order = instance.order
 
         if sender != order_day_item_model:
             order_day_item_model.objects.filter(day=day, order=order).delete()
