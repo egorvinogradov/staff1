@@ -136,7 +136,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             return
 
         if not current_week.closed and current_week.date < datetime.date.today():
-            current_week_open.closed = True
+            current_week.closed = True
 
         data['meta']['current_week_open'] = not current_week.closed 
         data['meta']['made_order'] = Order.objects.filter(user=request.user, week=current_week).exists()
@@ -159,7 +159,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             raise ValueError('Supply data at least for 1 day')
 
         first_order_day = datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d')
-        week_start_date = get_week_start_day(first_order_day)
+        week_start_date = get_week_start_day_menu(first_order_day)
         current_week = Week.objects.get(date=week_start_date)
 
         if current_week.closed:
