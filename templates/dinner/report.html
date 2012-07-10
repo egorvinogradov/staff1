@@ -23,7 +23,9 @@
                                 {{ donor_widget }}
                             </form>
                         {% else %}
-                            <a href="{% url dinner.views.order_view order.pk %}" target="_blank" onclick="window.open('{% url dinner.views.order_view order.pk %}', 'order', 'width=400,height=400'); return false;">посмотреть</a>
+                            {% comment %}
+                                <a href="{% url dinner.views.order_view order.pk %}" target="_blank" onclick="window.open('{% url dinner.views.order_view order.pk %}', 'order', 'width=400,height=400'); return false;">посмотреть</a>
+                            {% endcomment %}
                         {% endif %}
                     {% endspaceless %}</td>
                 </tr>
