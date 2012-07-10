@@ -1658,9 +1658,9 @@ var OrderView = Backbone.View.extend({
 
                 localOrder = this.app.getLocalData('order');
 
-                console.warn('order view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order);
+                console.warn('order view:', localOrder && !_.isEmpty(localOrder) ? 'local' : 'server', localOrder, order.get('objects')[0]);
 
-                this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order, menu.get('objects'));
+                this.order = this.assembleOrder( localOrder && !_.isEmpty(localOrder) ? localOrder : order.get('objects')[0], menu.get('objects'));
                 this.meta = meta;
 
                 //this.meta.current_week_open = false;
@@ -1671,11 +1671,11 @@ var OrderView = Backbone.View.extend({
                     };
                 }
 
-                console.log('--- SET DATA OrderView 111:', _.clone(localOrder), _.clone(order));
+                console.log('--- SET DATA OrderView 111:', _.clone(localOrder), _.clone(order.get('objects')[0]));
 
                 if ( !localOrder || _.isEmpty(localOrder) ) {
 
-                    _.each(order, function(data, date){
+                    _.each(order.get('objects')[0], function(data, date){
 
                         var dayOrder = {},
                             dayDishes = {};
@@ -1706,7 +1706,7 @@ var OrderView = Backbone.View.extend({
 
                 }
 
-                console.log('--- SET DATA OrderView 222:', _.clone(localOrder), _.clone(order));
+                console.log('--- SET DATA OrderView 222:', _.clone(localOrder), _.clone(order.get('objects')[0]));
 
                 callback.call(this);
 
@@ -1722,7 +1722,9 @@ var OrderView = Backbone.View.extend({
 
 
         this.app.fetchModel(this.model, function(model){
-            order = model.get('objects')[0];
+
+            order = model;
+            //order = model.get('objects')[0];
             meta = model.get('meta');
             setData.call(this);
         }, this);
