@@ -159,7 +159,7 @@ class OrderDayItemResource(NotSoTastyPieModelResource):
             raise ValueError('Supply data at least for 1 day')
 
         first_order_day = datetime.datetime.strptime(sorted(bundle.data.keys())[0], '%Y-%m-%d')
-        week_start_date = get_week_start_day_menu(first_order_day)
+        week_start_date = get_week_start_day(first_order_day)
         current_week = Week.objects.get(date=week_start_date)
 
         if current_week.closed:
