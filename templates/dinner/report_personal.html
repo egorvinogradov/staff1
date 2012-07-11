@@ -4,26 +4,44 @@
 
 {% block extrastyle %}
     <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}admin.css" />
+    <link rel="stylesheet" type="text/css" href="{% get_media_prefix %}css/report_print.css" />
 {% endblock %}
 
 {% block content %}
     <div id="content-main">
         {% include 'dinner/report_menu.html' %}
-{% spaceless %}
         {% for office, users in offices %}
-        <h2><u>{{office.title}}</u></h2>
-            {% for user, days in users %}
-                <h3 style="color:black">{{ user.get_full_name }}</h3>
-                {% for day, items in days %}
-                    <h4 style="margin-bottom: 0; color: gray">{{ day }}</h4>
-                    <div style="padding-left: 1em">
-                    {% for item in items %}
-                       {{ item.dish_day.dish.name }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}<br/>
+            <div class="office">
+                <h2 class="office-title">{{office.title}}</h2>
+
+                <table class="office-menu">
+                    {% for user, days in users %}
+                        <tr class="user-menu">
+                            <th class="user">{{ user.get_full_name }}</th>
+                            {% for day, items in days %}
+                                <td class="day-dishes">
+                                    {% for item in items %}
+                                        <div class="dish">
+                                            <span class="provider provider-{% if item.dish_day.dish.provider|safe == 'Хлеб-Соль' %}h{% else %}{% if item.dish_day.dish.provider|safe == 'Фьюжн' %}f{% endif %}{% endif %}">
+                                                {% if item.dish_day.dish.provider|safe == 'Хлеб-Соль' %}
+                                                    Х
+                                                {% else %}
+                                                    {% if item.dish_day.dish.provider|safe == 'Фьюжн' %}
+                                                        Ф
+                                                    {% else %}
+                                                        {{ item.dish_day.dish.provider|safe }}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </span>
+                                            {{ item.dish_day.dish.name }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
                     {% endfor %}
-                    </div>
-                {% endfor %}
-            {% endfor %}
+                </table>
+            </div>
         {% endfor %}
-{% endspaceless %}
     </div>
 {% endblock %}
