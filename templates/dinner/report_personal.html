@@ -33,7 +33,7 @@
                                                     {% endif %}
                                                 {% endif %}
                                             </span>
-                                            {{ item.dish_day.dish.name }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}
+                                            <span class="dish-name">{{ item.dish_day.dish.name }}{% if item.count > 1 %} <strong>x{{ item.count }}</strong>{% endif %}</span>
                                         </div>
                                     {% endfor %}
                                 </td>
@@ -44,4 +44,13 @@
             </div>
         {% endfor %}
     </div>
+	<script>
+		var dishes = document.getElementsByClassName('dish-name');
+		for ( var i = 0, l = dishes.length; i < l; i++ ) {
+		    var dish = dishes[i],
+		        name = dishes[i].innerHTML,
+		        cut = name.replace(/\n/mg, ' ').replace(/\(.+\)/g, '');
+		    dish.innerHTML = cut;
+		}
+	</script>
 {% endblock %}

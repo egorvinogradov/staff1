@@ -1,0 +1,74 @@
+html, body, * {
+    padding: 0;
+    margin: 0;
+    font-size: 8pt;
+}
+
+.office {
+    page-break-after: always;
+}
+
+.provider {
+    font-weight: bold;
+    color: #fff;
+    display: inline-block;
+    width: 15px;
+    text-align: center;
+    margin: 1px 0;
+}
+
+.provider-h {
+    background: red;
+}
+
+.provider-f {
+    background: green;
+}
+
+thead {
+    display:table-header-group;
+}
+
+tbody {
+    display:table-row-group;
+}
+
+tr {
+    page-break-inside: avoid;
+}
+
+.provider-icon {
+    text-transform: uppercase;
+    color: black;
+    border-radius: 1em;
+    padding: 0.2em;
+    border: 1px solid black;
+    font-size: 0.6em;
+}
+
+table {
+    border-collapse: collapse;
+    page-break-after: always;
+}
+
+table, th, td, tr, thead, tbody
+{
+    border: 1px solid black;
+}
+
+td {
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+@media print {
+    #header,
+    .no-print,
+    .breadcrumbs,
+    .dinner-menu,
+    .office-title,
+    .provider {
+        display: none !important;
+    }
+}
+
