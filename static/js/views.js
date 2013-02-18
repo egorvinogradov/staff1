@@ -119,17 +119,79 @@ var AppView = Backbone.View.extend({
     },
     fetchModel: function(model, callback, context){
 
-        model.fetch({
-            success: $.proxy(callback, context || window),
-            error: function(error){
-                this.catchError('can\'t fetch model from ' + model.url, {
-                    model: model,
-                    callback: callback,
-                    context: context,
-                    error: error
-                });
-            }
-        });
+
+        // model.fetch({
+        //     success: $.proxy(callback, context || window),
+        //     error: $.proxy(function(error){
+        //         this.catchError('can\'t fetch model from ' + model.url, {
+        //             model: model,
+        //             callback: callback,
+        //             context: context,
+        //             error: error
+        //         });
+        //     }, this)
+        // });
+
+
+        if ( model.url === '/api/v1/day' ) {
+
+            var menuMockModel = {
+                meta: {
+                    limit: 500,
+                    next: null,
+                    offset: 0,
+                    previous: null,
+                    total_count: 0
+                },
+                objects: mockMenu
+            };
+
+            model.set({
+                meta: menuMockModel.meta,
+                objects: menuMockModel.objects
+            }, { silent: true })
+
+            console.log('>> Fetch menu mock model', model);
+            callback.call(context, model);
+
+        }
+        else if ( model.url === '/api/v1/order/' ) {
+
+            var orderMockModel = {
+                meta: {
+                    current_week_open: true,
+                    made_order: false
+                },
+                objects: []
+            };
+
+            model.set({
+                meta: orderMockModel.meta,
+                objects: orderMockModel.objects
+            }, { silent: true });
+
+            console.log('>> Fetch order mock model', model);
+            callback.call(context, model);
+
+        }
+        else if ( model.url === '/api/v1/favorite/' ) {
+
+            var favoriteMockModel = {
+                meta: {},
+                objects: []
+            };
+
+            model.set({
+                meta: favoriteMockModel.meta,
+                objects: favoriteMockModel.objects
+            }, { silent: true });
+
+            console.log('>> Fetch favorite mock model', model);
+            callback.call(context, model);
+
+        }
+
+
     },
     getLocalData: function(key){
 
@@ -320,8 +382,7 @@ var AppView = Backbone.View.extend({
             username: user.firstName + ' ' + user.lastName,
             email: user.email
         });
-        alert('Error: ' + message);
-
+        // alert('Error: ' + message);
         // TODO: send error
 
     }

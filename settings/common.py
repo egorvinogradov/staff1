@@ -6,6 +6,7 @@ TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     ('cwiz', 'cyberwizard.ru@gmail.com'),
+    ('egor', 'egor@ostrovok.ru'),
 )
 
 MANAGERS = ADMINS
@@ -13,11 +14,13 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2', 
-        'NAME': 'fast_food',                      
-        'USER': 'postgres',                       
-        'PASSWORD': 'suprpass616',                  
-        'HOST': '78.46.187.179',                      
-        'PORT': '',                      
+        'NAME': 'fast_food',
+        #'NAME': 'staff_db',
+        'USER': 'postgres',
+        'PASSWORD': 'suprpass616',
+        'HOST': '78.46.187.179',
+        #'HOST': 'localhost',
+        #'PORT': '5432',
     }
 }
 
