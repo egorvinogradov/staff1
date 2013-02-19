@@ -178,7 +178,7 @@ var AppView = Backbone.View.extend({
 
             var favoriteMockModel = {
                 meta: {},
-                objects: []
+                objects: mockFavorites
             };
 
             model.set({
