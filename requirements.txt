@@ -1,7 +1,7 @@
 -e git+https://github.com/toastdriven/django-tastypie.git#egg=71758153da32e7680
 #django-tastypie
 
-django==1.4.2
+django==2.2.24
 
 django-annoying==0.7.6
 django-debug-toolbar==0.8.5
